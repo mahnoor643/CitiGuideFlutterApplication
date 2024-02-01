@@ -1,4 +1,6 @@
 import 'package:citi_guide/Constants/constants.dart';
+import 'package:citi_guide/widgets/blueButton.dart';
+import 'package:citi_guide/widgets/greyButton.dart';
 import 'package:flutter/material.dart';
 
 class Dashboard extends StatefulWidget {
@@ -55,50 +57,195 @@ class _DashboardState extends State<Dashboard> {
               )
             ],
           ),
-          SizedBox(height: 20),
 
-          // searchbar row
-         Container(
-  decoration: BoxDecoration(
-    color: Constants.greyColor,
-    borderRadius: BorderRadius.circular(8.0), // Adjust the radius as needed
-  ),
-  child: Row(
-    children: [
-      Container(
-        margin: EdgeInsets.all(4),
-        child: Icon(Icons.search, color: Constants.greyTextColor),
-      ),
-      Expanded(
-        child: TextField(
-          cursorColor: Constants.greyTextColor,
-          decoration: InputDecoration(
-            filled: true,
-            fillColor: Constants.greyColor,
-            hintText: 'Search Destination',
+          // searchbar row //
+          Container(
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    cursorColor: Constants.greyTextColor,
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: Constants.greyColor,
+                      hintText: 'Search Destination',
+                      prefixIcon: Icon(Icons.search,
+                          color:
+                              Constants.greyTextColor), // Add icon to the left
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(
+                              Constants.buttonBorderRadius),
+                          borderSide: BorderSide(color: Constants.greyColor)),
+                      contentPadding: EdgeInsets.symmetric(
+                          vertical: Constants.searchBarButtonHeight),
+                    ),
+                    style: TextStyle(
+                      color: Constants.greyTextColor,
+                    ),
+                  ),
+                ),
+                SizedBox(
+                  width: 7,
+                ),
+                // InkWell(
+                //   onTap: () {
+                //     print("tapped");
+                //   },
+                //   child: Container(
+                //     decoration: BoxDecoration(
+                //       color: Constants.darkBlueColor,
+                //       borderRadius:
+                //           BorderRadius.circular(Constants.buttonBorderRadius),
+                //     ),
+                //     child: Center(
+                //       child: Padding(
+                //         padding: EdgeInsets.symmetric(
+                //             vertical: Constants.searchBarButtonHeight,
+                //             horizontal: 10), // Adjust the padding as needed
+                //         child: Icon(Icons.storage_rounded,
+                //             color: Constants.whiteColor),
+                //       ),
+                //     ),
+                //   ),
+                // ),
+
+                BlueButton(
+                  topBottomPadding: Constants.searchBarButtonHeight,
+                  leftRightPadding: 10,
+                  widget_:
+                      Icon(Icons.storage_rounded, color: Constants.whiteColor),
+                  OntapFunction: () {
+                    print("tapped");
+                  },
+                  topBottomMargin: 0,
+                  leftRightMargin: 0,
+                ),
+              ],
+            ),
           ),
-          style: TextStyle(
-            color: Constants.greyTextColor,
+
+          SizedBox(
+            height: 7,
+          ),
+
+          //City Categories row
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                BlueButton(
+                  topBottomPadding: 10,
+                  leftRightPadding: 30,
+                  widget_: Text(
+                    "Karachi",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  OntapFunction: () {
+                    print("tapped");
+                  },
+                  topBottomMargin: 0,
+                  leftRightMargin: 0,
+                ),
+                GreyButton(
+                  topBottomPadding: 10,
+                  leftRightPadding: 30,
+                  widget_: Text(
+                    "Islamabad",
+                    style: TextStyle(color: Color(0xff000000)),
+                  ),
+                  OntapFunction: () {
+                    print("tapped");
+                  },
+                  topBottomMargin: 0,
+                  leftRightMargin: 5,
+                ),
+                GreyButton(
+                  topBottomPadding: 10,
+                  leftRightPadding: 30,
+                  widget_: Text(
+                    "Lahore",
+                    style: TextStyle(color: Color(0xff000000)),
+                  ),
+                  OntapFunction: () {
+                    print("tapped");
+                  },
+                  topBottomMargin: 0,
+                  leftRightMargin: 5,
+                ),
+                GreyButton(
+                  topBottomPadding: 10,
+                  leftRightPadding: 30,
+                  widget_: Text(
+                    "Multan",
+                    style: TextStyle(color: Color(0xff000000)),
+                  ),
+                  OntapFunction: () {
+                    print("tapped");
+                  },
+                  topBottomMargin: 0,
+                  leftRightMargin: 5,
+                ),
+              ],
+            ),
+          ),
+
+
+
+
+
+
+
+
+
+
+
+
+
+          //Destination cards
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                SafeArea(
+          top: true,
+          child: Card(
+            clipBehavior: Clip.antiAliasWithSaveLayer,
+            color: Colors.grey,
+            elevation: 4,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.network(
+                    'https://picsum.photos/seed/127/600',
+                    width: 200,
+                    height: 200,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                Opacity(
+                  opacity: 0.8,
+                  child: Align(
+                    alignment: Alignment.bottomCenter,
+                    child: Container(
+                      width: 200,
+                      height: 109,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
-      ),
-
-
-
-
-
-
-
-
-
-      //will continue from hereeeeeeeeeeeeee
-      ElevatedButton(onPressed: (){
-        //
-      }, child: Text("hello ji"))
-    ],
-  ),
-)
-
+              ],
+            ),
+          )
         ],
       ),
     ));
