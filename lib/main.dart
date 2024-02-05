@@ -1,4 +1,6 @@
 import 'package:citi_guide/screens/Dashboard/dashboard.dart';
+import 'package:citi_guide/screens/Details/details.dart';
+import 'package:citi_guide/screens/Login/login.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -11,7 +13,7 @@ class CitiGuide extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: Dashboard(),
+      home: DestinationDetails(),
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         //Beneath colorScheme is used for background color setting of app
@@ -19,6 +21,10 @@ class CitiGuide extends StatelessWidget {
           background:Colors.orange,
         ),
       ),
+      routes: {
+        '/home': (context) => Dashboard(),
+        '/login': (context) => Login(),
+      },
     );
   }
 }
