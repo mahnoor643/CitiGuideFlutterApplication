@@ -9,4 +9,5 @@ class Constants {
   static double searchBarButtonHeight = 15;
   static Color darkBlueColor = Color(0xff0029FF);
   static Color whiteColor = Colors.white;
+  static Color lightBlueColor = Color(0xffF0F3FB);
 }

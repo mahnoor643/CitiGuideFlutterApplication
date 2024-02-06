@@ -99,8 +99,8 @@ class DestinationDetails extends StatelessWidget {
                 "Pearl Continental (PC Hotel)",
                 style: TextStyle(
                   color: Constants.darkBlueColor,
-                  fontSize: 20,
-                  fontWeight: FontWeight.w900,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ),
@@ -112,7 +112,7 @@ class DestinationDetails extends StatelessWidget {
                 style: TextStyle(
                   color: Colors.black,
                   fontSize: 14,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),
@@ -132,7 +132,7 @@ class DestinationDetails extends StatelessWidget {
                           style: TextStyle(
                             color: Colors.black,
                             fontSize: 20,
-                            fontWeight: FontWeight.w900,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ],
@@ -144,7 +144,7 @@ class DestinationDetails extends StatelessWidget {
                           style: TextStyle(
                             color: Colors.black,
                             fontSize: 16,
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
                       ],
@@ -167,7 +167,7 @@ class DestinationDetails extends StatelessWidget {
                           style: TextStyle(
                             color: Colors.black,
                             fontSize: 20,
-                            fontWeight: FontWeight.w900,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ],
@@ -179,7 +179,7 @@ class DestinationDetails extends StatelessWidget {
                           style: TextStyle(
                             color: Colors.black,
                             fontSize: 16,
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
                       ],
@@ -204,7 +204,7 @@ class DestinationDetails extends StatelessWidget {
                           style: TextStyle(
                             color: Colors.black,
                             fontSize: 20,
-                            fontWeight: FontWeight.w900,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                   ],
@@ -212,11 +212,11 @@ class DestinationDetails extends StatelessWidget {
                 Row(
                   children: [
                     Text(
-                          "021-321 654254",
+                          "         021-321 654254",
                           style: TextStyle(
                             color: Colors.black,
                             fontSize: 16,
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
                   ],
