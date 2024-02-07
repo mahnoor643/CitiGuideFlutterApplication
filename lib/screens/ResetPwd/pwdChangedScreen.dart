@@ -15,7 +15,7 @@ class _PwdChangedScreenState extends State<PwdChangedScreen> {
     return Scaffold(
       body: Center(
         child: Container(
-                                  margin: EdgeInsets.only(left: 20, right: 20),
+          margin: EdgeInsets.only(left: 20, right: 20),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -38,19 +38,20 @@ class _PwdChangedScreenState extends State<PwdChangedScreen> {
                 ),
               ),
               Container(
-                                alignment: Alignment.center,
-
+                alignment: Alignment.center,
                 child: Text(
-                    "Your password has been changed  successfully",
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w200,
-                    ),
-                    textAlign: TextAlign.center,
+                  "Your password has been changed  successfully",
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w200,
                   ),
+                  textAlign: TextAlign.center,
+                ),
               ),
-              SizedBox(height: 30,),
+              SizedBox(
+                height: 30,
+              ),
               //login in  button
               BlueButton(
                 topBottomPadding: Constants.searchBarButtonHeight,

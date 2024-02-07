@@ -7,6 +7,7 @@ import 'package:citi_guide/widgets/destinationCards.dart';
 import 'package:citi_guide/widgets/greyButton.dart';
 import 'package:citi_guide/widgets/transparentButton.dart';
 import 'package:flutter/material.dart';
+import 'package:google_nav_bar/google_nav_bar.dart';
 
 class Dashboard extends StatefulWidget {
   const Dashboard({super.key});
@@ -31,7 +32,7 @@ class _DashboardState extends State<Dashboard> {
       //Navigation Bar
 
       body: Container(
-        margin: EdgeInsets.only(left: 20, right: 20),
+        margin: EdgeInsets.only(top:10,left: 20, right: 20),
         child: SingleChildScrollView(
           scrollDirection: Axis.vertical,
           child: Column(
@@ -167,7 +168,9 @@ class _DashboardState extends State<Dashboard> {
                       ),
                       OntapFunction: () {
                         Navigator.push(
-                  context, MaterialPageRoute(builder: (context) => DestinationDetails()));
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => DestinationDetails()));
                       },
                       topBottomMargin: 0,
                       leftRightMargin: 0,
@@ -260,22 +263,22 @@ class _DashboardState extends State<Dashboard> {
                 child: Row(
                   children: [
                     DestinationCards(
-                        imgPath: 'assets/images/profile.jpeg',
+                        imgPath: 'assets/images/PC.png',
                         location: 'PC Hotel',
                         city: 'Karachi',
                         distance: '3.2 Km'),
                     DestinationCards(
-                        imgPath: 'assets/images/profile.jpeg',
-                        location: 'PC Hotel',
+                        imgPath: 'assets/images/clockTower.png',
+                        location: 'Clock Tower',
+                        city: 'Karachi',
+                        distance: '6.2 Km'),
+                    DestinationCards(
+                        imgPath: 'assets/images/superSpace.png',
+                        location: 'Super Space',
                         city: 'Karachi',
                         distance: '3.2 Km'),
                     DestinationCards(
-                        imgPath: 'assets/images/profile.jpeg',
-                        location: 'PC Hotel',
-                        city: 'Karachi',
-                        distance: '3.2 Km'),
-                    DestinationCards(
-                        imgPath: 'assets/images/profile.jpeg',
+                        imgPath: 'assets/images/PC.png',
                         location: 'PC Hotel',
                         city: 'Karachi',
                         distance: '3.2 Km'),
@@ -306,63 +309,63 @@ class _DashboardState extends State<Dashboard> {
                           ],
                         ),
                         secondOpacityDivRow: Row(
-          children: [
-            Padding(
-              padding: EdgeInsets.only(left: 10),
-              child: TransparentButton(
-                  OpacitySet: 0.1,
-                  topBottomPadding: 2,
-                  leftRightPadding: 7,
-                  widget_: Row(
-                    children: [
-                      Icon(
-                        Icons.location_on_outlined,
-                        color: Constants.greyColor,
-                        size: 10,
-                      ),
-                      Text(
-                        "Karachi",
-                        style: TextStyle(
-                          fontSize: 10,
-                          color: Constants.greyColor,
+                          children: [
+                            Padding(
+                              padding: EdgeInsets.only(left: 10),
+                              child: TransparentButton(
+                                  OpacitySet: 0.1,
+                                  topBottomPadding: 2,
+                                  leftRightPadding: 7,
+                                  widget_: Row(
+                                    children: [
+                                      Icon(
+                                        Icons.location_on_outlined,
+                                        color: Constants.greyColor,
+                                        size: 10,
+                                      ),
+                                      Text(
+                                        "Karachi",
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          color: Constants.greyColor,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  OntapFunction: () {
+                                    print("navigation button");
+                                  },
+                                  topBottomMargin: 2,
+                                  leftRightMargin: 0),
+                            ),
+                            Spacer(),
+                            Padding(
+                              padding: EdgeInsets.only(right: 10),
+                              child: TransparentButton(
+                                  OpacitySet: 0.1,
+                                  topBottomPadding: 2,
+                                  leftRightPadding: 7,
+                                  widget_: Row(
+                                    children: [
+                                      Text(
+                                        "6.5 km",
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          color: Constants.greyColor,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  OntapFunction: () {
+                                    print("navigation button");
+                                  },
+                                  topBottomMargin: 2,
+                                  leftRightMargin: 0),
+                            ),
+                          ],
                         ),
-                      ),
-                    ],
-                  ),
-                  OntapFunction: () {
-                    print("navigation button");
-                  },
-                  topBottomMargin: 2,
-                  leftRightMargin: 0),
-            ),
-            Spacer(),
-            Padding(
-              padding: EdgeInsets.only(right: 10),
-              child: TransparentButton(
-                  OpacitySet: 0.1,
-                  topBottomPadding: 2,
-                  leftRightPadding: 7,
-                  widget_: Row(
-                    children: [
-                      Text(
-                        "6.5 km",
-                        style: TextStyle(
-                          fontSize: 10,
-                          color: Constants.greyColor,
-                        ),
-                      ),
-                    ],
-                  ),
-                  OntapFunction: () {
-                    print("navigation button");
-                  },
-                  topBottomMargin: 2,
-                  leftRightMargin: 0),
-            ),
-          ],
-        ),
                         OpacityAboveRemainingHeightForMargin: 250,
-                        cityImg: 'assets/images/profile.jpeg'),
+                        cityImg: 'assets/images/PC.png'),
                   ),
                 ],
               )
@@ -376,42 +379,31 @@ class _DashboardState extends State<Dashboard> {
         margin: EdgeInsets.only(bottom: 20, left: 20, right: 20),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(8.0),
+          border: Border.all(
+            color: Constants.whiteColor, // Set your border color
+            width: 1.0, // Set your border width
+          ),
+          color: Constants.whiteColor,
         ),
-        child: BottomNavigationBar(
-          backgroundColor: Colors.white,
-          currentIndex: _currentIndex,
-          onTap: (index) {
-            setState(() {
-              _currentIndex = index;
-            });
-
-            // Use Navigator to navigate to the selected page
-            switch (index) {
-              case 0:
-                Navigator.pushNamed(context, '/home');
-                break;
-              case 1:
-                Navigator.pushNamed(context, '/login');
-                break;
-              case 2:
-                Navigator.pushNamed(context, '/login');
-                break;
-            }
-          },
-          items: [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home),
-              label: 'Home',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.pageview),
-              label: 'Page 2',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.star),
-              label: 'Page 3',
-            ),
-          ],
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 20),
+          child: GNav(
+            backgroundColor: Constants.whiteColor,
+            color: Constants.greyTextColor,
+            activeColor: Constants.whiteColor,
+            tabBackgroundGradient: Constants.orangeGradient,
+            onTabChange: (index) {
+              // Handle tab change
+            },
+            gap: 8,
+            padding: EdgeInsets.all(11),
+            tabs: [
+              GButton(icon: Icons.home, text: "Home"),
+              GButton(icon: Icons.favorite_border, text: "Like"),
+              GButton(icon: Icons.search, text: "Search"),
+              GButton(icon: Icons.settings, text: "Settings"),
+            ],
+          ),
         ),
       ),
     );

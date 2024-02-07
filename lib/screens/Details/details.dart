@@ -90,7 +90,7 @@ class DestinationDetails extends StatelessWidget {
                     ],
                   ),
                   OpacityAboveRemainingHeightForMargin: 200,
-                  cityImg: 'assets/images/profile.jpeg'),
+                  cityImg: 'assets/images/PC.png'),
             ),
             Container(
               margin: EdgeInsets.only(top: 10),
@@ -98,7 +98,7 @@ class DestinationDetails extends StatelessWidget {
               child: Text(
                 "Pearl Continental (PC Hotel)",
                 style: TextStyle(
-                  color: Constants.darkBlueColor,
+                  color: Constants.OrangeColor,
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
                 ),
@@ -125,7 +125,7 @@ class DestinationDetails extends StatelessWidget {
                       children: [
                         Icon(
                           Icons.route_sharp,
-                          color: Constants.darkBlueColor,
+                          color: Constants.OrangeColor,
                         ),
                         Text(
                           "Distance",
@@ -160,7 +160,7 @@ class DestinationDetails extends StatelessWidget {
                       children: [
                         Icon(
                           Icons.access_time_sharp,
-                          color: Constants.darkBlueColor,
+                          color: Constants.OrangeColor,
                         ),
                         Text(
                           "Opening Hours",
@@ -197,7 +197,7 @@ class DestinationDetails extends StatelessWidget {
                   children: [
                     Icon(
                           Icons.phone_in_talk_outlined,
-                          color: Constants.darkBlueColor,
+                          color: Constants.OrangeColor,
                         ),
                         Text(
                           "Contact Number",

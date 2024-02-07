@@ -28,7 +28,7 @@ class BlueButton extends StatelessWidget {
           horizontal: leftRightMargin
         ),
         decoration: BoxDecoration(
-          color: Constants.darkBlueColor,
+          gradient: Constants.orangeGradient,
           borderRadius: BorderRadius.circular(Constants.buttonBorderRadius),
         ),
         child: Center(
