@@ -1,6 +1,9 @@
 import 'package:citi_guide/Constants/constants.dart';
+import 'package:citi_guide/screens/Cities/cities.dart';
 import 'package:citi_guide/screens/Details/details.dart';
 import 'package:citi_guide/screens/Login/login.dart';
+import 'package:citi_guide/screens/SearchScreen/searchScreen.dart';
+import 'package:citi_guide/screens/profile/profile.dart';
 import 'package:citi_guide/widgets/blueButton.dart';
 import 'package:citi_guide/widgets/card.dart';
 import 'package:citi_guide/widgets/destinationCards.dart';
@@ -17,22 +20,14 @@ class Dashboard extends StatefulWidget {
 }
 
 class _DashboardState extends State<Dashboard> {
-  int _currentIndex = 0;
-
-  final List<Widget> _pages = [
-    // Add your pages here
-    Dashboard(),
-    Login(),
-    Login(),
-  ];
-
+  int selectedIndex = 0;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       //Navigation Bar
 
       body: Container(
-        margin: EdgeInsets.only(top:10,left: 20, right: 20),
+        margin: EdgeInsets.only(top: 10, left: 20, right: 20),
         child: SingleChildScrollView(
           scrollDirection: Axis.vertical,
           child: Column(
@@ -384,6 +379,7 @@ class _DashboardState extends State<Dashboard> {
             width: 1.0, // Set your border width
           ),
           color: Constants.whiteColor,
+          boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 25)],
         ),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 20),
@@ -391,17 +387,35 @@ class _DashboardState extends State<Dashboard> {
             backgroundColor: Constants.whiteColor,
             color: Constants.greyTextColor,
             activeColor: Constants.whiteColor,
-            tabBackgroundGradient: Constants.orangeGradient,
             onTabChange: (index) {
+              // Update the selected index
+            setState(() {
+              selectedIndex = index;
+            });
               // Handle tab change
+              if (index == 0) {
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => Dashboard()));
+              } else if (index == 1) {
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => CitiesScreen()));
+              } else if (index == 2) {
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => SearchScreen()));
+              } else {
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => ProfileScreen()));
+              }
             },
+                        tabBackgroundGradient: Constants.orangeGradient,
             gap: 8,
             padding: EdgeInsets.all(11),
             tabs: [
               GButton(icon: Icons.home, text: "Home"),
-              GButton(icon: Icons.favorite_border, text: "Like"),
+              GButton(icon: Icons.language, text: "Cities"),
               GButton(icon: Icons.search, text: "Search"),
-              GButton(icon: Icons.settings, text: "Settings"),
+              GButton(
+                  icon: Icons.supervised_user_circle_sharp, text: "Profile"),
             ],
           ),
         ),
