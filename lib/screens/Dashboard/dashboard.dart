@@ -1,7 +1,8 @@
+// import 'dart:html';
+
 import 'package:citi_guide/Constants/constants.dart';
 import 'package:citi_guide/screens/Cities/cities.dart';
 import 'package:citi_guide/screens/Details/details.dart';
-import 'package:citi_guide/screens/Login/login.dart';
 import 'package:citi_guide/screens/SearchScreen/searchScreen.dart';
 import 'package:citi_guide/screens/profile/profile.dart';
 import 'package:citi_guide/widgets/blueButton.dart';
@@ -27,23 +28,23 @@ class _DashboardState extends State<Dashboard> {
       //Navigation Bar
 
       body: Container(
-        margin: EdgeInsets.only(top: 10, left: 20, right: 20),
+        margin: const EdgeInsets.only(top: 10, left: 20, right: 20),
         child: SingleChildScrollView(
           scrollDirection: Axis.vertical,
           child: Column(
             children: [
-              SizedBox(height: 30),
+              const SizedBox(height: 30),
               Row(
                 children: [
                   Container(
-                    padding: EdgeInsets.all(4),
+                    padding: const EdgeInsets.all(4),
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.all(Radius.circular(19)),
+                      borderRadius: const BorderRadius.all(Radius.circular(19)),
                       border: Border.all(
                         color: Constants.greyColor,
                       ),
                     ),
-                    margin: EdgeInsets.only(right: 20, bottom: 5, top: 5),
+                    margin: const EdgeInsets.only(right: 20, bottom: 5, top: 5),
                     child: ClipOval(
                       child: CircleAvatar(
                         radius: 26,
@@ -60,10 +61,10 @@ class _DashboardState extends State<Dashboard> {
                     children: [
                       Text(
                         Constants.profileName,
-                        style: TextStyle(fontWeight: FontWeight.w400),
+                        style: const TextStyle(fontWeight: FontWeight.w400),
                         textAlign: TextAlign.left,
                       ),
-                      Text(
+                      const Text(
                         "Good Morning",
                         style: TextStyle(
                             fontWeight: FontWeight.w900, fontSize: 20),
@@ -78,34 +79,40 @@ class _DashboardState extends State<Dashboard> {
                 child: Row(
                   children: [
                     Expanded(
-                      child: TextField(
-                        cursorColor: Constants.greyTextColor,
-                        decoration: InputDecoration(
-                          enabledBorder: const OutlineInputBorder(
-                            borderSide: BorderSide(
-                                width: 3,
-                                color: Colors.transparent), //<-- SEE HERE
+                      child: GestureDetector(
+                        onTap: (){
+                           Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => const SearchScreen()));
+                        },
+                        child: TextField(
+                          cursorColor: Constants.greyTextColor,
+                          decoration: InputDecoration(
+                            enabledBorder: const OutlineInputBorder(
+                              borderSide: BorderSide(
+                                  width: 3,
+                                  color: Colors.transparent), //<-- SEE HERE
+                            ),
+                            filled: true,
+                            fillColor: Constants.greyColor,
+                            hintText: 'Search Destination',
+                            prefixIcon: Icon(Icons.search,
+                                color: Constants
+                                    .greyTextColor), // Add icon to the left
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(
+                                    Constants.buttonBorderRadius),
+                                borderSide:
+                                    BorderSide(color: Constants.greyColor)),
+                            contentPadding: EdgeInsets.symmetric(
+                                vertical: Constants.searchBarButtonHeight),
                           ),
-                          filled: true,
-                          fillColor: Constants.greyColor,
-                          hintText: 'Search Destination',
-                          prefixIcon: Icon(Icons.search,
-                              color: Constants
-                                  .greyTextColor), // Add icon to the left
-                          border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(
-                                  Constants.buttonBorderRadius),
-                              borderSide:
-                                  BorderSide(color: Constants.greyColor)),
-                          contentPadding: EdgeInsets.symmetric(
-                              vertical: Constants.searchBarButtonHeight),
-                        ),
-                        style: TextStyle(
-                          color: Constants.greyTextColor,
+                          style: TextStyle(
+                            color: Constants.greyTextColor,
+                          ),
                         ),
                       ),
                     ),
-                    SizedBox(
+                    const SizedBox(
                       width: 7,
                     ),
                     // InkWell(
@@ -136,7 +143,8 @@ class _DashboardState extends State<Dashboard> {
                       widget_: Icon(Icons.storage_rounded,
                           color: Constants.whiteColor),
                       OntapFunction: () {
-                        print("tapped");
+                        Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => const SearchScreen()));
                       },
                       topBottomMargin: 0,
                       leftRightMargin: 0,
@@ -145,7 +153,7 @@ class _DashboardState extends State<Dashboard> {
                 ),
               ),
 
-              SizedBox(
+              const SizedBox(
                 height: 7,
               ),
 
@@ -157,7 +165,7 @@ class _DashboardState extends State<Dashboard> {
                     BlueButton(
                       topBottomPadding: 10,
                       leftRightPadding: 30,
-                      widget_: Text(
+                      widget_: const Text(
                         "Karachi",
                         style: TextStyle(color: Colors.white),
                       ),
@@ -165,7 +173,7 @@ class _DashboardState extends State<Dashboard> {
                         Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => DestinationDetails()));
+                                builder: (context) => const DestinationDetails()));
                       },
                       topBottomMargin: 0,
                       leftRightMargin: 0,
@@ -173,7 +181,7 @@ class _DashboardState extends State<Dashboard> {
                     GreyButton(
                       topBottomPadding: 10,
                       leftRightPadding: 30,
-                      widget_: Text(
+                      widget_: const Text(
                         "Islamabad",
                         style: TextStyle(color: Color(0xff000000)),
                       ),
@@ -186,7 +194,7 @@ class _DashboardState extends State<Dashboard> {
                     GreyButton(
                       topBottomPadding: 10,
                       leftRightPadding: 30,
-                      widget_: Text(
+                      widget_: const Text(
                         "Lahore",
                         style: TextStyle(color: Color(0xff000000)),
                       ),
@@ -199,7 +207,7 @@ class _DashboardState extends State<Dashboard> {
                     GreyButton(
                       topBottomPadding: 10,
                       leftRightPadding: 30,
-                      widget_: Text(
+                      widget_: const Text(
                         "Multan",
                         style: TextStyle(color: Color(0xff000000)),
                       ),
@@ -248,7 +256,7 @@ class _DashboardState extends State<Dashboard> {
               //             ),
               //           ),
 
-              SizedBox(
+              const SizedBox(
                 height: 7,
               ),
 
@@ -306,7 +314,7 @@ class _DashboardState extends State<Dashboard> {
                         secondOpacityDivRow: Row(
                           children: [
                             Padding(
-                              padding: EdgeInsets.only(left: 10),
+                              padding: const EdgeInsets.only(left: 10),
                               child: TransparentButton(
                                   OpacitySet: 0.1,
                                   topBottomPadding: 2,
@@ -328,14 +336,15 @@ class _DashboardState extends State<Dashboard> {
                                     ],
                                   ),
                                   OntapFunction: () {
-                                    print("navigation button");
+                                    Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => DestinationDetails()));
                                   },
                                   topBottomMargin: 2,
                                   leftRightMargin: 0),
                             ),
-                            Spacer(),
+                            const Spacer(),
                             Padding(
-                              padding: EdgeInsets.only(right: 10),
+                              padding: const EdgeInsets.only(right: 10),
                               child: TransparentButton(
                                   OpacitySet: 0.1,
                                   topBottomPadding: 2,
@@ -352,7 +361,8 @@ class _DashboardState extends State<Dashboard> {
                                     ],
                                   ),
                                   OntapFunction: () {
-                                    print("navigation button");
+                                     Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => const DestinationDetails()));
                                   },
                                   topBottomMargin: 2,
                                   leftRightMargin: 0),
@@ -371,7 +381,7 @@ class _DashboardState extends State<Dashboard> {
 
       // Navigation Bar
       bottomNavigationBar: Container(
-        margin: EdgeInsets.only(bottom: 20, left: 20, right: 20),
+        margin: const EdgeInsets.only(bottom: 20, left: 20, right: 20),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(8.0),
           border: Border.all(
@@ -395,22 +405,22 @@ class _DashboardState extends State<Dashboard> {
               // Handle tab change
               if (index == 0) {
                 Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => Dashboard()));
+                    MaterialPageRoute(builder: (context) => const Dashboard()));
               } else if (index == 1) {
                 Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => CitiesScreen()));
+                    MaterialPageRoute(builder: (context) => const CitiesScreen()));
               } else if (index == 2) {
                 Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => SearchScreen()));
+                    MaterialPageRoute(builder: (context) => const SearchScreen()));
               } else {
                 Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => ProfileScreen()));
+                    MaterialPageRoute(builder: (context) => const ProfileScreen()));
               }
             },
                         tabBackgroundGradient: Constants.orangeGradient,
             gap: 8,
             padding: EdgeInsets.all(11),
-            tabs: [
+            tabs: const [
               GButton(icon: Icons.home, text: "Home"),
               GButton(icon: Icons.language, text: "Cities"),
               GButton(icon: Icons.search, text: "Search"),

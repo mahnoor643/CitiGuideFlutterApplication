@@ -15,19 +15,19 @@ class _PwdChangedScreenState extends State<PwdChangedScreen> {
     return Scaffold(
       body: Center(
         child: Container(
-          margin: EdgeInsets.only(left: 20, right: 20),
+          margin: const EdgeInsets.only(left: 20, right: 20),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
                   height: 250,
                   width: double.infinity,
-                  margin: EdgeInsets.symmetric(vertical: 15),
+                  margin: const EdgeInsets.symmetric(vertical: 15),
                   child: Image.asset('assets/images/profile.jpeg')),
               Container(
-                margin: EdgeInsets.symmetric(vertical: 15),
+                margin: const EdgeInsets.symmetric(vertical: 15),
                 alignment: Alignment.center,
-                child: Text(
+                child: const Text(
                   "Password changed",
                   style: TextStyle(
                     color: Colors.black,
@@ -39,7 +39,7 @@ class _PwdChangedScreenState extends State<PwdChangedScreen> {
               ),
               Container(
                 alignment: Alignment.center,
-                child: Text(
+                child: const Text(
                   "Your password has been changed  successfully",
                   style: TextStyle(
                     color: Colors.black,
@@ -49,7 +49,7 @@ class _PwdChangedScreenState extends State<PwdChangedScreen> {
                   textAlign: TextAlign.center,
                 ),
               ),
-              SizedBox(
+              const SizedBox(
                 height: 30,
               ),
               //login in  button
@@ -71,7 +71,7 @@ class _PwdChangedScreenState extends State<PwdChangedScreen> {
                 topBottomMargin: 0,
                 leftRightMargin: 0,
               ),
-              SizedBox(
+              const SizedBox(
                 height: 20,
               ),
             ],

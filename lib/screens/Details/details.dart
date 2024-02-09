@@ -12,7 +12,7 @@ class DestinationDetails extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(),
       body: Container(
-        padding: EdgeInsets.only(left: 20, right: 20),
+        padding: const EdgeInsets.only(left: 20, right: 20),
         child: SingleChildScrollView(
           scrollDirection: Axis.vertical,
           child: Column(
@@ -52,9 +52,9 @@ class DestinationDetails extends StatelessWidget {
                               topBottomMargin: 2,
                               leftRightMargin: 0),
                         ),
-                        Spacer(),
+                        const Spacer(),
                         Padding(
-                          padding: EdgeInsets.only(top: 6, right: 10),
+                          padding: const EdgeInsets.only(top: 6, right: 10),
                           child: TransparentButton(
                               OpacitySet: 0.1,
                               topBottomPadding: 3,
@@ -81,7 +81,7 @@ class DestinationDetails extends StatelessWidget {
                     secondOpacityDivRow: Row(
                       children: [
                         Padding(
-                          padding: EdgeInsets.only(left: 10, right: 10, top: 3),
+                          padding: const EdgeInsets.only(left: 10, right: 10, top: 3),
                           child: Text(
                             "PC Hotel(Pearl Continental)",
                             style: TextStyle(
@@ -96,7 +96,7 @@ class DestinationDetails extends StatelessWidget {
                     cityImg: 'assets/images/PC.png'),
               ),
               Container(
-                margin: EdgeInsets.only(top: 10),
+                margin: const EdgeInsets.only(top: 10),
                 alignment: Alignment.centerLeft,
                 child: Text(
                   "Pearl Continental (PC Hotel)",
@@ -109,8 +109,8 @@ class DestinationDetails extends StatelessWidget {
               ),
               Container(
                 alignment: Alignment.centerLeft,
-                margin: EdgeInsets.only(top: 10, bottom: 10),
-                child: Text(
+                margin: const EdgeInsets.only(top: 10, bottom: 10),
+                child: const Text(
                   "CrossAxisAlignment is a property that often finds its relevance in Flutter’s Flex-based layout widgets, namely Column and Row. In text alignment, this property can be an essential tool for aligning text widgets vertically within a Column or horizontally within a Row.",
                   style: TextStyle(
                     color: Colors.black,
@@ -130,7 +130,7 @@ class DestinationDetails extends StatelessWidget {
                             Icons.route_sharp,
                             color: Constants.OrangeColor,
                           ),
-                          Text(
+                          const Text(
                             "Distance",
                             style: TextStyle(
                               color: Colors.black,
@@ -140,7 +140,7 @@ class DestinationDetails extends StatelessWidget {
                           ),
                         ],
                       ),
-                      Row(
+                      const Row(
                         children: [
                           Text(
                             "3.2 km",
@@ -156,7 +156,7 @@ class DestinationDetails extends StatelessWidget {
                   ),
 
                   //second column
-                  Spacer(),
+                  const Spacer(),
                   Column(
                     children: [
                       Row(
@@ -165,7 +165,7 @@ class DestinationDetails extends StatelessWidget {
                             Icons.access_time_sharp,
                             color: Constants.OrangeColor,
                           ),
-                          Text(
+                          const Text(
                             "Opening Hours",
                             style: TextStyle(
                               color: Colors.black,
@@ -175,7 +175,7 @@ class DestinationDetails extends StatelessWidget {
                           ),
                         ],
                       ),
-                      Row(
+                      const Row(
                         children: [
                           Text(
                             "24 hours",
@@ -202,7 +202,7 @@ class DestinationDetails extends StatelessWidget {
                         Icons.phone_in_talk_outlined,
                         color: Constants.OrangeColor,
                       ),
-                      Text(
+                      const Text(
                         "Contact Number",
                         style: TextStyle(
                           color: Colors.black,
@@ -212,7 +212,7 @@ class DestinationDetails extends StatelessWidget {
                       ),
                     ],
                   ),
-                  Row(
+                  const Row(
                     children: [
                       Text(
                         "         021-321 654254",
@@ -233,7 +233,7 @@ class DestinationDetails extends StatelessWidget {
                   print("map navigation");
                 },
                 child: Container(
-                  margin: EdgeInsets.symmetric(horizontal: 12, vertical: 20),
+                  margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 20),
                   
                   decoration: BoxDecoration(
                     color: Colors.white,

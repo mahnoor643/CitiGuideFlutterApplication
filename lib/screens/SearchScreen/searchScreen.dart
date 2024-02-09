@@ -20,7 +20,7 @@ class _SearchScreenState extends State<SearchScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        margin: EdgeInsets.only(top: 10, left: 20, right: 20),
+        margin: const EdgeInsets.only(top: 40, left: 20, right: 20),
         child: SingleChildScrollView(
           scrollDirection: Axis.vertical,
           child: Column(
@@ -57,7 +57,7 @@ class _SearchScreenState extends State<SearchScreen> {
                         ),
                       ),
                     ),
-                    SizedBox(
+                    const SizedBox(
                       width: 7,
                     ),
                     // InkWell(
@@ -97,15 +97,15 @@ class _SearchScreenState extends State<SearchScreen> {
                 ),
               ),
 
-              SizedBox(
+              const SizedBox(
                 height: 10,
               ),
 
 //search suggestions
-SearchSuggestions(place: "Pearl Continental Hotel, Karachi"),
-SearchSuggestions(place: "Badshahi Masjid, Lahore"),
-SearchSuggestions(place: "Monal Restaurant, Islamabad"),
-SearchSuggestions(place: "Super Space, Karachi"),
+const SearchSuggestions(place: "Pearl Continental Hotel, Karachi"),
+const SearchSuggestions(place: "Badshahi Masjid, Lahore"),
+const SearchSuggestions(place: "Monal Restaurant, Islamabad"),
+const SearchSuggestions(place: "Super Space, Karachi"),
             ],
           ),
         ),
@@ -113,7 +113,7 @@ SearchSuggestions(place: "Super Space, Karachi"),
 
 // Navigation Bar
       bottomNavigationBar: Container(
-        margin: EdgeInsets.only(bottom: 20, left: 20, right: 20),
+        margin: const EdgeInsets.only(bottom: 20, left: 20, right: 20),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(8.0),
           border: Border.all(
@@ -137,22 +137,22 @@ SearchSuggestions(place: "Super Space, Karachi"),
               // Handle tab change
               if (index == 0) {
                 Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => Dashboard()));
+                    MaterialPageRoute(builder: (context) => const Dashboard()));
               } else if (index == 1) {
                 Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => CitiesScreen()));
+                    MaterialPageRoute(builder: (context) => const CitiesScreen()));
               } else if (index == 2) {
                 Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => SearchScreen()));
+                    MaterialPageRoute(builder: (context) => const SearchScreen()));
               } else {
                 Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => ProfileScreen()));
+                    MaterialPageRoute(builder: (context) => const ProfileScreen()));
               }
             },
                         tabBackgroundGradient: Constants.orangeGradient,
             gap: 8,
-            padding: EdgeInsets.all(11),
-            tabs: [
+            padding: const EdgeInsets.all(11),
+            tabs: const [
               GButton(icon: Icons.home, text: "Home"),
               GButton(icon: Icons.language, text: "Cities"),
               GButton(icon: Icons.search, text: "Search"),

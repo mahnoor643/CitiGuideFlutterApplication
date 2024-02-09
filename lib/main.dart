@@ -1,15 +1,7 @@
-import 'package:citi_guide/screens/Cities/cities.dart';
 import 'package:citi_guide/screens/Dashboard/dashboard.dart';
-import 'package:citi_guide/screens/Details/details.dart';
 import 'package:citi_guide/screens/Login/login.dart';
-import 'package:citi_guide/screens/ResetPwd/pwdChangedScreen.dart';
-import 'package:citi_guide/screens/ResetPwd/resetPwd.dart';
-import 'package:citi_guide/screens/SearchScreen/searchScreen.dart';
 import 'package:citi_guide/screens/SignUpPages/signUp1.dart';
 import 'package:citi_guide/screens/SignUpPages/signUp2.dart';
-import 'package:citi_guide/screens/SplashScreens/firstSplashScreen.dart';
-import 'package:citi_guide/screens/SplashScreens/secondSplashScreen.dart';
-import 'package:citi_guide/screens/forgotPassword/forgotPwd.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -22,7 +14,7 @@ class CitiGuide extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: Dashboard(),
+      home: SignUp1(),
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         //Beneath colorScheme is used for background color setting of app

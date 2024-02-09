@@ -1,4 +1,5 @@
 import 'package:citi_guide/Constants/constants.dart';
+import 'package:citi_guide/screens/Login/login.dart';
 import 'package:citi_guide/widgets/whiteButton.dart';
 import 'package:flutter/material.dart';
 
@@ -14,22 +15,22 @@ class _SignUp1State extends State<SignUp1> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        margin: EdgeInsets.only(left: 20, right: 20, top: 30),
+        margin: const EdgeInsets.only(left: 20, right: 20, top: 30),
           child: Column(
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(19),
                 child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 30, vertical: 25),
+                  padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 25),
                   color: Constants.lightBlueColor,
                   child: Column(
                     children: [
                       Container(
-                          height: 250,
+                          height: 200,
                           width: double.infinity,
-                          margin: EdgeInsets.symmetric(vertical: 15),
-                          child: Image.asset('assets/images/profile.jpeg')),
-                      Text(
+                          margin: const EdgeInsets.symmetric(vertical: 15),
+                          child: Image.asset('assets/images/googleIcon.png')),
+                      const Text(
                         "Explore the app",
                         textAlign: TextAlign.center,
                         style: TextStyle(
@@ -38,10 +39,11 @@ class _SignUp1State extends State<SignUp1> {
                           fontWeight: FontWeight.w900,
                         ),
                       ),
+                      const SizedBox(height: 10,),
                       Container(
-                        padding: EdgeInsets.symmetric(horizontal: 10),
-                        margin: EdgeInsets.only(top: 5, bottom: 5),
-                        child: Text(
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        margin: const EdgeInsets.only(top: 5, bottom: 5),
+                        child: const Text(
                           "Now your finances are in one place and always under control",
                           style: TextStyle(
                             color: Colors.black,
@@ -51,7 +53,7 @@ class _SignUp1State extends State<SignUp1> {
                           textAlign: TextAlign.center,
                         ),
                       ),
-          
+          const SizedBox(height: 15,),
                       //First Button
                       whiteButton(
                           topBottomPadding: 10,
@@ -62,10 +64,10 @@ class _SignUp1State extends State<SignUp1> {
                                 'assets/images/googleIcon.png',
                                 height: 20,
                               ),
-                              SizedBox(
+                              const SizedBox(
                                 width: 10,
                               ),
-                              Text(
+                              const Text(
                                 "Continue with Google",
                                 style: TextStyle(
                                   fontSize: 12,
@@ -80,7 +82,7 @@ class _SignUp1State extends State<SignUp1> {
                           },
                           topBottomMargin: 2,
                           leftRightMargin: 0),
-                      SizedBox(
+                      const SizedBox(
                         height: 10,
                       ),
           
@@ -88,7 +90,7 @@ class _SignUp1State extends State<SignUp1> {
                       whiteButton(
                           topBottomPadding: 10,
                           leftRightPadding: 15,
-                          widget_: Row(
+                          widget_: const Row(
                             children: [
                               Icon(
                                 Icons.apple,
@@ -113,7 +115,7 @@ class _SignUp1State extends State<SignUp1> {
                           },
                           topBottomMargin: 2,
                           leftRightMargin: 0),
-                      SizedBox(
+                      const SizedBox(
                         height: 10,
                       ),
           
@@ -121,7 +123,7 @@ class _SignUp1State extends State<SignUp1> {
                       whiteButton(
                           topBottomPadding: 10,
                           leftRightPadding: 15,
-                          widget_: Row(
+                          widget_: const Row(
                             children: [
                               Icon(
                                 Icons.email,
@@ -150,13 +152,13 @@ class _SignUp1State extends State<SignUp1> {
                   ),
                 ),
               ),
-              Spacer(),
+              const Spacer(),
               Container(
-                margin: EdgeInsets.only(top:10,bottom:20),
+                margin: const EdgeInsets.only(top:10,bottom:20),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(
+                    const Text(
                       "Already have an account?",
                       style: TextStyle(
                         color: Colors.black,
@@ -167,9 +169,10 @@ class _SignUp1State extends State<SignUp1> {
                     ),
                     GestureDetector(
                       onTap: () {
-                        print("object");
+                        Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => const Login()));
                       },
-                      child: Text(
+                      child: const Text(
                       "Log in",
                       style: TextStyle(
                         color: Colors.black,

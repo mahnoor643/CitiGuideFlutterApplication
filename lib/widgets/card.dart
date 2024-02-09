@@ -1,6 +1,5 @@
 import 'dart:ui';
 
-import 'package:citi_guide/Constants/constants.dart';
 import 'package:flutter/material.dart';
 
 class CityImgCard extends StatelessWidget {
@@ -52,7 +51,7 @@ class CityImgCard extends StatelessWidget {
                 width: Widthcard,
                 height: OpacityHeight,
                 child: ClipRRect(
-                  borderRadius: BorderRadius.only(
+                  borderRadius: const BorderRadius.only(
                     bottomLeft: Radius.circular(8),
                     bottomRight: Radius.circular(8),
                   ),

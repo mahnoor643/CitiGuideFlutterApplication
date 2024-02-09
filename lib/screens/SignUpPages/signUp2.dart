@@ -1,4 +1,5 @@
 import 'package:citi_guide/Constants/constants.dart';
+import 'package:citi_guide/screens/Login/login.dart';
 import 'package:citi_guide/widgets/blueButton.dart';
 import 'package:flutter/material.dart';
 
@@ -15,13 +16,13 @@ class _SignUp2State extends State<SignUp2> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        margin: EdgeInsets.only(left: 20, right: 20, top: 30),
+        margin: const EdgeInsets.only(left: 20, right: 20, top: 30),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
             Row(
               children: [
-                Spacer(),
+                const Spacer(),
                 Image.asset(
                   'assets/images/googleIcon.png',
                   height: 40,
@@ -29,9 +30,9 @@ class _SignUp2State extends State<SignUp2> {
               ],
             ),
             Container(
-              margin: EdgeInsets.symmetric(vertical: 20),
+              margin: const EdgeInsets.symmetric(vertical: 20),
               alignment: Alignment.centerLeft,
-              child: Text(
+              child: const Text(
                 "Create account",
                 style: TextStyle(
                   color: Colors.black,
@@ -43,9 +44,9 @@ class _SignUp2State extends State<SignUp2> {
             ),
 
             Container(
-              margin: EdgeInsets.only(bottom: 10),
+              margin: const EdgeInsets.only(bottom: 10),
               alignment: Alignment.centerLeft,
-              child: Text(
+              child: const Text(
                 "Username",
                 style: TextStyle(
                   color: Colors.black,
@@ -80,9 +81,9 @@ class _SignUp2State extends State<SignUp2> {
             ),
 
             Container(
-              margin: EdgeInsets.only(bottom: 10, top: 20),
+              margin: const EdgeInsets.only(bottom: 10, top: 20),
               alignment: Alignment.centerLeft,
-              child: Text(
+              child: const Text(
                 "Email",
                 style: TextStyle(
                   color: Colors.black,
@@ -117,9 +118,9 @@ class _SignUp2State extends State<SignUp2> {
             ),
 
             Container(
-              margin: EdgeInsets.only(bottom: 10, top: 20),
+              margin: const EdgeInsets.only(bottom: 10, top: 20),
               alignment: Alignment.centerLeft,
-              child: Text(
+              child: const Text(
                 "Password",
                 style: TextStyle(
                   color: Colors.black,
@@ -145,12 +146,12 @@ class _SignUp2State extends State<SignUp2> {
         hintText: 'Password',
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: Colors.grey),
+          borderSide: const BorderSide(color: Colors.grey),
         ),
-        contentPadding: EdgeInsets.symmetric(vertical: 15, horizontal: 15),
+        contentPadding: const EdgeInsets.symmetric(vertical: 15, horizontal: 15),
         suffixIcon: IconButton(
           icon: Icon(
-            _isObscured ? Icons.visibility : Icons.visibility_off,
+            _isObscured ? Icons.visibility_off : Icons.visibility,
             color: Colors.grey,
           ),
           onPressed: () {
@@ -160,14 +161,14 @@ class _SignUp2State extends State<SignUp2> {
           },
         ),
       ),
-      style: TextStyle(
+      style: const TextStyle(
         color: Colors.grey,
       ),
       obscureText: _isObscured,
     ),
             Container(
-              margin: EdgeInsets.only(top: 30),
-              child: Row(
+              margin: const EdgeInsets.only(top: 30),
+              child: const Row(
                 children: [
                   Icon(
                     Icons.verified_rounded,
@@ -185,7 +186,7 @@ class _SignUp2State extends State<SignUp2> {
                 ],
               ),
             ),
-            SizedBox(
+            const SizedBox(
               height: 30,
             ),
             BlueButton(
@@ -201,19 +202,20 @@ class _SignUp2State extends State<SignUp2> {
                 ),
               ),
               OntapFunction: () {
-                print("tapped");
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => const Login()));
               },
               topBottomMargin: 0,
               leftRightMargin: 0,
             ),
             //bottom div
-            Spacer(),
+            const Spacer(),
             Container(
               margin: EdgeInsets.only(top: 10, bottom: 20),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(
+                  const Text(
                     "Already have an account?",
                     style: TextStyle(
                       color: Colors.black,
@@ -224,9 +226,10 @@ class _SignUp2State extends State<SignUp2> {
                   ),
                   GestureDetector(
                     onTap: () {
-                      print("object");
+                      Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => const Login()));
                     },
-                    child: Text(
+                    child: const Text(
                       "Log in",
                       style: TextStyle(
                         color: Colors.black,

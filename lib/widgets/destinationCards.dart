@@ -1,4 +1,5 @@
 import 'package:citi_guide/Constants/constants.dart';
+import 'package:citi_guide/screens/Cities/cities.dart';
 import 'package:citi_guide/widgets/card.dart';
 import 'package:citi_guide/widgets/transparentButton.dart';
 import 'package:flutter/material.dart';
@@ -23,7 +24,7 @@ class DestinationCards extends StatelessWidget {
         firstOpacityDivRow: Row(
           children: [
             Padding(
-              padding: EdgeInsets.only(left: 10, right: 10, top: 5),
+              padding: const EdgeInsets.only(left: 10, right: 10, top: 5),
               child: Text(
                 location,
                 style: TextStyle(
@@ -37,7 +38,7 @@ class DestinationCards extends StatelessWidget {
         secondOpacityDivRow: Row(
           children: [
             Padding(
-              padding: EdgeInsets.only(left: 10),
+              padding: const EdgeInsets.only(left: 10),
               child: TransparentButton(
                   OpacitySet: 0.1,
                   topBottomPadding: 2,
@@ -59,14 +60,15 @@ class DestinationCards extends StatelessWidget {
                     ],
                   ),
                   OntapFunction: () {
-                    print("navigation button");
+                     Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => const CitiesScreen()));
                   },
                   topBottomMargin: 2,
                   leftRightMargin: 0),
             ),
-            Spacer(),
+            const Spacer(),
             Padding(
-              padding: EdgeInsets.only(right: 10),
+              padding: const EdgeInsets.only(right: 10),
               child: TransparentButton(
                   OpacitySet: 0.1,
                   topBottomPadding: 2,

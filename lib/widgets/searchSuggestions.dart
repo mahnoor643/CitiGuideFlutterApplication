@@ -8,7 +8,7 @@ class SearchSuggestions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 10),
+      padding: const EdgeInsets.symmetric(vertical: 10),
       decoration: BoxDecoration(
         border: Border(
           bottom: BorderSide(width: 1.5, color: Constants.greyTextColor),
@@ -23,7 +23,7 @@ class SearchSuggestions extends StatelessWidget {
               fontSize: 14,
             ),
           ),
-          Spacer(),
+          const Spacer(),
           Icon(
             Icons.arrow_outward_sharp,
             color: Constants.greyTextColor,

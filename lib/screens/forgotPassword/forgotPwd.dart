@@ -1,4 +1,5 @@
 import 'package:citi_guide/Constants/constants.dart';
+import 'package:citi_guide/screens/Login/login.dart';
 import 'package:citi_guide/widgets/blueButton.dart';
 import 'package:flutter/material.dart';
 
@@ -16,7 +17,7 @@ class _ForgotPwdScreenState extends State<ForgotPwdScreen> {
       appBar: AppBar(
         actions: [
           Container(
-            padding: EdgeInsets.only(right: 20, top: 30),
+            padding: const EdgeInsets.only(right: 20, top: 30),
             child: Image.asset(
               'assets/images/googleIcon.png',
               height: 40,
@@ -25,14 +26,14 @@ class _ForgotPwdScreenState extends State<ForgotPwdScreen> {
         ],
       ),
       body: Container(
-        margin: EdgeInsets.only(left: 20, right: 20, top: 30),
+        margin: const EdgeInsets.only(left: 20, right: 20, top: 30),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
             Container(
-              margin: EdgeInsets.symmetric(vertical: 15),
+              margin: const EdgeInsets.symmetric(vertical: 15),
               alignment: Alignment.centerLeft,
-              child: Text(
+              child: const Text(
                 "Forgot password?",
                 style: TextStyle(
                   color: Colors.black,
@@ -42,7 +43,7 @@ class _ForgotPwdScreenState extends State<ForgotPwdScreen> {
                 ),
               ),
             ),
-            Text(
+            const Text(
               "Don’t worry! It happens. Please enter the email associated with your account.",
               style: TextStyle(
                 color: Colors.black,
@@ -51,14 +52,14 @@ class _ForgotPwdScreenState extends State<ForgotPwdScreen> {
                 fontWeight: FontWeight.w200,
               ),
             ),
-            SizedBox(
+            const SizedBox(
               height: 30,
             ),
             //Email TextField
             Container(
-              margin: EdgeInsets.only(bottom: 10),
+              margin: const EdgeInsets.only(bottom: 10),
               alignment: Alignment.centerLeft,
-              child: Text(
+              child: const Text(
                 "Email address",
                 style: TextStyle(
                   color: Colors.black,
@@ -89,7 +90,7 @@ class _ForgotPwdScreenState extends State<ForgotPwdScreen> {
                 color: Constants.greyTextColor,
               ),
             ),
-            SizedBox(
+            const SizedBox(
               height: 30,
             ),
             //login in  button
@@ -111,18 +112,18 @@ class _ForgotPwdScreenState extends State<ForgotPwdScreen> {
               topBottomMargin: 0,
               leftRightMargin: 0,
             ),
-            SizedBox(
+            const SizedBox(
               height: 20,
             ),
 
             //bottom div
-            Spacer(),
+            const Spacer(),
             Container(
-              margin: EdgeInsets.only(top: 10, bottom: 20),
+              margin: const EdgeInsets.only(top: 10, bottom: 20),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(
+                  const Text(
                     "Remember password?",
                     style: TextStyle(
                       color: Colors.black,
@@ -133,9 +134,10 @@ class _ForgotPwdScreenState extends State<ForgotPwdScreen> {
                   ),
                   GestureDetector(
                     onTap: () {
-                      print("object");
+                      Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => const Login()));
                     },
-                    child: Text(
+                    child: const Text(
                       " Log in",
                       style: TextStyle(
                         color: Colors.black,

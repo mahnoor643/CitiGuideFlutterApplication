@@ -4,7 +4,6 @@ import 'package:citi_guide/screens/SearchScreen/searchScreen.dart';
 import 'package:citi_guide/screens/profile/profile.dart';
 import 'package:citi_guide/widgets/blueButton.dart';
 import 'package:citi_guide/widgets/card.dart';
-import 'package:citi_guide/widgets/destinationCards.dart';
 import 'package:citi_guide/widgets/transparentButton.dart';
 import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
@@ -22,7 +21,7 @@ class _CitiesScreenState extends State<CitiesScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        margin: EdgeInsets.only(top: 10, left: 20, right: 20),
+        margin: const EdgeInsets.only(top: 40, left: 20, right: 20),
         child: Column(
           children: [
             // searchbar row //
@@ -56,7 +55,7 @@ class _CitiesScreenState extends State<CitiesScreen> {
                       ),
                     ),
                   ),
-                  SizedBox(
+                  const SizedBox(
                     width: 7,
                   ),
                   // InkWell(
@@ -96,7 +95,7 @@ class _CitiesScreenState extends State<CitiesScreen> {
               ),
             ),
 
-            SizedBox(
+            const SizedBox(
               height: 10,
             ),
 
@@ -114,7 +113,7 @@ class _CitiesScreenState extends State<CitiesScreen> {
                           firstOpacityDivRow: Row(
                             children: [
                               Padding(
-                                padding: EdgeInsets.only(
+                                padding: const EdgeInsets.only(
                                     left: 10, right: 10, top: 5),
                                 child: Text(
                                   "Karachi",
@@ -157,7 +156,7 @@ class _CitiesScreenState extends State<CitiesScreen> {
                           ),
                           OpacityAboveRemainingHeightForMargin: 100,
                           cityImg: 'assets/images/Karachi.jpg'),
-                      Spacer(),
+                      const Spacer(),
                       CityImgCard(
                           Widthcard: 150,
                           ImgHeight: 150,
@@ -165,7 +164,7 @@ class _CitiesScreenState extends State<CitiesScreen> {
                           firstOpacityDivRow: Row(
                             children: [
                               Padding(
-                                padding: EdgeInsets.only(
+                                padding: const EdgeInsets.only(
                                     left: 10, right: 10, top: 5),
                                 child: Text(
                                   "Lahore",
@@ -219,7 +218,7 @@ class _CitiesScreenState extends State<CitiesScreen> {
                           firstOpacityDivRow: Row(
                             children: [
                               Padding(
-                                padding: EdgeInsets.only(
+                                padding: const EdgeInsets.only(
                                     left: 10, right: 10, top: 5),
                                 child: Text(
                                   "Quetta",
@@ -262,7 +261,7 @@ class _CitiesScreenState extends State<CitiesScreen> {
                           ),
                           OpacityAboveRemainingHeightForMargin: 100,
                           cityImg: 'assets/images/Quetta.jpg'),
-                      Spacer(),
+                      const Spacer(),
                       CityImgCard(
                           Widthcard: 150,
                           ImgHeight: 150,
@@ -270,7 +269,7 @@ class _CitiesScreenState extends State<CitiesScreen> {
                           firstOpacityDivRow: Row(
                             children: [
                               Padding(
-                                padding: EdgeInsets.only(
+                                padding: const EdgeInsets.only(
                                     left: 10, right: 10, top: 5),
                                 child: Text(
                                   "Peshawar",
@@ -323,7 +322,7 @@ class _CitiesScreenState extends State<CitiesScreen> {
       ),
 // Navigation Bar
       bottomNavigationBar: Container(
-        margin: EdgeInsets.only(bottom: 20, left: 20, right: 20),
+        margin: const EdgeInsets.only(bottom: 20, left: 20, right: 20),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(8.0),
           border: Border.all(
@@ -348,21 +347,21 @@ class _CitiesScreenState extends State<CitiesScreen> {
               // Handle tab change
               if (index == 0) {
                 Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => Dashboard()));
+                    MaterialPageRoute(builder: (context) => const Dashboard()));
               } else if (index == 1) {
                 Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => CitiesScreen()));
+                    MaterialPageRoute(builder: (context) => const CitiesScreen()));
               } else if (index == 2) {
                 Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => SearchScreen()));
+                    MaterialPageRoute(builder: (context) => const SearchScreen()));
               } else {
                 Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => ProfileScreen()));
+                    MaterialPageRoute(builder: (context) => const ProfileScreen()));
               }
             },
             gap: 8,
             padding: EdgeInsets.all(11),
-            tabs: [
+            tabs: const [
               GButton(icon: Icons.home, text: "Home"),
               GButton(icon: Icons.language, text: "Cities"),
               GButton(icon: Icons.search, text: "Search"),

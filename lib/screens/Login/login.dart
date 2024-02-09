@@ -1,5 +1,7 @@
 import 'package:citi_guide/Constants/constants.dart';
 import 'package:citi_guide/screens/Dashboard/dashboard.dart';
+import 'package:citi_guide/screens/SignUpPages/signUp2.dart';
+import 'package:citi_guide/screens/forgotPassword/forgotPwd.dart';
 import 'package:citi_guide/widgets/blueButton.dart';
 import 'package:flutter/material.dart';
 
@@ -16,13 +18,13 @@ class _LoginState extends State<Login> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        margin: EdgeInsets.only(left: 20, right: 20, top: 30),
+        margin: const EdgeInsets.only(left: 20, right: 20, top: 30),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
             Row(
               children: [
-                Spacer(),
+                const Spacer(),
                 Image.asset(
                   'assets/images/googleIcon.png',
                   height: 40,
@@ -30,9 +32,9 @@ class _LoginState extends State<Login> {
               ],
             ),
             Container(
-              margin: EdgeInsets.symmetric(vertical: 20),
+              margin: const EdgeInsets.symmetric(vertical: 20),
               alignment: Alignment.centerLeft,
-              child: Text(
+              child: const Text(
                 "Log in",
                 style: TextStyle(
                   color: Colors.black,
@@ -44,9 +46,9 @@ class _LoginState extends State<Login> {
             ),
 
             Container(
-              margin: EdgeInsets.only(bottom: 10),
+              margin: const EdgeInsets.only(bottom: 10),
               alignment: Alignment.centerLeft,
-              child: Text(
+              child: const Text(
                 "Email address",
                 style: TextStyle(
                   color: Colors.black,
@@ -81,9 +83,9 @@ class _LoginState extends State<Login> {
 
 //pwd TextField
             Container(
-              margin: EdgeInsets.only(bottom: 10, top: 20),
+              margin: const EdgeInsets.only(bottom: 10, top: 20),
               alignment: Alignment.centerLeft,
-              child: Text(
+              child: const Text(
                 "Password",
                 style: TextStyle(
                   color: Colors.black,
@@ -109,13 +111,13 @@ class _LoginState extends State<Login> {
                 hintText: 'Password',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide(color: Colors.grey),
+                  borderSide: const BorderSide(color: Colors.grey),
                 ),
                 contentPadding:
-                    EdgeInsets.symmetric(vertical: 15, horizontal: 15),
+                    const EdgeInsets.symmetric(vertical: 15, horizontal: 15),
                 suffixIcon: IconButton(
                   icon: Icon(
-                    _isObscured ? Icons.visibility : Icons.visibility_off,
+                    _isObscured ? Icons.visibility_off : Icons.visibility,
                     color: Colors.grey,
                   ),
                   onPressed: () {
@@ -125,18 +127,18 @@ class _LoginState extends State<Login> {
                   },
                 ),
               ),
-              style: TextStyle(
+              style: const TextStyle(
                 color: Colors.grey,
               ),
               obscureText: _isObscured,
             ),
             Container(
-              margin: EdgeInsets.only(top: 30),
+              margin: const EdgeInsets.only(top: 30),
               child: Row(
                 children: [
-                  Spacer(),
+                  const Spacer(),
                   GestureDetector(
-                    child: Text(
+                    child: const Text(
                       "Forgot password?",
                       style: TextStyle(
                         color: Colors.black,
@@ -146,13 +148,14 @@ class _LoginState extends State<Login> {
                       ),
                     ),
                     onTap: () {
-                      print("page navigation add");
+                      Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => const ForgotPwdScreen()));
                     },
                   ),
                 ],
               ),
             ),
-            SizedBox(
+            const SizedBox(
               height: 20,
             ),
 
@@ -170,12 +173,13 @@ class _LoginState extends State<Login> {
                 ),
               ),
               OntapFunction: () {
-                print("tapped");
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => const Dashboard()));
               },
               topBottomMargin: 0,
               leftRightMargin: 0,
             ),
-            SizedBox(
+            const SizedBox(
               height: 20,
             ),
             Container(
@@ -187,9 +191,9 @@ class _LoginState extends State<Login> {
                     height: 1,
                     width: 60, // Adjust the width according to your design
                     color: Colors.black,
-                    margin: EdgeInsets.symmetric(horizontal: 20),
+                    margin: const EdgeInsets.symmetric(horizontal: 20),
                   ),
-                  Text(
+                  const Text(
                     "Or Login with",
                     style: TextStyle(
                       color: Colors.black,
@@ -202,12 +206,12 @@ class _LoginState extends State<Login> {
                     height: 1,
                     width: 60, // Adjust the width according to your design
                     color: Colors.black,
-                    margin: EdgeInsets.symmetric(horizontal: 20),
+                    margin: const EdgeInsets.symmetric(horizontal: 20),
                   ),
                 ],
               ),
             ),
-            SizedBox(
+            const SizedBox(
               height: 20,
             ),
             Row(
@@ -218,7 +222,7 @@ class _LoginState extends State<Login> {
                     print("navigation btn");
                   },
                   child: Container(
-                    margin: EdgeInsets.symmetric(
+                    margin: const EdgeInsets.symmetric(
                       vertical: 10,
                       horizontal: 10,
                     ),
@@ -232,7 +236,7 @@ class _LoginState extends State<Login> {
                     ),
                     child: Center(
                       child: Padding(
-                        padding: EdgeInsets.symmetric(
+                        padding: const EdgeInsets.symmetric(
                             vertical: 10,
                             horizontal: 20), // Adjust the padding as needed
                         child: Image.asset(
@@ -248,7 +252,7 @@ class _LoginState extends State<Login> {
                     print("navigation btn");
                   },
                   child: Container(
-                    margin: EdgeInsets.symmetric(
+                    margin: const EdgeInsets.symmetric(
                       vertical: 10,
                       horizontal: 10,
                     ),
@@ -260,7 +264,7 @@ class _LoginState extends State<Login> {
                         color: Constants.greyTextColor,
                       ),
                     ),
-                    child: Center(
+                    child: const Center(
                       child: Padding(
                         padding: EdgeInsets.symmetric(
                             vertical: 10,
@@ -278,7 +282,7 @@ class _LoginState extends State<Login> {
                     print("navigation btn");
                   },
                   child: Container(
-                    margin: EdgeInsets.symmetric(
+                    margin: const EdgeInsets.symmetric(
                       vertical: 10,
                       horizontal: 10,
                     ),
@@ -292,7 +296,7 @@ class _LoginState extends State<Login> {
                     ),
                     child: Center(
                       child: Padding(
-                        padding: EdgeInsets.symmetric(
+                        padding: const EdgeInsets.symmetric(
                             vertical: 10,
                             horizontal: 20), // Adjust the padding as needed
                         child: Image.asset(
@@ -306,13 +310,13 @@ class _LoginState extends State<Login> {
               ],
             ),
             //bottom div
-            Spacer(),
+            const Spacer(),
             Container(
-              margin: EdgeInsets.only(top: 10, bottom: 20),
+              margin: const EdgeInsets.only(top: 10, bottom: 20),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(
+                  const Text(
                     "Don't have an account?",
                     style: TextStyle(
                       color: Colors.black,
@@ -323,9 +327,10 @@ class _LoginState extends State<Login> {
                   ),
                   GestureDetector(
                     onTap: () {
-                      print("object");
+                      Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => const SignUp2()));
                     },
-                    child: Text(
+                    child: const Text(
                       " Sign up",
                       style: TextStyle(
                         color: Colors.black,

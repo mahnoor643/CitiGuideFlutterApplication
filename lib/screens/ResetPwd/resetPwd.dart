@@ -17,7 +17,7 @@ class _ResetPwdState extends State<ResetPwd> {
       appBar: AppBar(
         actions: [
           Container(
-            padding: EdgeInsets.only(right: 20,top:30),
+            padding: const EdgeInsets.only(right: 20,top:30),
             child: Image.asset(
                     'assets/images/googleIcon.png',
                     height: 40,
@@ -26,14 +26,14 @@ class _ResetPwdState extends State<ResetPwd> {
         ], 
       ),
       body: Container(
-                        margin: EdgeInsets.only(left: 20, right: 20, top: 30),
+                        margin: const EdgeInsets.only(left: 20, right: 20, top: 30),
                         child: Column(
                                               mainAxisAlignment: MainAxisAlignment.start,
                           children: [
                             Container(
-              margin: EdgeInsets.symmetric(vertical: 15),
+              margin: const EdgeInsets.symmetric(vertical: 15),
               alignment: Alignment.centerLeft,
-              child: Text(
+              child: const Text(
                 "Reset password?",
                 style: TextStyle(
                   color: Colors.black,
@@ -45,7 +45,7 @@ class _ResetPwdState extends State<ResetPwd> {
             ),
             Container(
               alignment: Alignment.centerLeft,
-              child: Text(
+              child: const Text(
                   "Please type something you’ll remember",
                   style: TextStyle(
                     color: Colors.black,
@@ -55,13 +55,13 @@ class _ResetPwdState extends State<ResetPwd> {
                   ),
                 ),
             ),
-              SizedBox(height: 20,),
+              const SizedBox(height: 20,),
               
 //pwd TextField
             Container(
-              margin: EdgeInsets.only(bottom: 10, top: 20),
+              margin: const EdgeInsets.only(bottom: 10, top: 20),
               alignment: Alignment.centerLeft,
-              child: Text(
+              child: const Text(
                 "New password",
                 style: TextStyle(
                   color: Colors.black,
@@ -87,10 +87,10 @@ class _ResetPwdState extends State<ResetPwd> {
                 hintText: 'must be 8 characters',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide(color: Colors.grey),
+                  borderSide: const BorderSide(color: Colors.grey),
                 ),
                 contentPadding:
-                    EdgeInsets.symmetric(vertical: 15, horizontal: 15),
+                    const EdgeInsets.symmetric(vertical: 15, horizontal: 15),
                 suffixIcon: IconButton(
                   icon: Icon(
                     _isObscured ? Icons.visibility : Icons.visibility_off,
@@ -103,7 +103,7 @@ class _ResetPwdState extends State<ResetPwd> {
                   },
                 ),
               ),
-              style: TextStyle(
+              style: const TextStyle(
                 color: Colors.grey,
               ),
               obscureText: _isObscured,
@@ -111,9 +111,9 @@ class _ResetPwdState extends State<ResetPwd> {
                  
 //pwd TextField
             Container(
-              margin: EdgeInsets.only(bottom: 10, top: 20),
+              margin: const EdgeInsets.only(bottom: 10, top: 20),
               alignment: Alignment.centerLeft,
-              child: Text(
+              child: const Text(
                 "Confirm new password",
                 style: TextStyle(
                   color: Colors.black,
@@ -139,10 +139,10 @@ class _ResetPwdState extends State<ResetPwd> {
                 hintText: 'repeat password',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide(color: Colors.grey),
+                  borderSide: const BorderSide(color: Colors.grey),
                 ),
                 contentPadding:
-                    EdgeInsets.symmetric(vertical: 15, horizontal: 15),
+                    const EdgeInsets.symmetric(vertical: 15, horizontal: 15),
                 suffixIcon: IconButton(
                   icon: Icon(
                     _isObscured ? Icons.visibility : Icons.visibility_off,
@@ -155,12 +155,12 @@ class _ResetPwdState extends State<ResetPwd> {
                   },
                 ),
               ),
-              style: TextStyle(
+              style: const TextStyle(
                 color: Colors.grey,
               ),
               obscureText: _isObscured,
             ),
-            SizedBox(
+            const SizedBox(
               height: 30,
             ),
             //login in  button
@@ -182,18 +182,18 @@ class _ResetPwdState extends State<ResetPwd> {
               topBottomMargin: 0,
               leftRightMargin: 0,
             ),
-            SizedBox(
+            const SizedBox(
               height: 20,
             ),
 
             //bottom div
-            Spacer(),
+            const Spacer(),
             Container(
-              margin: EdgeInsets.only(top: 10, bottom: 20),
+              margin: const EdgeInsets.only(top: 10, bottom: 20),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(
+                  const Text(
                     "Already have an account?",
                     style: TextStyle(
                       color: Colors.black,
@@ -206,7 +206,7 @@ class _ResetPwdState extends State<ResetPwd> {
                     onTap: () {
                       print("object");
                     },
-                    child: Text(
+                    child: const Text(
                       " Log in",
                       style: TextStyle(
                         color: Colors.black,
