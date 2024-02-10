@@ -3,6 +3,7 @@ import 'package:citi_guide/screens/Dashboard/dashboard.dart';
 import 'package:citi_guide/screens/SignUpPages/signUp2.dart';
 import 'package:citi_guide/screens/forgotPassword/forgotPwd.dart';
 import 'package:citi_guide/widgets/blueButton.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class Login extends StatefulWidget {
@@ -13,6 +14,21 @@ class Login extends StatefulWidget {
 }
 
 class _LoginState extends State<Login> {
+  //TextField Controllers
+  final TextEditingController username = new TextEditingController();
+  final TextEditingController email = new TextEditingController();
+  final TextEditingController pwd = new TextEditingController();
+
+//Login
+loginbtn(String email, String pwd)async{
+  await FirebaseAuth.instance
+        .signInWithEmailAndPassword(email: email, password: pwd).then((value) => {
+          Navigator.push(
+        context, MaterialPageRoute(builder: (context) => const Dashboard()))
+        }).onError((error, stackTrace) => {
+          // print("Error: ${error.toString()}")
+        });
+}
   bool _isObscured = true;
   @override
   Widget build(BuildContext context) {
@@ -59,8 +75,10 @@ class _LoginState extends State<Login> {
               ),
             ),
             //Email TextField
-            TextField(
+            TextFormField(
               cursorColor: Constants.greyTextColor,
+              controller: email,
+              keyboardType: TextInputType.emailAddress,
               decoration: InputDecoration(
                 enabledBorder: const OutlineInputBorder(
                   borderSide: BorderSide(
@@ -96,9 +114,10 @@ class _LoginState extends State<Login> {
               ),
             ),
 
-            
-            TextField(
+            TextFormField(
               cursorColor: Colors.grey,
+              controller: pwd,
+              keyboardType: TextInputType.text,
               decoration: InputDecoration(
                 enabledBorder: const OutlineInputBorder(
                   borderSide: BorderSide(
@@ -148,8 +167,10 @@ class _LoginState extends State<Login> {
                       ),
                     ),
                     onTap: () {
-                      Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => const ForgotPwdScreen()));
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const ForgotPwdScreen()));
                     },
                   ),
                 ],
@@ -173,8 +194,7 @@ class _LoginState extends State<Login> {
                 ),
               ),
               OntapFunction: () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => const Dashboard()));
+                loginbtn(email.text,pwd.text);
               },
               topBottomMargin: 0,
               leftRightMargin: 0,
@@ -327,8 +347,10 @@ class _LoginState extends State<Login> {
                   ),
                   GestureDetector(
                     onTap: () {
-                      Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => const SignUp2()));
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const SignUp2()));
                     },
                     child: const Text(
                       " Sign up",

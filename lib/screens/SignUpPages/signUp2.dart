@@ -1,6 +1,7 @@
 import 'package:citi_guide/Constants/constants.dart';
 import 'package:citi_guide/screens/Login/login.dart';
 import 'package:citi_guide/widgets/blueButton.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class SignUp2 extends StatefulWidget {
@@ -11,6 +12,19 @@ class SignUp2 extends StatefulWidget {
 }
 
 class _SignUp2State extends State<SignUp2> {
+  //TextField Controllers
+  final TextEditingController username = new TextEditingController();
+  final TextEditingController email = new TextEditingController();
+  final TextEditingController pwd = new TextEditingController();
+
+  //SignIn Function
+  signIn(String email, String pwd) async {
+    await FirebaseAuth.instance
+        .createUserWithEmailAndPassword(email: email, password: pwd);
+    Navigator.push(
+        context, MaterialPageRoute(builder: (context) => const Login()));
+  }
+
   bool _isObscured = true;
   @override
   Widget build(BuildContext context) {
@@ -58,8 +72,10 @@ class _SignUp2State extends State<SignUp2> {
             ),
 
             //Username TextField
-            TextField(
+            TextFormField(
               cursorColor: Constants.greyTextColor,
+              controller: username,
+              keyboardType: TextInputType.name,
               decoration: InputDecoration(
                 enabledBorder: const OutlineInputBorder(
                   borderSide: BorderSide(
@@ -95,8 +111,10 @@ class _SignUp2State extends State<SignUp2> {
             ),
 
             //Email TextField
-            TextField(
+            TextFormField(
               cursorColor: Constants.greyTextColor,
+              keyboardType: TextInputType.emailAddress,
+              controller: email,
               decoration: InputDecoration(
                 enabledBorder: const OutlineInputBorder(
                   borderSide: BorderSide(
@@ -133,39 +151,42 @@ class _SignUp2State extends State<SignUp2> {
 
             //pwd TextField
             TextField(
-      cursorColor: Colors.grey,
-      decoration: InputDecoration(
-        enabledBorder: const OutlineInputBorder(
-          borderSide: BorderSide(
-            width: 3,
-            color: Colors.transparent,
-          ),
-        ),
-        filled: true,
-        fillColor: Constants.greyColor,
-        hintText: 'Password',
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: Colors.grey),
-        ),
-        contentPadding: const EdgeInsets.symmetric(vertical: 15, horizontal: 15),
-        suffixIcon: IconButton(
-          icon: Icon(
-            _isObscured ? Icons.visibility_off : Icons.visibility,
-            color: Colors.grey,
-          ),
-          onPressed: () {
-            setState(() {
-              _isObscured = !_isObscured;
-            });
-          },
-        ),
-      ),
-      style: const TextStyle(
-        color: Colors.grey,
-      ),
-      obscureText: _isObscured,
-    ),
+              cursorColor: Colors.grey,
+              keyboardType: TextInputType.text,
+              controller: pwd,
+              decoration: InputDecoration(
+                enabledBorder: const OutlineInputBorder(
+                  borderSide: BorderSide(
+                    width: 3,
+                    color: Colors.transparent,
+                  ),
+                ),
+                filled: true,
+                fillColor: Constants.greyColor,
+                hintText: 'Password',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(color: Colors.grey),
+                ),
+                contentPadding:
+                    const EdgeInsets.symmetric(vertical: 15, horizontal: 15),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _isObscured ? Icons.visibility_off : Icons.visibility,
+                    color: Colors.grey,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _isObscured = !_isObscured;
+                    });
+                  },
+                ),
+              ),
+              style: const TextStyle(
+                color: Colors.grey,
+              ),
+              obscureText: _isObscured,
+            ),
             Container(
               margin: const EdgeInsets.only(top: 30),
               child: const Row(
@@ -202,8 +223,7 @@ class _SignUp2State extends State<SignUp2> {
                 ),
               ),
               OntapFunction: () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => const Login()));
+                signIn(email.text, pwd.text);
               },
               topBottomMargin: 0,
               leftRightMargin: 0,
@@ -226,8 +246,10 @@ class _SignUp2State extends State<SignUp2> {
                   ),
                   GestureDetector(
                     onTap: () {
-                      Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => const Login()));
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const Login()));
                     },
                     child: const Text(
                       "Log in",

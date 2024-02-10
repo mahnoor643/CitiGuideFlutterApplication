@@ -3,8 +3,14 @@ import 'package:citi_guide/screens/Login/login.dart';
 import 'package:citi_guide/screens/SignUpPages/signUp1.dart';
 import 'package:citi_guide/screens/SignUpPages/signUp2.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(CitiGuide());
 }
 
@@ -19,14 +25,14 @@ class CitiGuide extends StatelessWidget {
       theme: ThemeData(
         //Beneath colorScheme is used for background color setting of app
         colorScheme: ColorScheme.light(
-          background:Colors.white,
+          background: Colors.white,
         ),
         fontFamily: 'myfonts',
       ),
       routes: {
         '/home': (context) => Dashboard(),
         '/login': (context) => Login(),
-        '/signup':(context) => SignUp2(),
+        '/signup': (context) => SignUp2(),
       },
     );
   }
