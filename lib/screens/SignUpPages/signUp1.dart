@@ -26,7 +26,7 @@ class _SignUp1State extends State<SignUp1> {
                   child: Column(
                     children: [
                       Container(
-                          height: 200,
+                          height: 150,
                           width: double.infinity,
                           margin: const EdgeInsets.symmetric(vertical: 15),
                           child: Image.asset('assets/images/googleIcon.png')),

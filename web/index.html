@@ -40,6 +40,9 @@
   <script src="flutter.js" defer></script>
 </head>
 <body>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+
+    <script src="main.dart.js" type="application/javascript"></script>
   <script>
     window.addEventListener('load', function(ev) {
       // Download main.dart.js
@@ -54,6 +57,20 @@
         }
       });
     });
+  </script>
+  <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBmzB1qISkdWOJJqM2MbLxXLUUV-Gsg8yg",
+      authDomain: "citiguide-c12b6.firebaseapp.com",
+      projectId: "citiguide-c12b6",
+      storageBucket: "gs://citiguide-c12b6.appspot.com",
+      messagingSenderId: "298832008266",
+      appId: "1:298832008266:android:e733aff52a6b01556942b3"
+    };
+  
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
   </script>
 </body>
 </html>

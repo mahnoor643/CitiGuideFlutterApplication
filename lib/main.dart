@@ -1,7 +1,9 @@
+import 'package:citi_guide/screens/Admin/admin.dart';
 import 'package:citi_guide/screens/Dashboard/dashboard.dart';
 import 'package:citi_guide/screens/Login/login.dart';
 import 'package:citi_guide/screens/SignUpPages/signUp1.dart';
 import 'package:citi_guide/screens/SignUpPages/signUp2.dart';
+import 'package:citi_guide/screens/profile/profile.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
@@ -20,7 +22,7 @@ class CitiGuide extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: SignUp1(),
+      home: AdminScreen(),
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         //Beneath colorScheme is used for background color setting of app
