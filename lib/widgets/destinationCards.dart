@@ -60,8 +60,7 @@ class DestinationCards extends StatelessWidget {
                     ],
                   ),
                   OntapFunction: () {
-                     Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => const CitiesScreen()));
+                     //
                   },
                   topBottomMargin: 2,
                   leftRightMargin: 0),

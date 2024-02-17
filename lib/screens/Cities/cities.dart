@@ -355,8 +355,8 @@ class _CitiesScreenState extends State<CitiesScreen> {
                 Navigator.push(context,
                     MaterialPageRoute(builder: (context) => const SearchScreen()));
               } else {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => const ProfileScreen()));
+                // Navigator.push(context,
+                //     MaterialPageRoute(builder: (context) => const ProfileScreen()));
               }
             },
             gap: 8,

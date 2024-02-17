@@ -58,11 +58,11 @@ class _AdminScreenState extends State<AdminScreen> {
       final String destinationID = destinationReference.id;
 
       //Adding Image aswell
-      uploadImageToStorage(destinationID, _image!);
+      uploadImageToStorage('locations/$destinationID', _image!);
       String successMsg = 'Data added successfully';
       successMessage(successMsg);
-      Navigator.push(
-          context, MaterialPageRoute(builder: (context) => const Login()));
+      // Navigator.push(
+      //     context, MaterialPageRoute(builder: (context) => const Login()));
       // username.clear();
       // this above will work but bete apne stateless widget
       // use ki hui hai 1 hr laga diya error dhundne mai
@@ -842,10 +842,10 @@ class _AdminScreenState extends State<AdminScreen> {
                     MaterialPageRoute(
                         builder: (context) => const SearchScreen()));
               } else {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const ProfileScreen()));
+                // Navigator.push(
+                //     context,
+                //     MaterialPageRoute(
+                //         builder: (context) => const ProfileScreen()));
               }
             },
             tabBackgroundGradient: Constants.orangeGradient,

@@ -145,8 +145,8 @@ const SearchSuggestions(place: "Super Space, Karachi"),
                 Navigator.push(context,
                     MaterialPageRoute(builder: (context) => const SearchScreen()));
               } else {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => const ProfileScreen()));
+                // Navigator.push(context,
+                //     MaterialPageRoute(builder: (context) => const ProfileScreen()));
               }
             },
                         tabBackgroundGradient: Constants.orangeGradient,

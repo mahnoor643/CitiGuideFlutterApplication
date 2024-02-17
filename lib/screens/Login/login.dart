@@ -3,8 +3,11 @@ import 'package:citi_guide/screens/Admin/admin.dart';
 import 'package:citi_guide/screens/Dashboard/dashboard.dart';
 import 'package:citi_guide/screens/SignUpPages/signUp2.dart';
 import 'package:citi_guide/screens/forgotPassword/forgotPwd.dart';
+import 'package:citi_guide/screens/profile/profile.dart';
 import 'package:citi_guide/widgets/blueButton.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 
 class Login extends StatefulWidget {
@@ -51,6 +54,7 @@ class _LoginState extends State<Login> {
   final TextEditingController pwd = new TextEditingController();
 
 //Login
+
   void loginbtn(String email, String pwd) async {
     try {
       UserCredential userCredential =
@@ -58,18 +62,51 @@ class _LoginState extends State<Login> {
         email: email,
         password: pwd,
       );
+      //Fetching details
+      CollectionReference users =
+          FirebaseFirestore.instance.collection('users');
+      QuerySnapshot querySnapshot =
+          await users.where('email', isEqualTo: email).get();
 
-      // Check the email and password for specific conditions
-      if (email == 'admin12@gmail.com' && pwd == 'admin123') {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const AdminScreen()),
-        );
+      if (querySnapshot.docs.isNotEmpty) {
+        // Access the data of the first document (assuming there's only one match)
+        var userData = querySnapshot.docs.first.data() as Map<String, dynamic>;
+        String emailFromFirestore = userData['email'] ?? '';
+        String usernameFromFirestore = userData['username'] ?? '';
+        String idFromFirestore = userData['id'] ?? '';
+
+        //Fetching Image
+        final refImg =
+            FirebaseStorage.instance.ref().child('profile/${userData['id']}');
+        String ProfileUrlFromFirestore = await refImg.getDownloadURL();
+
+// Check the email and password for specific conditions
+        if (email == 'admin12@gmail.com' && pwd == 'admin123') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => ProfileScreen(
+                    userId: idFromFirestore,
+                    email: emailFromFirestore,
+                    username: usernameFromFirestore,
+                    profile: ProfileUrlFromFirestore)),
+          );
+          // Navigator.push(
+          //   context,
+          //   MaterialPageRoute(builder: (context) => const AdminScreen()),
+          // );
+        } else {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const Dashboard()),
+          );
+        }
+
+        // Print or use the retrieved data
+        print('Email from Firestore: $emailFromFirestore');
+        print('Username from Firestore: $usernameFromFirestore');
       } else {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const Dashboard()),
-        );
+        print('No matching documents');
       }
     } on FirebaseAuthException catch (e) {
       // Handle authentication errors
@@ -87,6 +124,7 @@ class _LoginState extends State<Login> {
           break;
         default:
           errorToShow = 'User not found!!';
+          print("Errorrrrrrr: ${e.message}");
         // errorToShow = 'Authentication failed. ${e.message}';
       }
 
@@ -94,6 +132,7 @@ class _LoginState extends State<Login> {
     } catch (e) {
       // Handle other errors
       String errorToShow = 'User not found!!';
+      print("Erorrrrr is: ${e}");
       showErrorMessage(errorToShow);
     }
   }

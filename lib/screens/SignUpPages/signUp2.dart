@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:citi_guide/Constants/constants.dart';
 import 'package:citi_guide/screens/Admin/admin.dart';
 import 'package:citi_guide/screens/Dashboard/dashboard.dart';
@@ -5,7 +8,9 @@ import 'package:citi_guide/screens/Login/login.dart';
 import 'package:citi_guide/widgets/blueButton.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class SignUp2 extends StatefulWidget {
   const SignUp2({super.key});
@@ -65,6 +70,11 @@ class _SignUp2State extends State<SignUp2> {
         'id': credential.user!.uid,
         'username': username,
       });
+      final FirebaseStorage _storage = FirebaseStorage.instance;
+      Reference ref = _storage.ref().child('profile/${credential.user!.uid}');
+      ByteData data = await rootBundle.load('assets/images/profileDefaultImg.jpg');
+      Uint8List image = data.buffer.asUint8List();
+      UploadTask uploadTask = ref.putData(image);
 
       String successMsg = 'Account Created Successfully';
       successMessage(successMsg);
@@ -73,7 +83,6 @@ class _SignUp2State extends State<SignUp2> {
       // username.clear();
       // this above will work but bete apne stateless widget
       // use ki hui hai 1 hr laga diya error dhundne mai
-
     } catch (error) {
       print("Error signing in: $error");
     }
@@ -86,7 +95,7 @@ class _SignUp2State extends State<SignUp2> {
       body: Container(
         margin: const EdgeInsets.only(left: 20, right: 20, top: 30),
         child: Form(
-                    key: _formKey,
+          key: _formKey,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
@@ -288,8 +297,8 @@ class _SignUp2State extends State<SignUp2> {
                     fontWeight: FontWeight.w200,
                   ),
                 ),
-                OntapFunction: () async{
-                                    await _formKey.currentState!.validate();
+                OntapFunction: () async {
+                  await _formKey.currentState!.validate();
                   signIn(email.text, pwd.text, username.text);
                 },
                 topBottomMargin: 0,

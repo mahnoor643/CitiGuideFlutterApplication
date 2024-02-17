@@ -22,7 +22,7 @@ class CitiGuide extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: AdminScreen(),
+      home: Login(),
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         //Beneath colorScheme is used for background color setting of app
