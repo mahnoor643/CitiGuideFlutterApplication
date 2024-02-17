@@ -72,7 +72,8 @@ class _SignUp2State extends State<SignUp2> {
       });
       final FirebaseStorage _storage = FirebaseStorage.instance;
       Reference ref = _storage.ref().child('profile/${credential.user!.uid}');
-      ByteData data = await rootBundle.load('assets/images/profileDefaultImg.jpg');
+      ByteData data =
+          await rootBundle.load('assets/images/profileDefaultImg.jpg');
       Uint8List image = data.buffer.asUint8List();
       UploadTask uploadTask = ref.putData(image);
 
@@ -183,9 +184,9 @@ class _SignUp2State extends State<SignUp2> {
               //Email TextField
               TextFormField(
                 cursorColor: Constants.greyTextColor,
-                keyboardType: TextInputType.emailAddress,
                 controller: email,
                 validator: validateEmail,
+                keyboardType: TextInputType.emailAddress,
                 autovalidateMode: AutovalidateMode.onUserInteraction,
                 decoration: InputDecoration(
                   enabledBorder: const OutlineInputBorder(
@@ -225,8 +226,8 @@ class _SignUp2State extends State<SignUp2> {
               //pwd TextField
               TextFormField(
                 cursorColor: Colors.grey,
-                keyboardType: TextInputType.text,
                 controller: pwd,
+                keyboardType: TextInputType.text,
                 validator: validatePwd,
                 autovalidateMode: AutovalidateMode.onUserInteraction,
                 decoration: InputDecoration(
@@ -289,7 +290,7 @@ class _SignUp2State extends State<SignUp2> {
                 topBottomPadding: Constants.searchBarButtonHeight,
                 leftRightPadding: 10,
                 widget_: Text(
-                  "Log in",
+                  "Sign Up",
                   style: TextStyle(
                     color: Constants.whiteColor,
                     fontFamily: 'myfonts',
@@ -298,8 +299,9 @@ class _SignUp2State extends State<SignUp2> {
                   ),
                 ),
                 OntapFunction: () async {
-                  await _formKey.currentState!.validate();
-                  signIn(email.text, pwd.text, username.text);
+                  if (_formKey.currentState!.validate()) {
+                    await (email.text, pwd.text, username.text);
+                  }
                 },
                 topBottomMargin: 0,
                 leftRightMargin: 0,

@@ -15,7 +15,8 @@ class Constants {
         Color(0xffE54000),
         Color(0xffA60000),
       ]);
-  static Color OrangeColor = const Color(0xffA60000);
+  static Color OrangeColor = const Color(0xffE54000);
+
   static Color whiteColor = Colors.white;
   static Color lightBlueColor = const Color(0xffF0F3FB);
   static Color splashScreenPageColor = const Color(0xffD6D4A7);

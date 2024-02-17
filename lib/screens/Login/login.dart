@@ -98,7 +98,12 @@ class _LoginState extends State<Login> {
         } else {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const Dashboard()),
+            MaterialPageRoute(
+                builder: (context) => Dashboard(
+                    userId: idFromFirestore,
+                    email: emailFromFirestore,
+                    username: usernameFromFirestore,
+                    profile: ProfileUrlFromFirestore)),
           );
         }
 
@@ -309,8 +314,9 @@ class _LoginState extends State<Login> {
                   ),
                 ),
                 OntapFunction: () async {
-                  await _formKey.currentState!.validate();
-                  loginbtn(email.text, pwd.text);
+                  if (_formKey.currentState!.validate()) {
+                    loginbtn(email.text, pwd.text);
+                  }
                 },
                 topBottomMargin: 0,
                 leftRightMargin: 0,

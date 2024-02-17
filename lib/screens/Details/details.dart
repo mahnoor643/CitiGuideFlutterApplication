@@ -118,7 +118,10 @@ class DestinationDetails extends StatelessWidget {
                           ),
                           OpacityAboveRemainingHeightForMargin: 200,
                           cityImg: url),
+                    
+                    
                     ),
+                    
                     Container(
                       margin: const EdgeInsets.only(top: 10),
                       alignment: Alignment.centerLeft,

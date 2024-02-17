@@ -8,7 +8,12 @@ import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 
 class SearchScreen extends StatefulWidget {
-  const SearchScreen({super.key});
+  
+  final String userId;
+  final String email;
+  final String username;
+  final String profile;
+  const SearchScreen({super.key, required this.userId, required this.email, required this.username, required this.profile});
 
   @override
   State<SearchScreen> createState() => _SearchScreenState();
@@ -129,6 +134,7 @@ const SearchSuggestions(place: "Super Space, Karachi"),
             backgroundColor: Constants.whiteColor,
             color: Constants.greyTextColor,
             activeColor: Constants.whiteColor,
+                        selectedIndex: selectedIndex,
             onTabChange: (index) {
               // Update the selected index
             setState(() {
@@ -137,19 +143,19 @@ const SearchSuggestions(place: "Super Space, Karachi"),
               // Handle tab change
               if (index == 0) {
                 Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => const Dashboard()));
+                    MaterialPageRoute(builder: (context) =>  Dashboard(userId: widget.userId, email: widget.email, username: widget.username, profile: widget.profile)));
               } else if (index == 1) {
                 Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => const CitiesScreen()));
+                    MaterialPageRoute(builder: (context) =>  CitiesScreen(userId: widget.userId, email: widget.email, username: widget.username, profile: widget.profile)));
               } else if (index == 2) {
                 Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => const SearchScreen()));
+                    MaterialPageRoute(builder: (context) =>  SearchScreen(userId: widget.userId, email: widget.email, username: widget.username, profile: widget.profile)));
               } else {
-                // Navigator.push(context,
-                //     MaterialPageRoute(builder: (context) => const ProfileScreen()));
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) =>  ProfileScreen(userId: widget.userId, email: widget.email, username: widget.username, profile: widget.profile)));
               }
             },
-                        tabBackgroundGradient: Constants.orangeGradient,
+            tabBackgroundColor: Constants.OrangeColor,
             gap: 8,
             padding: const EdgeInsets.all(11),
             tabs: const [

@@ -16,7 +16,11 @@ import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 
 class Dashboard extends StatefulWidget {
-  const Dashboard({super.key});
+  final String userId;
+  final String email;
+  final String username;
+  final String profile;
+  const Dashboard({super.key, required this.userId, required this.email, required this.username, required this.profile});
 
   @override
   State<Dashboard> createState() => _DashboardState();
@@ -48,7 +52,7 @@ class _DashboardState extends State<Dashboard> {
                   child: CircleAvatar(
                     radius: 26,
                     child: Image(
-                      image: AssetImage(Constants.dashboardProfileImg),
+                      image: NetworkImage(widget.profile),
                       fit: BoxFit.cover,
                     ),
                   ),
@@ -82,7 +86,7 @@ class _DashboardState extends State<Dashboard> {
                       Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => const SearchScreen()));
+                              builder: (context) => SearchScreen(userId: widget.userId, email: widget.email, username: widget.username, profile: widget.profile)));
                     },
                     child: TextField(
                       cursorColor: Constants.greyTextColor,
@@ -145,7 +149,7 @@ class _DashboardState extends State<Dashboard> {
                     Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => const SearchScreen()));
+                            builder: (context) =>  SearchScreen(userId: widget.userId, email: widget.email, username: widget.username, profile: widget.profile)));
                   },
                   topBottomMargin: 0,
                   leftRightMargin: 0,
@@ -477,6 +481,7 @@ class _DashboardState extends State<Dashboard> {
             backgroundColor: Constants.whiteColor,
             color: Constants.greyTextColor,
             activeColor: Constants.whiteColor,
+                        selectedIndex: selectedIndex,
             onTabChange: (index) {
               // Update the selected index
               setState(() {
@@ -485,25 +490,25 @@ class _DashboardState extends State<Dashboard> {
               // Handle tab change
               if (index == 0) {
                 Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => const Dashboard()));
+                    MaterialPageRoute(builder: (context) =>  Dashboard(userId: widget.userId, email: widget.email, username: widget.username, profile: widget.profile)));
               } else if (index == 1) {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => const CitiesScreen()));
+                        builder: (context) =>  CitiesScreen(userId: widget.userId, email: widget.email, username: widget.username, profile: widget.profile)));
               } else if (index == 2) {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => const SearchScreen()));
+                        builder: (context) =>  SearchScreen(userId: widget.userId, email: widget.email, username: widget.username, profile: widget.profile)));
               } else {
-                // Navigator.push(
-                //     context,
-                //     MaterialPageRoute(
-                //         builder: (context) => const ProfileScreen()));
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) =>  ProfileScreen(userId: widget.userId, email: widget.email, username: widget.username, profile: widget.profile)));
               }
             },
-            tabBackgroundGradient: Constants.orangeGradient,
+            tabBackgroundColor: Constants.OrangeColor,
             gap: 8,
             padding: EdgeInsets.all(11),
             tabs: const [

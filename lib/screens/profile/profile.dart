@@ -29,6 +29,36 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  //Validation
+  final _formKey = GlobalKey<FormState>();
+  //Email validation
+  String? validateEmail(String? email) {
+    RegExp emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    final isEmailValid = emailRegex.hasMatch(email ?? '');
+    if (!isEmailValid) {
+      return 'Please enter a valid email';
+    }
+    return null;
+  }
+
+  //Password validation
+  String? validatePwd(String? pwd) {
+    RegExp passwordRegex = RegExp(r'^(?=.*[a-zA-Z])(?=.*\d).{8,}$');
+    final isPwdValid = passwordRegex.hasMatch(pwd ?? '');
+    if (!isPwdValid) {
+      return 'Password must be of 8 characters\n including digits and alphabets';
+    }
+  }
+
+  //Login Successful msg
+  void successMessage(String successMsg) {
+    final snackBar = SnackBar(
+      content: Text(successMsg),
+      backgroundColor: Constants.OrangeColor,
+    );
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+
   //Initial state for controller
   @override
   void initState() {
@@ -49,8 +79,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         'username': usernameController.text,
       });
       //Image update
-      if(_image!=null){
-      uploadImageToStorage('profile/$userId', _image!);
+      if (_image != null) {
+        uploadImageToStorage('profile/$userId', _image!);
       }
       print('User data updated successfully');
     } catch (error) {
@@ -139,8 +169,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         backgroundImage: _image == null
                             ? NetworkImage(widget.profile)
                             : _image!.isNotEmpty
-                                ? MemoryImage(_image!)
-                                    as ImageProvider<Object>?
+                                ? MemoryImage(_image!) as ImageProvider<Object>?
                                 : null,
 
                         child: Container(
@@ -177,86 +206,93 @@ class _ProfileScreenState extends State<ProfileScreen> {
               margin: const EdgeInsets.only(top: 5, left: 20, right: 20),
               child: SingleChildScrollView(
                 scrollDirection: Axis.vertical,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                     Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          widget.username,
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 20,
-                            fontWeight: FontWeight.w900,
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            widget.username,
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 20,
+                              fontWeight: FontWeight.w900,
+                            ),
+                            textAlign: TextAlign.center,
                           ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(
-                      height: 5,
-                    ),
-                    //mail
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          widget.email,
-                          style: TextStyle(
-                            color: Constants.greyTextColor,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(
-                      height: 20,
-                    ),
-
-                    //TextFields
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.manage_accounts_outlined,
-                          color: Constants.greyTextColor,
-                          size: 13,
-                        ),
-                        Text(
-                          " Name",
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: Constants.greyTextColor,
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(
-                      height: 5,
-                    ),
-
-                    //Email TextField
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(
-                            60.0), // Adjust this value for more circular corners
-                        color: Constants.whiteColor,
-                        border: Border.all(
-                          color: Constants
-                              .greyTextColor, // Set your desired border color
-                          width: 2.0, // Set the width of the border
-                        ),
+                        ],
                       ),
-                      child: TextFormField(
+                      const SizedBox(
+                        height: 5,
+                      ),
+                      //mail
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            widget.email,
+                            style: TextStyle(
+                              color: Constants.greyTextColor,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(
+                        height: 20,
+                      ),
+
+                      //TextFields
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.manage_accounts_outlined,
+                            color: Constants.greyTextColor,
+                            size: 13,
+                          ),
+                          Text(
+                            " Name",
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Constants.greyTextColor,
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(
+                        height: 5,
+                      ),
+
+                      //Username TextField
+                      TextFormField(
                         cursorColor: Constants.greyTextColor,
                         controller: usernameController,
+                        validator: (email) => email!.length < 3
+                            ? 'Username should be atleast 3 characters'
+                            : null,
+                        autovalidateMode: AutovalidateMode.onUserInteraction,
+                        keyboardType: TextInputType.name,
                         decoration: InputDecoration(
+                          isDense: true,
+                          border: OutlineInputBorder(
+                            borderSide:
+                                BorderSide(color: Constants.greyTextColor),
+                            borderRadius: BorderRadius.circular(
+                                30.0), // Adjust the value for more rounded corners
+                          ),
+                          // Remove the default border
+                          focusedBorder: OutlineInputBorder(
+                            borderSide:
+                                BorderSide(color: Constants.greyTextColor),
+                            borderRadius: BorderRadius.circular(30.0),
+                          ),
                           hintText: 'Your name',
-                          border: InputBorder.none, // Remove the default border
                           suffixIcon: IconButton(
                             icon: const Icon(
                               Icons.edit,
@@ -271,52 +307,54 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           color: Constants.greyTextColor,
                         ),
                       ),
-                    ),
 
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    //TextFields
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.mail,
-                          color: Constants.greyTextColor,
-                          size: 13,
-                        ),
-                        Text(
-                          " Email",
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: Constants.greyTextColor,
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(
-                      height: 5,
-                    ),
-
-                    //Email TextField
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(
-                            60.0), // Adjust this value for more circular corners
-                        color: Constants.whiteColor,
-                        border: Border.all(
-                          color: Constants
-                              .greyTextColor, // Set your desired border color
-                          width: 2.0, // Set the width of the border
-                        ),
+                      const SizedBox(
+                        height: 10,
                       ),
-                      child: TextField(
+                      //TextFields
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.mail,
+                            color: Constants.greyTextColor,
+                            size: 13,
+                          ),
+                          Text(
+                            " Email",
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Constants.greyTextColor,
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(
+                        height: 5,
+                      ),
+
+                      //Email textField
+                      TextFormField(
                         cursorColor: Constants.greyTextColor,
                         controller: emailController,
+                        validator: validateEmail,
+                        keyboardType: TextInputType.emailAddress,
+                        autovalidateMode: AutovalidateMode.onUserInteraction,
                         decoration: InputDecoration(
+                          isDense: true,
+                          border: OutlineInputBorder(
+                            borderSide:
+                                BorderSide(color: Constants.greyTextColor),
+                            borderRadius: BorderRadius.circular(
+                                30.0), // Adjust the value for more rounded corners
+                          ),
+                          // Remove the default border
+                          focusedBorder: OutlineInputBorder(
+                            borderSide:
+                                BorderSide(color: Constants.greyTextColor),
+                            borderRadius: BorderRadius.circular(30.0),
+                          ),
                           hintText: 'Your email',
-                          border: InputBorder.none, // Remove the default border
                           suffixIcon: IconButton(
                             icon: const Icon(
                               Icons.edit,
@@ -331,52 +369,54 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           color: Constants.greyTextColor,
                         ),
                       ),
-                    ),
 
-                    const SizedBox(
-                      height: 10,
-                    ),
-
-                    //TextFields
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.lock,
-                          color: Constants.greyTextColor,
-                          size: 13,
-                        ),
-                        Text(
-                          " Password",
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: Constants.greyTextColor,
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(
-                      height: 5,
-                    ),
-
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(
-                            60.0), // Adjust this value for more circular corners
-                        color: Constants.whiteColor,
-                        border: Border.all(
-                          color: Constants
-                              .greyTextColor, // Set your desired border color
-                          width: 2.0, // Set the width of the border
-                        ),
+                      const SizedBox(
+                        height: 10,
                       ),
-                      child: TextField(
+
+                      //TextFields
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.lock,
+                            color: Constants.greyTextColor,
+                            size: 13,
+                          ),
+                          Text(
+                            " Password",
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Constants.greyTextColor,
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(
+                        height: 5,
+                      ),
+
+                      TextFormField(
                         cursorColor: Constants.greyTextColor,
                         controller: pwdController,
+                        keyboardType: TextInputType.text,
+                        validator: validatePwd,
+                        autovalidateMode: AutovalidateMode.onUserInteraction,
                         decoration: InputDecoration(
+                          isDense: true,
+                          border: OutlineInputBorder(
+                            borderSide:
+                                BorderSide(color: Constants.greyTextColor),
+                            borderRadius: BorderRadius.circular(
+                                30.0), // Adjust the value for more rounded corners
+                          ),
+                          // Remove the default border
+                          focusedBorder: OutlineInputBorder(
+                            borderSide:
+                                BorderSide(color: Constants.greyTextColor),
+                            borderRadius: BorderRadius.circular(30.0),
+                          ),
                           hintText: 'Your password',
-                          border: InputBorder.none, // Remove the default border
                           suffixIcon: IconButton(
                             icon: Icon(
                               _isObscured
@@ -396,39 +436,47 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                         obscureText: _isObscured,
                       ),
-                    ),
 
-                    BlueButton(
-                        topBottomPadding: 10,
-                        leftRightPadding: 20,
-                        widget_: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              "Sign out",
-                              style: TextStyle(
+                      BlueButton(
+                          topBottomPadding: 10,
+                          leftRightPadding: 10,
+                          widget_: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                "Update Profile",
+                                style: TextStyle(
+                                  color: Constants.whiteColor,
+                                  fontWeight: FontWeight.w100,
+                                ),
+                              ),
+                              Icon(
+                                Icons.arrow_forward,
                                 color: Constants.whiteColor,
                               ),
-                            ),
-                            Icon(
-                              Icons.arrow_forward,
-                              color: Constants.whiteColor,
-                            ),
-                          ],
-                        ),
-                        OntapFunction: () async {
-                          await updateUserData(widget.userId,
-                              emailController.text, usernameController.text);
-                          updateUserInfo(
-                              emailController.text, pwdController.text);
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => const SignOutScreen()));
-                        },
-                        topBottomMargin: 20,
-                        leftRightMargin: 90)
-                  ],
+                            ],
+                          ),
+                          OntapFunction: () async {
+                            if (_formKey.currentState!.validate()) {
+                              // The form is valid, proceed with update functions
+                              await updateUserData(
+                                  widget.userId,
+                                  emailController.text,
+                                  usernameController.text);
+                              updateUserInfo(
+                                  emailController.text, pwdController.text);
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                        const SignOutScreen()),
+                              );
+                            }
+                          },
+                          topBottomMargin: 20,
+                          leftRightMargin: 90)
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -454,6 +502,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             backgroundColor: Constants.whiteColor,
             color: Constants.greyTextColor,
             activeColor: Constants.whiteColor,
+            selectedIndex: selectedIndex,
             onTabChange: (index) {
               // Update the selected index
               setState(() {
@@ -461,26 +510,44 @@ class _ProfileScreenState extends State<ProfileScreen> {
               });
               // Handle tab change
               if (index == 0) {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => const Dashboard()));
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => Dashboard(
+                            userId: widget.userId,
+                            email: widget.email,
+                            username: widget.username,
+                            profile: widget.profile)));
               } else if (index == 1) {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => const CitiesScreen()));
+                        builder: (context) => CitiesScreen(
+                            userId: widget.userId,
+                            email: widget.email,
+                            username: widget.username,
+                            profile: widget.profile)));
               } else if (index == 2) {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => const SearchScreen()));
+                        builder: (context) => SearchScreen(
+                            userId: widget.userId,
+                            email: widget.email,
+                            username: widget.username,
+                            profile: widget.profile)));
               } else {
-                // Navigator.push(
-                //     context,
-                //     MaterialPageRoute(
-                //         builder: (context) => const ProfileScreen()));
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => ProfileScreen(
+                            userId: widget.userId,
+                            email: widget.email,
+                            username: widget.username,
+                            profile: widget.profile)));
               }
             },
-            tabBackgroundGradient: Constants.orangeGradient,
+            tabBackgroundColor: Constants.OrangeColor,
             gap: 8,
             padding: EdgeInsets.all(11),
             tabs: const [

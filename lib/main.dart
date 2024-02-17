@@ -1,6 +1,9 @@
 import 'package:citi_guide/screens/Admin/admin.dart';
+import 'package:citi_guide/screens/Cities/cities.dart';
+import 'package:citi_guide/screens/CityDestinations/cityDestinations.dart';
 import 'package:citi_guide/screens/Dashboard/dashboard.dart';
 import 'package:citi_guide/screens/Login/login.dart';
+import 'package:citi_guide/screens/SearchScreen/searchScreen.dart';
 import 'package:citi_guide/screens/SignUpPages/signUp1.dart';
 import 'package:citi_guide/screens/SignUpPages/signUp2.dart';
 import 'package:citi_guide/screens/profile/profile.dart';
@@ -22,17 +25,16 @@ class CitiGuide extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: Login(),
+      home: CitiesScreen(userId: '1245', email: 'hogi', username: 'widget.username', profile: 'widget.profile'),
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         //Beneath colorScheme is used for background color setting of app
         colorScheme: ColorScheme.light(
           background: Colors.white,
         ),
-        fontFamily: 'myfonts',
       ),
       routes: {
-        '/home': (context) => Dashboard(),
+        // '/home': (context) => Dashboard(),
         '/login': (context) => Login(),
         '/signup': (context) => SignUp2(),
       },

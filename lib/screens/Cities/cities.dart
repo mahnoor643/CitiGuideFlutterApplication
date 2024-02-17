@@ -1,4 +1,5 @@
 import 'package:citi_guide/Constants/constants.dart';
+import 'package:citi_guide/screens/CityDestinations/cityDestinations.dart';
 import 'package:citi_guide/screens/Dashboard/dashboard.dart';
 import 'package:citi_guide/screens/SearchScreen/searchScreen.dart';
 import 'package:citi_guide/screens/profile/profile.dart';
@@ -9,7 +10,11 @@ import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 
 class CitiesScreen extends StatefulWidget {
-  const CitiesScreen({super.key});
+  final String userId;
+  final String email;
+  final String username;
+  final String profile;
+  const CitiesScreen({super.key, required this.userId, required this.email, required this.username, required this.profile});
 
   @override
   State<CitiesScreen> createState() => _CitiesScreenState();
@@ -106,212 +111,236 @@ class _CitiesScreenState extends State<CitiesScreen> {
                 children: [
                   Row(
                     children: [
-                      CityImgCard(
-                          Widthcard: 150,
-                          ImgHeight: 150,
-                          OpacityHeight: 50,
-                          firstOpacityDivRow: Row(
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                    left: 10, right: 10, top: 5),
-                                child: Text(
-                                  "Karachi",
-                                  style: TextStyle(
-                                    color: Constants.greyColor,
-                                    fontSize: 12,
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(context,
+                    MaterialPageRoute(builder: (context) =>  CityDestinations(cityFetch: "Karachi")));
+                        },
+                        child: CityImgCard(
+                            Widthcard: 150,
+                            ImgHeight: 150,
+                            OpacityHeight: 50,
+                            firstOpacityDivRow: Row(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                      left: 10, right: 10, top: 5),
+                                  child: Text(
+                                    "Karachi",
+                                    style: TextStyle(
+                                      color: Constants.greyColor,
+                                      fontSize: 12,
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ],
-                          ),
-                          secondOpacityDivRow: Row(
-                            children: [
-                              TransparentButton(
-                                  OpacitySet: 0.1,
-                                  topBottomPadding: 2,
-                                  leftRightPadding: 7,
-                                  widget_: Row(
-                                    children: [
-                                      Icon(
-                                        Icons.location_on_outlined,
-                                        color: Constants.greyColor,
-                                        size: 10,
-                                      ),
-                                      Text(
-                                        "Location",
-                                        style: TextStyle(
-                                          fontSize: 10,
+                              ],
+                            ),
+                            secondOpacityDivRow: Row(
+                              children: [
+                                TransparentButton(
+                                    OpacitySet: 0.1,
+                                    topBottomPadding: 2,
+                                    leftRightPadding: 7,
+                                    widget_: Row(
+                                      children: [
+                                        Icon(
+                                          Icons.location_on_outlined,
                                           color: Constants.greyColor,
+                                          size: 10,
                                         ),
-                                      ),
-                                    ],
-                                  ),
-                                  OntapFunction: () {
-                                    print("navigation button");
-                                  },
-                                  topBottomMargin: 2,
-                                  leftRightMargin: 0),
-                            ],
-                          ),
-                          OpacityAboveRemainingHeightForMargin: 100,
-                          cityImg: 'assets/images/Karachi.jpg'),
+                                        Text(
+                                          "Location",
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            color: Constants.greyColor,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    OntapFunction: () {
+                                      print("navigation button");
+                                    },
+                                    topBottomMargin: 2,
+                                    leftRightMargin: 0),
+                              ],
+                            ),
+                            OpacityAboveRemainingHeightForMargin: 100,
+                            cityImg: 'assets/images/Karachi.jpg'),
+                      ),
                       const Spacer(),
-                      CityImgCard(
-                          Widthcard: 150,
-                          ImgHeight: 150,
-                          OpacityHeight: 50,
-                          firstOpacityDivRow: Row(
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                    left: 10, right: 10, top: 5),
-                                child: Text(
-                                  "Lahore",
-                                  style: TextStyle(
-                                    color: Constants.greyColor,
-                                    fontSize: 12,
+                      GestureDetector(
+                        onTap: () {
+                           Navigator.push(context,
+                    MaterialPageRoute(builder: (context) =>  CityDestinations(cityFetch: "Lahore")));
+                        },
+                        child: CityImgCard(
+                            Widthcard: 150,
+                            ImgHeight: 150,
+                            OpacityHeight: 50,
+                            firstOpacityDivRow: Row(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                      left: 10, right: 10, top: 5),
+                                  child: Text(
+                                    "Lahore",
+                                    style: TextStyle(
+                                      color: Constants.greyColor,
+                                      fontSize: 12,
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ],
-                          ),
-                          secondOpacityDivRow: Row(
-                            children: [
-                              TransparentButton(
-                                  OpacitySet: 0.1,
-                                  topBottomPadding: 2,
-                                  leftRightPadding: 7,
-                                  widget_: Row(
-                                    children: [
-                                      Icon(
-                                        Icons.location_on_outlined,
-                                        color: Constants.greyColor,
-                                        size: 10,
-                                      ),
-                                      Text(
-                                        "Location",
-                                        style: TextStyle(
-                                          fontSize: 10,
+                              ],
+                            ),
+                            secondOpacityDivRow: Row(
+                              children: [
+                                TransparentButton(
+                                    OpacitySet: 0.1,
+                                    topBottomPadding: 2,
+                                    leftRightPadding: 7,
+                                    widget_: Row(
+                                      children: [
+                                        Icon(
+                                          Icons.location_on_outlined,
                                           color: Constants.greyColor,
+                                          size: 10,
                                         ),
-                                      ),
-                                    ],
-                                  ),
-                                  OntapFunction: () {
-                                    print("navigation button");
-                                  },
-                                  topBottomMargin: 2,
-                                  leftRightMargin: 0),
-                            ],
-                          ),
-                          OpacityAboveRemainingHeightForMargin: 100,
-                          cityImg: 'assets/images/Lahore.jpg'),
+                                        Text(
+                                          "Location",
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            color: Constants.greyColor,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    OntapFunction: () {
+                                      print("navigation button");
+                                    },
+                                    topBottomMargin: 2,
+                                    leftRightMargin: 0),
+                              ],
+                            ),
+                            OpacityAboveRemainingHeightForMargin: 100,
+                            cityImg: 'assets/images/Lahore.jpg'),
+                      ),
                     ],
                   ),
                   Row(
                     children: [
-                      CityImgCard(
-                          Widthcard: 150,
-                          ImgHeight: 150,
-                          OpacityHeight: 50,
-                          firstOpacityDivRow: Row(
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                    left: 10, right: 10, top: 5),
-                                child: Text(
-                                  "Quetta",
-                                  style: TextStyle(
-                                    color: Constants.greyColor,
-                                    fontSize: 12,
+                      GestureDetector(
+                        onTap: () {
+                           Navigator.push(context,
+                    MaterialPageRoute(builder: (context) =>  CityDestinations(cityFetch: "Quetta")));
+                        },
+                        child: CityImgCard(
+                            Widthcard: 150,
+                            ImgHeight: 150,
+                            OpacityHeight: 50,
+                            firstOpacityDivRow: Row(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                      left: 10, right: 10, top: 5),
+                                  child: Text(
+                                    "Quetta",
+                                    style: TextStyle(
+                                      color: Constants.greyColor,
+                                      fontSize: 12,
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ],
-                          ),
-                          secondOpacityDivRow: Row(
-                            children: [
-                              TransparentButton(
-                                  OpacitySet: 0.1,
-                                  topBottomPadding: 2,
-                                  leftRightPadding: 7,
-                                  widget_: Row(
-                                    children: [
-                                      Icon(
-                                        Icons.location_on_outlined,
-                                        color: Constants.greyColor,
-                                        size: 10,
-                                      ),
-                                      Text(
-                                        "Location",
-                                        style: TextStyle(
-                                          fontSize: 10,
+                              ],
+                            ),
+                            secondOpacityDivRow: Row(
+                              children: [
+                                TransparentButton(
+                                    OpacitySet: 0.1,
+                                    topBottomPadding: 2,
+                                    leftRightPadding: 7,
+                                    widget_: Row(
+                                      children: [
+                                        Icon(
+                                          Icons.location_on_outlined,
                                           color: Constants.greyColor,
+                                          size: 10,
                                         ),
-                                      ),
-                                    ],
-                                  ),
-                                  OntapFunction: () {
-                                    print("navigation button");
-                                  },
-                                  topBottomMargin: 2,
-                                  leftRightMargin: 0),
-                            ],
-                          ),
-                          OpacityAboveRemainingHeightForMargin: 100,
-                          cityImg: 'assets/images/Quetta.jpg'),
+                                        Text(
+                                          "Location",
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            color: Constants.greyColor,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    OntapFunction: () {
+                                      print("navigation button");
+                                    },
+                                    topBottomMargin: 2,
+                                    leftRightMargin: 0),
+                              ],
+                            ),
+                            OpacityAboveRemainingHeightForMargin: 100,
+                            cityImg: 'assets/images/Quetta.jpg'),
+                      ),
                       const Spacer(),
-                      CityImgCard(
-                          Widthcard: 150,
-                          ImgHeight: 150,
-                          OpacityHeight: 50,
-                          firstOpacityDivRow: Row(
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                    left: 10, right: 10, top: 5),
-                                child: Text(
-                                  "Peshawar",
-                                  style: TextStyle(
-                                    color: Constants.greyColor,
-                                    fontSize: 12,
+                      GestureDetector(
+                        onTap: () {
+                           Navigator.push(context,
+                    MaterialPageRoute(builder: (context) =>  CityDestinations(cityFetch: "Peshawar")));
+                        },
+                        child: CityImgCard(
+                            Widthcard: 150,
+                            ImgHeight: 150,
+                            OpacityHeight: 50,
+                            firstOpacityDivRow: Row(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                      left: 10, right: 10, top: 5),
+                                  child: Text(
+                                    "Peshawar",
+                                    style: TextStyle(
+                                      color: Constants.greyColor,
+                                      fontSize: 12,
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ],
-                          ),
-                          secondOpacityDivRow: Row(
-                            children: [
-                              TransparentButton(
-                                  OpacitySet: 0.1,
-                                  topBottomPadding: 2,
-                                  leftRightPadding: 7,
-                                  widget_: Row(
-                                    children: [
-                                      Icon(
-                                        Icons.location_on_outlined,
-                                        color: Constants.greyColor,
-                                        size: 10,
-                                      ),
-                                      Text(
-                                        "Location",
-                                        style: TextStyle(
-                                          fontSize: 10,
+                              ],
+                            ),
+                            secondOpacityDivRow: Row(
+                              children: [
+                                TransparentButton(
+                                    OpacitySet: 0.1,
+                                    topBottomPadding: 2,
+                                    leftRightPadding: 7,
+                                    widget_: Row(
+                                      children: [
+                                        Icon(
+                                          Icons.location_on_outlined,
                                           color: Constants.greyColor,
+                                          size: 10,
                                         ),
-                                      ),
-                                    ],
-                                  ),
-                                  OntapFunction: () {
-                                    print("navigation button");
-                                  },
-                                  topBottomMargin: 2,
-                                  leftRightMargin: 0),
-                            ],
-                          ),
-                          OpacityAboveRemainingHeightForMargin: 100,
-                          cityImg: 'assets/images/Peshawar.jpg'),
+                                        Text(
+                                          "Location",
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            color: Constants.greyColor,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    OntapFunction: () {
+                                      print("navigation button");
+                                    },
+                                    topBottomMargin: 2,
+                                    leftRightMargin: 0),
+                              ],
+                            ),
+                            OpacityAboveRemainingHeightForMargin: 100,
+                            cityImg: 'assets/images/Peshawar.jpg'),
+                      ),
                     ],
                   )
                 ],
@@ -338,7 +367,8 @@ class _CitiesScreenState extends State<CitiesScreen> {
             backgroundColor: Constants.whiteColor,
             color: Constants.greyTextColor,
             activeColor: Constants.whiteColor,
-            tabBackgroundGradient: Constants.orangeGradient,
+            tabBackgroundColor: Constants.OrangeColor,
+                        selectedIndex: selectedIndex,
             onTabChange: (index) {
               // Update the selected index
             setState(() {
@@ -347,16 +377,16 @@ class _CitiesScreenState extends State<CitiesScreen> {
               // Handle tab change
               if (index == 0) {
                 Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => const Dashboard()));
+                    MaterialPageRoute(builder: (context) =>  Dashboard(userId: widget.userId, email: widget.email, username: widget.username, profile: widget.profile)));
               } else if (index == 1) {
                 Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => const CitiesScreen()));
+                    MaterialPageRoute(builder: (context) =>  CitiesScreen(userId: widget.userId, email: widget.email, username: widget.username, profile: widget.profile)));
               } else if (index == 2) {
                 Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => const SearchScreen()));
+                    MaterialPageRoute(builder: (context) =>  SearchScreen(userId: widget.userId, email: widget.email, username: widget.username, profile: widget.profile)));
               } else {
-                // Navigator.push(context,
-                //     MaterialPageRoute(builder: (context) => const ProfileScreen()));
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => ProfileScreen(userId: widget.userId, email: widget.email, username: widget.username, profile: widget.profile)));
               }
             },
             gap: 8,
