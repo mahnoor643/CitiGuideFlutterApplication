@@ -35,30 +35,48 @@ class _CitiesScreenState extends State<CitiesScreen> {
                 children: [
                   Expanded(
                     child: TextField(
-                      cursorColor: Constants.greyTextColor,
-                      decoration: InputDecoration(
-                        enabledBorder: const OutlineInputBorder(
-                          borderSide: BorderSide(
-                              width: 3,
-                              color: Colors.transparent), //<-- SEE HERE
-                        ),
-                        filled: true,
-                        fillColor: Constants.greyColor,
-                        hintText: 'Search Destination',
-                        prefixIcon: Icon(Icons.search,
-                            color: Constants
-                                .greyTextColor), // Add icon to the left
-                        border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(
-                                Constants.buttonBorderRadius),
-                            borderSide: BorderSide(color: Constants.greyColor)),
-                        contentPadding: EdgeInsets.symmetric(
-                            vertical: Constants.searchBarButtonHeight),
-                      ),
-                      style: TextStyle(
-                        color: Constants.greyTextColor,
-                      ),
-                    ),
+  readOnly: true, // Set readOnly to true to prevent typing
+  onTap: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => SearchScreen(
+          userId: widget.userId,
+          email: widget.email,
+          username: widget.username,
+          profile: widget.profile,
+        ),
+      ),
+    );
+  },
+  cursorColor: Constants.greyTextColor,
+  decoration: InputDecoration(
+    enabledBorder: const OutlineInputBorder(
+      borderSide: BorderSide(
+        width: 3,
+        color: Colors.transparent,
+      ),
+    ),
+    filled: true,
+    fillColor: Constants.greyColor,
+    hintText: 'Search Destination',
+    prefixIcon: Icon(
+      Icons.search,
+      color: Constants.greyTextColor,
+    ),
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(Constants.buttonBorderRadius),
+      borderSide: BorderSide(color: Constants.greyColor),
+    ),
+    contentPadding: EdgeInsets.symmetric(
+      vertical: Constants.searchBarButtonHeight,
+    ),
+  ),
+  style: TextStyle(
+    color: Constants.greyTextColor,
+  ),
+)
+
                   ),
                   const SizedBox(
                     width: 7,

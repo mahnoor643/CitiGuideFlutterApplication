@@ -1,4 +1,6 @@
 import 'package:citi_guide/Constants/constants.dart';
+import 'package:citi_guide/screens/Admin/admin.dart';
+import 'package:citi_guide/screens/Admin/fetchData.dart';
 import 'package:citi_guide/screens/Cities/cities.dart';
 import 'package:citi_guide/screens/Dashboard/dashboard.dart';
 import 'package:citi_guide/screens/SearchScreen/searchScreen.dart';
@@ -436,6 +438,52 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                         obscureText: _isObscured,
                       ),
+                      widget.email == 'admin12@gmail.com'
+                          ? Column(
+                            children: [
+                              GestureDetector(onTap: (){
+                                 Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) => FetchData()));
+                              },child: Row(
+                                children: [SizedBox(height: 5,),
+                                  Text(
+                                    "Added Locations",
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  )],
+                              ),),
+                              GestureDetector(
+                                  onTap: () {
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) => AdminScreen(
+                                                userId: widget.userId,
+                                                email: widget.email,
+                                                username: widget.username,
+                                                profile: widget.profile)));
+                                  },
+                                  child: Row(
+                                    children: [
+                                      Text(
+                                        "Add A New Place !",
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          color: Colors.black,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                            ],
+                          )
+                          : SizedBox(height: 1),
 
                       BlueButton(
                           topBottomPadding: 10,
@@ -474,7 +522,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             }
                           },
                           topBottomMargin: 20,
-                          leftRightMargin: 90)
+                          leftRightMargin: 90),
+                          Row(children: [
+                            Spacer(),
+                            BlueButton(topBottomPadding: 10, leftRightPadding: 10, widget_: Icon(Icons.arrow_forward,color: Constants.whiteColor,), OntapFunction:(){
+                             Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                        const SignOutScreen()),
+                              ); 
+                            } , topBottomMargin: 20, leftRightMargin: 20)
+                          ],)
                     ],
                   ),
                 ),

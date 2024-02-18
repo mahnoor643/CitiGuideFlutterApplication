@@ -81,21 +81,7 @@ class _LoginState extends State<Login> {
         String ProfileUrlFromFirestore = await refImg.getDownloadURL();
 
 // Check the email and password for specific conditions
-        if (email == 'admin12@gmail.com' && pwd == 'admin123') {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => ProfileScreen(
-                    userId: idFromFirestore,
-                    email: emailFromFirestore,
-                    username: usernameFromFirestore,
-                    profile: ProfileUrlFromFirestore)),
-          );
-          // Navigator.push(
-          //   context,
-          //   MaterialPageRoute(builder: (context) => const AdminScreen()),
-          // );
-        } else {
+        
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -105,7 +91,6 @@ class _LoginState extends State<Login> {
                     username: usernameFromFirestore,
                     profile: ProfileUrlFromFirestore)),
           );
-        }
 
         // Print or use the retrieved data
         print('Email from Firestore: $emailFromFirestore');

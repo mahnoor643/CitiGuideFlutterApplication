@@ -38,7 +38,7 @@ class _SignOutScreenState extends State<SignOutScreen> {
               margin: const EdgeInsets.symmetric(vertical: 15),
               alignment: Alignment.center,
               child: const Text(
-                "Thanks For Using City Guide!",
+                "Thanks For Using Citi Guide!",
                 style: TextStyle(
                   color: Colors.black,
                   fontFamily: 'myfonts',
@@ -63,9 +63,8 @@ class _SignOutScreenState extends State<SignOutScreen> {
                     "Back to home",
                     style: TextStyle(
                       color: Constants.greyColor,
-                      fontFamily: 'myfonts',
                       fontSize: 16,
-                      fontWeight: FontWeight.w200,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                   Icon(

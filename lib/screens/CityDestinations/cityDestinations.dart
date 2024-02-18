@@ -18,7 +18,7 @@ class _CityDestinationsState extends State<CityDestinations> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Constants.greyColor,
+      backgroundColor: Constants.whiteColor,
       appBar: AppBar(
         title: Text(widget.cityFetch),
       ),
@@ -37,7 +37,7 @@ class _CityDestinationsState extends State<CityDestinations> {
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     // Data is still loading
-                    return CircularProgressIndicator();
+                    return const Text(" ");
                   }
 
                   if (snapshot.hasError) {
@@ -64,7 +64,7 @@ class _CityDestinationsState extends State<CityDestinations> {
                           if (urlSnapshot.connectionState ==
                               ConnectionState.waiting) {
                             // URL is still loading
-                            return CircularProgressIndicator();
+                            return const Text(" ");
                           }
 
                           if (urlSnapshot.hasError) {

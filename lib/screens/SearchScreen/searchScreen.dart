@@ -1,25 +1,93 @@
+import 'dart:async';
+
 import 'package:citi_guide/Constants/constants.dart';
 import 'package:citi_guide/screens/Cities/cities.dart';
 import 'package:citi_guide/screens/Dashboard/dashboard.dart';
+import 'package:citi_guide/screens/Details/details.dart';
 import 'package:citi_guide/screens/profile/profile.dart';
 import 'package:citi_guide/widgets/blueButton.dart';
 import 'package:citi_guide/widgets/searchSuggestions.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 
 class SearchScreen extends StatefulWidget {
-  
   final String userId;
   final String email;
   final String username;
   final String profile;
-  const SearchScreen({super.key, required this.userId, required this.email, required this.username, required this.profile});
+  const SearchScreen(
+      {super.key,
+      required this.userId,
+      required this.email,
+      required this.username,
+      required this.profile});
 
   @override
   State<SearchScreen> createState() => _SearchScreenState();
 }
 
 class _SearchScreenState extends State<SearchScreen> {
+  TextEditingController searchController = TextEditingController();
+ StreamController<List<Widget>> _streamController =
+      StreamController<List<Widget>>.broadcast();
+
+  @override
+  void initState() {
+    super.initState();
+    // Listen to changes in the searchController
+    searchController.addListener(() {
+      // Trigger a new search when the text changes
+      _performSearch();
+    });
+  }
+
+  @override
+  void dispose() {
+    _streamController.close();
+    super.dispose();
+  }
+
+  // Function to perform the search based on the current text in searchController
+void _performSearch() async {
+  var snapshot = await FirebaseFirestore.instance
+      .collection('destinationDetails')
+      .get();
+
+  var destinationData = snapshot.docs;
+
+  List<Widget> destinationCards = await Future.wait(
+    destinationData
+        .where((doc) =>
+            doc.data()['locationName']
+                .toLowerCase()
+                .contains(searchController.text.toLowerCase()))
+        .map<Future<Widget>>((doc) async {
+          var data = doc.data();
+          String imageUrl = await FirebaseStorage.instance
+              .ref()
+              .child('locations/${doc.id}')
+              .getDownloadURL();
+          return GestureDetector(onTap: () {
+            Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) =>
+                                     DestinationDetails(destinationID: doc.id,url: imageUrl,)));
+          },child: SearchSuggestions(place: data['locationName'],city: data['city'],));
+        })
+        .toList(),
+  );
+
+  // Update the stream with the new search results
+  _streamController.add(destinationCards);
+}
+
+
+
+
+
   int selectedIndex = 2;
   @override
   Widget build(BuildContext context) {
@@ -37,6 +105,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     Expanded(
                       child: TextField(
                         cursorColor: Constants.greyTextColor,
+                        controller: searchController,
                         decoration: InputDecoration(
                           enabledBorder: const OutlineInputBorder(
                             borderSide: BorderSide(
@@ -106,11 +175,78 @@ class _SearchScreenState extends State<SearchScreen> {
                 height: 10,
               ),
 
+
+
+
+
+
+
+
+
+
+
+
+
+StreamBuilder<List<Widget>>(
+          stream: _streamController.stream,
+          builder: (context, snapshot) {
+            if (!snapshot.hasData) {
+              return const Text(" ");
+            }
+
+            // Display the search results
+            List<Widget> destinationCards = snapshot.data!;
+            return Column(
+              children: destinationCards,
+            );
+          },
+        ),
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 //search suggestions
-const SearchSuggestions(place: "Pearl Continental Hotel, Karachi"),
-const SearchSuggestions(place: "Badshahi Masjid, Lahore"),
-const SearchSuggestions(place: "Monal Restaurant, Islamabad"),
-const SearchSuggestions(place: "Super Space, Karachi"),
+               
+              // const SearchSuggestions(place: "Badshahi Masjid, Lahore"),
+              // const SearchSuggestions(place: "Monal Restaurant, Islamabad"),
+              // const SearchSuggestions(place: "Super Space, Karachi"),
             ],
           ),
         ),
@@ -134,25 +270,49 @@ const SearchSuggestions(place: "Super Space, Karachi"),
             backgroundColor: Constants.whiteColor,
             color: Constants.greyTextColor,
             activeColor: Constants.whiteColor,
-                        selectedIndex: selectedIndex,
+            selectedIndex: selectedIndex,
             onTabChange: (index) {
               // Update the selected index
-            setState(() {
-              selectedIndex = index;
-            });
+              setState(() {
+                selectedIndex = index;
+              });
               // Handle tab change
               if (index == 0) {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) =>  Dashboard(userId: widget.userId, email: widget.email, username: widget.username, profile: widget.profile)));
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => Dashboard(
+                            userId: widget.userId,
+                            email: widget.email,
+                            username: widget.username,
+                            profile: widget.profile)));
               } else if (index == 1) {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) =>  CitiesScreen(userId: widget.userId, email: widget.email, username: widget.username, profile: widget.profile)));
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => CitiesScreen(
+                            userId: widget.userId,
+                            email: widget.email,
+                            username: widget.username,
+                            profile: widget.profile)));
               } else if (index == 2) {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) =>  SearchScreen(userId: widget.userId, email: widget.email, username: widget.username, profile: widget.profile)));
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => SearchScreen(
+                            userId: widget.userId,
+                            email: widget.email,
+                            username: widget.username,
+                            profile: widget.profile)));
               } else {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) =>  ProfileScreen(userId: widget.userId, email: widget.email, username: widget.username, profile: widget.profile)));
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => ProfileScreen(
+                            userId: widget.userId,
+                            email: widget.email,
+                            username: widget.username,
+                            profile: widget.profile)));
               }
             },
             tabBackgroundColor: Constants.OrangeColor,

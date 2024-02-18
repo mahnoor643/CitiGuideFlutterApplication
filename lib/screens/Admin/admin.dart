@@ -178,6 +178,7 @@ class _AdminScreenState extends State<AdminScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(),
       body: Column(
         children: [
           //profile design
@@ -808,63 +809,7 @@ class _AdminScreenState extends State<AdminScreen> {
         ],
       ),
 
-      // Navigation Bar
-      bottomNavigationBar: Container(
-        margin: const EdgeInsets.only(bottom: 20, left: 20, right: 20),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(8.0),
-          border: Border.all(
-            color: Constants.whiteColor, // Set your border color
-            width: 1.0, // Set your border width
-          ),
-          color: Constants.whiteColor,
-          boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 25)],
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 20),
-          child: GNav(
-            backgroundColor: Constants.whiteColor,
-            color: Constants.greyTextColor,
-            activeColor: Constants.whiteColor,
-            onTabChange: (index) {
-              // Update the selected index
-              setState(() {
-                selectedIndex = index;
-              });
-              // Handle tab change
-              if (index == 0) {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => Dashboard(userId: widget.userId, email: widget.email, username: widget.username, profile: widget.profile)));
-              } else if (index == 1) {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) =>  CitiesScreen(userId: widget.userId, email: widget.email, username: widget.username, profile: widget.profile)));
-              } else if (index == 2) {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) =>  SearchScreen(userId: widget.userId, email: widget.email, username: widget.username, profile: widget.profile)));
-              } else {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) =>  ProfileScreen(userId: widget.userId, email: widget.email, username: widget.username, profile: widget.profile)));
-              }
-            },
-            tabBackgroundGradient: Constants.orangeGradient,
-            gap: 8,
-            padding: EdgeInsets.all(11),
-            tabs: const [
-              GButton(icon: Icons.home, text: "Home"),
-              GButton(icon: Icons.language, text: "Cities"),
-              GButton(icon: Icons.search, text: "Search"),
-              GButton(
-                  icon: Icons.supervised_user_circle_sharp, text: "Profile"),
-            ],
-          ),
-        ),
-      ),
+      
     );
   }
 }

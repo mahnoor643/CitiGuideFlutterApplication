@@ -81,39 +81,49 @@ class _DashboardState extends State<Dashboard> {
             child: Row(
               children: [
                 Expanded(
-                  child: GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => SearchScreen(userId: widget.userId, email: widget.email, username: widget.username, profile: widget.profile)));
-                    },
-                    child: TextField(
-                      cursorColor: Constants.greyTextColor,
-                      decoration: InputDecoration(
-                        enabledBorder: const OutlineInputBorder(
-                          borderSide: BorderSide(
-                              width: 3,
-                              color: Colors.transparent), //<-- SEE HERE
-                        ),
-                        filled: true,
-                        fillColor: Constants.greyColor,
-                        hintText: 'Search Destination',
-                        prefixIcon: Icon(Icons.search,
-                            color: Constants
-                                .greyTextColor), // Add icon to the left
-                        border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(
-                                Constants.buttonBorderRadius),
-                            borderSide: BorderSide(color: Constants.greyColor)),
-                        contentPadding: EdgeInsets.symmetric(
-                            vertical: Constants.searchBarButtonHeight),
-                      ),
-                      style: TextStyle(
-                        color: Constants.greyTextColor,
-                      ),
-                    ),
-                  ),
+                  child:TextField(
+  readOnly: true, // Set readOnly to true to prevent typing
+  onTap: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => SearchScreen(
+          userId: widget.userId,
+          email: widget.email,
+          username: widget.username,
+          profile: widget.profile,
+        ),
+      ),
+    );
+  },
+  cursorColor: Constants.greyTextColor,
+  decoration: InputDecoration(
+    enabledBorder: const OutlineInputBorder(
+      borderSide: BorderSide(
+        width: 3,
+        color: Colors.transparent,
+      ),
+    ),
+    filled: true,
+    fillColor: Constants.greyColor,
+    hintText: 'Search Destination',
+    prefixIcon: Icon(
+      Icons.search,
+      color: Constants.greyTextColor,
+    ),
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(Constants.buttonBorderRadius),
+      borderSide: BorderSide(color: Constants.greyColor),
+    ),
+    contentPadding: EdgeInsets.symmetric(
+      vertical: Constants.searchBarButtonHeight,
+    ),
+  ),
+  style: TextStyle(
+    color: Constants.greyTextColor,
+  ),
+)
+
                 ),
                 const SizedBox(
                   width: 7,
@@ -298,7 +308,7 @@ class _DashboardState extends State<Dashboard> {
                   .snapshots(),
               builder: (context, snapshot) {
                 if (!snapshot.hasData) {
-                  return CircularProgressIndicator();
+                  return const Text(" ");
                 }
 
                 var destinationData = snapshot.data?.docs ?? [];
@@ -336,7 +346,7 @@ class _DashboardState extends State<Dashboard> {
                   future: fetchUrls(),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
-                      return CircularProgressIndicator();
+                      return const Text(" ");
                     }
 
                     if (snapshot.hasError) {
@@ -521,6 +531,7 @@ class _DashboardState extends State<Dashboard> {
           ),
         ),
       ),
+    
     );
   }
 }

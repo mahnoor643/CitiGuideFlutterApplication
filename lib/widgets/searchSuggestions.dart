@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 
 class SearchSuggestions extends StatelessWidget {
   final String place;
-  const SearchSuggestions({super.key, required this.place});
+  final String city;
+  const SearchSuggestions({super.key, required this.place, required this.city});
 
   @override
   Widget build(BuildContext context) {
@@ -18,6 +19,13 @@ class SearchSuggestions extends StatelessWidget {
         children: [
           Text(
             place,
+            style: TextStyle(
+              color: Constants.greyTextColor,
+              fontSize: 14,
+            ),
+          ),
+          Text(
+            ", $city",
             style: TextStyle(
               color: Constants.greyTextColor,
               fontSize: 14,

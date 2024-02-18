@@ -1,4 +1,5 @@
 import 'package:citi_guide/Constants/constants.dart';
+import 'package:citi_guide/screens/map/map_page.dart';
 import 'package:citi_guide/widgets/blueButton.dart';
 import 'package:citi_guide/widgets/card.dart';
 import 'package:citi_guide/widgets/transparentButton.dart';
@@ -32,7 +33,11 @@ class DestinationDetails extends StatelessWidget {
             var doc = snapshot.data!;
             var data = doc.data();
             String docId = doc.id;
-
+            String locationString = data!['location'];
+            List<String> latLngList = locationString.split(',');
+              double latitude = double.parse(latLngList[0]);
+              double longitude = double.parse(latLngList[1]);
+            
             return Container(
               padding: const EdgeInsets.only(left: 20, right: 20),
               child: SingleChildScrollView(
@@ -60,7 +65,7 @@ class DestinationDetails extends StatelessWidget {
                                           size: 10,
                                         ),
                                         Text(
-                                          data!['city'],
+                                          data['city'],
                                           style: TextStyle(
                                             fontSize: 12,
                                             color: Constants.greyColor,
@@ -118,10 +123,8 @@ class DestinationDetails extends StatelessWidget {
                           ),
                           OpacityAboveRemainingHeightForMargin: 200,
                           cityImg: url),
-                    
-                    
                     ),
-                    
+
                     Container(
                       margin: const EdgeInsets.only(top: 10),
                       alignment: Alignment.centerLeft,
@@ -239,7 +242,7 @@ class DestinationDetails extends StatelessWidget {
                             ),
                           ],
                         ),
-                         Row(
+                        Row(
                           children: [
                             Text(
                               "         ${data['distance']}",
@@ -257,7 +260,11 @@ class DestinationDetails extends StatelessWidget {
                     //map
                     GestureDetector(
                       onTap: () {
-                        print("map navigation");
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) =>
+                                    MapPage(longitudeDetected: longitude, latitudeDetected: latitude)));
                       },
                       child: Container(
                         margin: const EdgeInsets.symmetric(
@@ -303,7 +310,11 @@ class DestinationDetails extends StatelessWidget {
                           ],
                         ),
                         OntapFunction: () {
-                          print("map navigation");
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => MapPage(
+                                      longitudeDetected: longitude, latitudeDetected: latitude)));
                         },
                         topBottomMargin: 10,
                         leftRightMargin: 90)
