@@ -29,7 +29,7 @@ class _SignUp1State extends State<SignUp1> {
                           height: 150,
                           width: double.infinity,
                           margin: const EdgeInsets.symmetric(vertical: 15),
-                          child: Image.asset('assets/images/googleIcon.png')),
+                          child: Image.asset(Constants.appLogo)),
                       const Text(
                         "Explore the app",
                         textAlign: TextAlign.center,

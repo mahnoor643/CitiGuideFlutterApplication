@@ -142,7 +142,7 @@ class _LoginState extends State<Login> {
                 children: [
                   const Spacer(),
                   Image.asset(
-                    'assets/images/googleIcon.png',
+                    Constants.appLogo,
                     height: 40,
                   ),
                 ],

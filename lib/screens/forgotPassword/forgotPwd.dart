@@ -19,7 +19,7 @@ class _ForgotPwdScreenState extends State<ForgotPwdScreen> {
           Container(
             padding: const EdgeInsets.only(right: 20, top: 30),
             child: Image.asset(
-              'assets/images/googleIcon.png',
+              Constants.appLogo,
               height: 40,
             ),
           ),

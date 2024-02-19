@@ -104,7 +104,7 @@ class _SignUp2State extends State<SignUp2> {
                 children: [
                   const Spacer(),
                   Image.asset(
-                    'assets/images/googleIcon.png',
+                    Constants.appLogo,
                     height: 40,
                   ),
                 ],
