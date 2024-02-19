@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:citi_guide/Constants/constants.dart';
 import 'package:flutter/material.dart';
 
 class CityImgCard extends StatelessWidget {
@@ -57,9 +58,9 @@ class CityImgCard extends StatelessWidget {
                     bottomRight: Radius.circular(8),
                   ),
                   child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                     child: Container(
-                      color: Colors.transparent,
+                      color: Color.fromARGB(255, 134, 132, 132).withOpacity(0.4),
                       child: Column(
                         children: [
                           firstOpacityDivRow,

@@ -7,6 +7,7 @@ import 'package:citi_guide/screens/Login/login.dart';
 import 'package:citi_guide/screens/SearchScreen/searchScreen.dart';
 import 'package:citi_guide/screens/SignUpPages/signUp1.dart';
 import 'package:citi_guide/screens/SignUpPages/signUp2.dart';
+import 'package:citi_guide/screens/SplashScreens/firstSplashScreen.dart';
 import 'package:citi_guide/screens/map/map_page.dart';
 import 'package:citi_guide/screens/profile/profile.dart';
 import 'package:flutter/material.dart';
@@ -27,7 +28,7 @@ class CitiGuide extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: SignUp1(),
+      home: firstSplashScreen(),
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         //Beneath colorScheme is used for background color setting of app

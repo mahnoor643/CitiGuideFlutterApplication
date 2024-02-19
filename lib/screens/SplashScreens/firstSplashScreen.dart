@@ -10,11 +10,10 @@ class firstSplashScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AnimatedSplashScreen(
-      splash: 'assets/images/firstScreen.jpg',
+      splash: ('assets/images/secondSplashScreenVector.png'),
       nextScreen: SecondSplashScreen(),
-      splashTransition: SplashTransition.rotationTransition,
+      splashTransition: SplashTransition.scaleTransition,
       duration: 100,
-      pageTransitionType: PageTransitionType.topToBottom,
          );
   }
 }

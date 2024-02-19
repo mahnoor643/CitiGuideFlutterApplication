@@ -63,7 +63,7 @@ class _DashboardState extends State<Dashboard> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    Constants.profileName,
+                    widget.username,
                     style: const TextStyle(fontWeight: FontWeight.w400),
                     textAlign: TextAlign.left,
                   ),

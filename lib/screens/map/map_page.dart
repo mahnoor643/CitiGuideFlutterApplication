@@ -61,10 +61,10 @@ class _MapPageState extends State<MapPage> {
                     markerId: MarkerId("_currentLocation"),
                     icon: BitmapDescriptor.defaultMarker,
                     position: _currentP!),
-                // Marker(
-                //     markerId: MarkerId("_sourceLocation"),
-                //     icon: BitmapDescriptor.defaultMarker,
-                //     position: _pGooglePlex),
+                Marker(
+                    markerId: MarkerId("_sourceLocation"),
+                    icon: BitmapDescriptor.defaultMarker,
+                    position: _pGooglePlex),
                 Marker(
                     markerId: MarkerId("_destinationLocation"),
                     icon: BitmapDescriptor.defaultMarker,
