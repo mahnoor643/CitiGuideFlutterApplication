@@ -300,7 +300,7 @@ class _SignUp2State extends State<SignUp2> {
                 ),
                 OntapFunction: () async {
                   if (_formKey.currentState!.validate()) {
-                    await (email.text, pwd.text, username.text);
+                    await signIn(email.text, pwd.text, username.text);
                   }
                 },
                 topBottomMargin: 0,
