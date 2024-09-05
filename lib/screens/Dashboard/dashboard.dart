@@ -28,6 +28,119 @@ class Dashboard extends StatefulWidget {
 
 class _DashboardState extends State<Dashboard> {
   int selectedIndex = 0;
+
+
+
+
+
+ // Asynchronous function to fetch URLs
+                Future<List<Widget>> fetchPC() async {
+                  // Fetching document data from Firestore
+    var docSnapshot = await FirebaseFirestore.instance.collection('destinationDetails').doc("wWuqSjoeHtre6w8hegIN").get();
+    
+    if (!docSnapshot.exists) {
+      return []; // Return empty list if document doesn't exist
+    }
+
+    var data = docSnapshot.data();
+    String dID = docSnapshot.id;
+
+    // Fetching image URL from Firebase Storage
+    final ref = FirebaseStorage.instance.ref().child('locations/$dID');
+    var url = await ref.getDownloadURL();
+
+    return [
+      GestureDetector(
+        onTap: () {
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) =>
+                       DestinationDetails(destinationID: dID, url: url)));
+        },
+        child: CityImgCard(
+          Widthcard: double.infinity,
+          ImgHeight: 300,
+          OpacityHeight: 50,
+          firstOpacityDivRow: Row(
+            children: [
+              Padding(
+                padding: EdgeInsets.only(left: 10, right: 10, top: 5),
+                child: Text(
+                  data?['locationName'] ?? 'Unknown Location',
+                  style: TextStyle(
+                    color: Constants.greyColor,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          secondOpacityDivRow: Row(
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(left: 10),
+                child: TransparentButton(
+                  OpacitySet: 0.1,
+                  topBottomPadding: 2,
+                  leftRightPadding: 7,
+                  widget_: Row(
+                    children: [
+                      Icon(
+                        Icons.location_on_outlined,
+                        color: Constants.greyColor,
+                        size: 10,
+                      ),
+                      Text(
+                        data?['city'] ?? 'Unknown City',
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: Constants.greyColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                  OntapFunction: () {},
+                  topBottomMargin: 2,
+                  leftRightMargin: 0,
+                ),
+              ),
+              const Spacer(),
+              Padding(
+                padding: const EdgeInsets.only(right: 10),
+                child: TransparentButton(
+                  OpacitySet: 0.1,
+                  topBottomPadding: 2,
+                  leftRightPadding: 7,
+                  widget_: Row(
+                    children: [
+                      Text(
+                        '${data?['distance'] ?? 'Unknown Distance'}',
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: Constants.greyColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                  OntapFunction: () {},
+                  topBottomMargin: 2,
+                  leftRightMargin: 0,
+                ),
+              ),
+            ],
+          ),
+          OpacityAboveRemainingHeightForMargin: 250,
+          cityImg: url,
+        ),
+      ),
+    ];
+  }
+
+
+
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -380,94 +493,31 @@ class _DashboardState extends State<Dashboard> {
             //     distance: '3.2 Km'),
           ),
 
+
+
+
           Column(
             children: [
-              Container(
-                child: CityImgCard(
-                    Widthcard: double.infinity,
-                    ImgHeight: 300,
-                    OpacityHeight: 50,
-                    firstOpacityDivRow: Row(
-                      children: [
-                        Padding(
-                          padding: EdgeInsets.only(left: 10, right: 10, top: 5),
-                          child: Text(
-                            "PC Hotel(Pearl Continental)",
-                            style: TextStyle(
-                              color: Constants.greyColor,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    secondOpacityDivRow: Row(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(left: 10),
-                          child: TransparentButton(
-                              OpacitySet: 0.1,
-                              topBottomPadding: 2,
-                              leftRightPadding: 7,
-                              widget_: Row(
-                                children: [
-                                  Icon(
-                                    Icons.location_on_outlined,
-                                    color: Constants.greyColor,
-                                    size: 10,
-                                  ),
-                                  Text(
-                                    "Karachi",
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      color: Constants.greyColor,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              OntapFunction: () {
-                                // Navigator.push(
-                                //     context,
-                                //     MaterialPageRoute(
-                                //         builder: (context) =>
-                                //             DestinationDetails()));
-                              },
-                              topBottomMargin: 2,
-                              leftRightMargin: 0),
-                        ),
-                        const Spacer(),
-                        Padding(
-                          padding: const EdgeInsets.only(right: 10),
-                          child: TransparentButton(
-                              OpacitySet: 0.1,
-                              topBottomPadding: 2,
-                              leftRightPadding: 7,
-                              widget_: Row(
-                                children: [
-                                  Text(
-                                    "6.5 km",
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      color: Constants.greyColor,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              OntapFunction: () {
-                                // Navigator.push(
-                                //     context,
-                                //     MaterialPageRoute(
-                                //         builder: (context) =>
-                                //             const DestinationDetails()));
-                              },
-                              topBottomMargin: 2,
-                              leftRightMargin: 0),
-                        ),
-                      ],
-                    ),
-                    OpacityAboveRemainingHeightForMargin: 250,
-                    cityImg: 'assets/images/PC.png'),
-              ),
+              FutureBuilder<List<Widget>>(
+        future: fetchPC(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          }
+
+          if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return const Center(child: Text('No data available'));
+          }
+
+          return Column(
+            children: snapshot.data!,
+          );
+        },
+      ),
             ],
           )
         ]),

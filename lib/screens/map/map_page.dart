@@ -120,10 +120,13 @@ class _MapPageState extends State<MapPage> {
     List<LatLng> polylineCoordinates = [];
     PolylinePoints polylinePoints = PolylinePoints();
     PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
-      GOOGLE_MAPS_API_KEY,
-      PointLatLng(_pGooglePlex.latitude, _pGooglePlex.longitude),
-      PointLatLng(_pApplePark.latitude, _pApplePark.longitude),
-      travelMode: TravelMode.driving,
+      googleApiKey:  GOOGLE_MAPS_API_KEY,
+      request: PolylineRequest(
+      origin:  PointLatLng(_pGooglePlex.latitude, _pGooglePlex.longitude),
+      destination:  PointLatLng(_pApplePark.latitude, _pApplePark.longitude),
+      mode: TravelMode.driving,
+      wayPoints: [], 
+      )
     );
     if (result.points.isNotEmpty) {
       result.points.forEach((PointLatLng point) {
