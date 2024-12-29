@@ -1,4 +1,29 @@
-CitiGuide serves as a platform enabling users to seamlessly sign in, enroll, and explore renowned landmarks within their designated cities. Users can effortlessly search for popular locations, and the platform facilitates tracking these destinations through an integrated map feature, leveraging the capabilities of the Google Maps API.
+# CitiGuide
+
+**CitiGuide** is a mobile application designed to help users explore and track renowned landmarks within their cities. The app offers a seamless experience for signing in, enrolling, and searching for popular locations, enhanced with an integrated map feature powered by the **Google Maps API**.
+
+---
+
+## 🌟 Features
+- **User Authentication**: Sign in and enroll effortlessly.  
+- **Location Search**: Find and explore popular landmarks.  
+- **Map Integration**: Track destinations with Google Maps integration.  
+
+---
+
+## 📂 Project Overview
+- **Platform**: Mobile application developed with [mention framework, e.g., Flutter].  
+- **Key Technologies**: 
+  - **Google Maps API** for navigation and tracking.  
+  - Backend integration for user data (e.g., Firebase or REST API).  
+
+---
+
+## 🚀 How to Use
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/mahnoor643/CitiGuideFlutterApplication
+
 
 
 ![citiGuide](https://github.com/mahnoor643/CitiGuideFlutterApplication/assets/117991270/86246af4-f174-4b45-93d6-b49bf85e5bd2)
