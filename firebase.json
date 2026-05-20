@@ -1,10 +1,1 @@
-{
-  "hosting": {
-    "public": "public",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ]
-  }
-}
+{"flutter":{"platforms":{"android":{"default":{"projectId":"citiguideapp-2b6b1","appId":"1:653458058785:android:f361cc2475398a2fbf3d60","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"citiguideapp-2b6b1","configurations":{"android":"1:653458058785:android:f361cc2475398a2fbf3d60","ios":"1:653458058785:ios:719f4ec1058f6e28bf3d60","macos":"1:653458058785:ios:719f4ec1058f6e28bf3d60","web":"1:653458058785:web:c865543dd6511955bf3d60","windows":"1:653458058785:web:6d5302cf44bbf957bf3d60"}}}}}}

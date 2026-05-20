@@ -3,11 +3,9 @@ import 'package:citi_guide/screens/Admin/admin.dart';
 import 'package:citi_guide/screens/Dashboard/dashboard.dart';
 import 'package:citi_guide/screens/SignUpPages/signUp2.dart';
 import 'package:citi_guide/screens/forgotPassword/forgotPwd.dart';
-import 'package:citi_guide/screens/profile/profile.dart';
 import 'package:citi_guide/widgets/blueButton.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 
 class Login extends StatefulWidget {
@@ -18,9 +16,10 @@ class Login extends StatefulWidget {
 }
 
 class _LoginState extends State<Login> {
-  //Validation
+  // Validation
   final _formKey = GlobalKey<FormState>();
-  //Email validation
+
+  // Email validation
   String? validateEmail(String? email) {
     RegExp emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
     final isEmailValid = emailRegex.hasMatch(email ?? '');
@@ -30,16 +29,17 @@ class _LoginState extends State<Login> {
     return null;
   }
 
-  //Password validation
+  // Password validation
   String? validatePwd(String? pwd) {
     RegExp passwordRegex = RegExp(r'^(?=.*[a-zA-Z])(?=.*\d).{8,}$');
     final isPwdValid = passwordRegex.hasMatch(pwd ?? '');
     if (!isPwdValid) {
       return 'Password must be of 8 characters\n including digits and alphabets';
     }
+    return null;
   }
 
-  //Error validating
+  // Error message
   void showErrorMessage(String errorToShow) {
     final snackBar = SnackBar(
       content: Text(errorToShow),
@@ -48,86 +48,113 @@ class _LoginState extends State<Login> {
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
-  //TextField Controllers
-  final TextEditingController username = new TextEditingController();
-  final TextEditingController email = new TextEditingController();
-  final TextEditingController pwd = new TextEditingController();
+  // TextField Controllers
+  final TextEditingController username = TextEditingController();
+  final TextEditingController email = TextEditingController();
+  final TextEditingController pwd = TextEditingController();
 
-//Login
-
+  // Login Function
   void loginbtn(String email, String pwd) async {
     try {
-      UserCredential userCredential =
-          await FirebaseAuth.instance.signInWithEmailAndPassword(
+      // Firebase Auth
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: email,
         password: pwd,
       );
-      //Fetching details
+
+      // Fetch user data from Firestore
       CollectionReference users =
           FirebaseFirestore.instance.collection('users');
       QuerySnapshot querySnapshot =
           await users.where('email', isEqualTo: email).get();
 
       if (querySnapshot.docs.isNotEmpty) {
-        // Access the data of the first document (assuming there's only one match)
-        var userData = querySnapshot.docs.first.data() as Map<String, dynamic>;
-        String emailFromFirestore = userData['email'] ?? '';
+        var userData =
+            querySnapshot.docs.first.data() as Map<String, dynamic>;
+
+        String emailFromFirestore    = userData['email']    ?? '';
         String usernameFromFirestore = userData['username'] ?? '';
-        String idFromFirestore = userData['id'] ?? '';
+        String idFromFirestore       = userData['id']       ?? '';
+        String roleFromFirestore     = userData['role']     ?? 'user'; // ✅ role check
 
-        //Fetching Image
-        final refImg =
-            FirebaseStorage.instance.ref().child('profile/${userData['id']}');
-        String ProfileUrlFromFirestore = await refImg.getDownloadURL();
+        // Profile image — try Firebase Storage, fallback to empty
+        // Storage try/catch ki jagah ye likho:
+String profileUrlFromFirestore = userData['profile'] 
+    ?? 'assets/images/profileDefaultImg.jpg'; // ✅
+        try {
+          // agar aap profile image storage mein rakh rahi hain
+          // to ye uncomment karo aur firebase_storage import karo
+          // final refImg = FirebaseStorage.instance
+          //     .ref()
+          //     .child('profile/${userData['id']}');
+          // profileUrlFromFirestore = await refImg.getDownloadURL();
+        } catch (e) {
+          print('Profile image not found: $e');
+        }
 
-// Check the email and password for specific conditions
-        
+        // ✅ Role ke hisaab se navigate karo
+        if (roleFromFirestore == 'admin') {
           Navigator.push(
             context,
             MaterialPageRoute(
-                builder: (context) => Dashboard(
-                    userId: idFromFirestore,
-                    email: emailFromFirestore,
-                    username: usernameFromFirestore,
-                    profile: ProfileUrlFromFirestore)),
+              builder: (context) => AdminScreen(
+                userId:   idFromFirestore,
+                email:    emailFromFirestore,
+                username: usernameFromFirestore,
+                profile:  profileUrlFromFirestore,
+              ),
+            ),
           );
+        } else {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => Dashboard(
+                userId:   idFromFirestore,
+                email:    emailFromFirestore,
+                username: usernameFromFirestore,
+                profile:  profileUrlFromFirestore,
+              ),
+            ),
+          );
+        }
 
-        // Print or use the retrieved data
-        print('Email from Firestore: $emailFromFirestore');
-        print('Username from Firestore: $usernameFromFirestore');
+        print('Email: $emailFromFirestore');
+        print('Username: $usernameFromFirestore');
+        print('Role: $roleFromFirestore');
+
       } else {
+        showErrorMessage('No user found!!');
         print('No matching documents');
       }
     } on FirebaseAuthException catch (e) {
-      // Handle authentication errors
       String errorToShow;
-
       switch (e.code) {
         case 'user-not-found':
           errorToShow = 'No user found for that email.';
           break;
         case 'wrong-password':
-          errorToShow = 'Wrong password provided for that user.';
+          errorToShow = 'Wrong password provided.';
           break;
         case 'invalid-email':
           errorToShow = 'Email address is not valid.';
           break;
+        case 'invalid-credential':
+          errorToShow = 'Invalid email or password.';
+          break;
         default:
           errorToShow = 'User not found!!';
-          print("Errorrrrrrr: ${e.message}");
-        // errorToShow = 'Authentication failed. ${e.message}';
+          print("Firebase Error: ${e.message}");
       }
-
       showErrorMessage(errorToShow);
     } catch (e) {
-      // Handle other errors
-      String errorToShow = 'User not found!!';
-      print("Erorrrrr is: ${e}");
-      showErrorMessage(errorToShow);
+      print("Error: $e");
+      showErrorMessage('User not found!!');
     }
   }
 
   bool _isObscured = true;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -174,7 +201,8 @@ class _LoginState extends State<Login> {
                   ),
                 ),
               ),
-              //Email TextField
+
+              // Email TextField
               TextFormField(
                 cursorColor: Constants.greyTextColor,
                 controller: email,
@@ -183,26 +211,25 @@ class _LoginState extends State<Login> {
                 keyboardType: TextInputType.emailAddress,
                 decoration: InputDecoration(
                   enabledBorder: const OutlineInputBorder(
-                    borderSide: BorderSide(
-                        width: 3, color: Colors.transparent), //<-- SEE HERE
+                    borderSide: BorderSide(width: 3, color: Colors.transparent),
                   ),
                   filled: true,
                   fillColor: Constants.greyColor,
                   hintText: '   Your email',
                   border: OutlineInputBorder(
-                      borderRadius:
-                          BorderRadius.circular(Constants.buttonBorderRadius),
-                      borderSide: BorderSide(color: Constants.greyColor)),
+                    borderRadius:
+                        BorderRadius.circular(Constants.buttonBorderRadius),
+                    borderSide: BorderSide(color: Constants.greyColor),
+                  ),
                   contentPadding: EdgeInsets.symmetric(
-                      vertical: Constants.searchBarButtonHeight,
-                      horizontal: 15),
+                    vertical: Constants.searchBarButtonHeight,
+                    horizontal: 15,
+                  ),
                 ),
-                style: TextStyle(
-                  color: Constants.greyTextColor,
-                ),
+                style: TextStyle(color: Constants.greyTextColor),
               ),
 
-              //pwd TextField
+              // Password Label
               Container(
                 margin: const EdgeInsets.only(bottom: 10, top: 20),
                 alignment: Alignment.centerLeft,
@@ -217,6 +244,7 @@ class _LoginState extends State<Login> {
                 ),
               ),
 
+              // Password TextField
               TextFormField(
                 cursorColor: Colors.grey,
                 controller: pwd,
@@ -225,10 +253,7 @@ class _LoginState extends State<Login> {
                 autovalidateMode: AutovalidateMode.onUserInteraction,
                 decoration: InputDecoration(
                   enabledBorder: const OutlineInputBorder(
-                    borderSide: BorderSide(
-                      width: 3,
-                      color: Colors.transparent,
-                    ),
+                    borderSide: BorderSide(width: 3, color: Colors.transparent),
                   ),
                   filled: true,
                   fillColor: Constants.greyColor,
@@ -237,8 +262,8 @@ class _LoginState extends State<Login> {
                     borderRadius: BorderRadius.circular(10),
                     borderSide: const BorderSide(color: Colors.grey),
                   ),
-                  contentPadding:
-                      const EdgeInsets.symmetric(vertical: 15, horizontal: 15),
+                  contentPadding: const EdgeInsets.symmetric(
+                      vertical: 15, horizontal: 15),
                   suffixIcon: IconButton(
                     icon: Icon(
                       _isObscured ? Icons.visibility_off : Icons.visibility,
@@ -251,11 +276,11 @@ class _LoginState extends State<Login> {
                     },
                   ),
                 ),
-                style: const TextStyle(
-                  color: Colors.grey,
-                ),
+                style: const TextStyle(color: Colors.grey),
                 obscureText: _isObscured,
               ),
+
+              // Forgot Password
               Container(
                 margin: const EdgeInsets.only(top: 30),
                 child: Row(
@@ -273,19 +298,19 @@ class _LoginState extends State<Login> {
                       ),
                       onTap: () {
                         Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const ForgotPwdScreen()));
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const ForgotPwdScreen(),
+                          ),
+                        );
                       },
                     ),
                   ],
                 ),
               ),
-              const SizedBox(
-                height: 20,
-              ),
+              const SizedBox(height: 20),
 
-              //login in  button
+              // Login Button
               BlueButton(
                 topBottomPadding: Constants.searchBarButtonHeight,
                 leftRightPadding: 10,
@@ -306,9 +331,9 @@ class _LoginState extends State<Login> {
                 topBottomMargin: 0,
                 leftRightMargin: 0,
               ),
-              const SizedBox(
-                height: 20,
-              ),
+              const SizedBox(height: 20),
+
+              // Or Login with
               Container(
                 alignment: Alignment.bottomCenter,
                 child: Row(
@@ -316,7 +341,7 @@ class _LoginState extends State<Login> {
                   children: [
                     Container(
                       height: 1,
-                      width: 60, // Adjust the width according to your design
+                      width: 60,
                       color: Colors.black,
                       margin: const EdgeInsets.symmetric(horizontal: 20),
                     ),
@@ -331,16 +356,16 @@ class _LoginState extends State<Login> {
                     ),
                     Container(
                       height: 1,
-                      width: 60, // Adjust the width according to your design
+                      width: 60,
                       color: Colors.black,
                       margin: const EdgeInsets.symmetric(horizontal: 20),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(
-                height: 20,
-              ),
+              const SizedBox(height: 20),
+
+              // Social Login Buttons
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -350,22 +375,17 @@ class _LoginState extends State<Login> {
                     },
                     child: Container(
                       margin: const EdgeInsets.symmetric(
-                        vertical: 10,
-                        horizontal: 10,
-                      ),
+                          vertical: 10, horizontal: 10),
                       decoration: BoxDecoration(
                         color: Constants.greyColor,
-                        borderRadius:
-                            BorderRadius.circular(Constants.buttonBorderRadius),
-                        border: Border.all(
-                          color: Constants.greyTextColor,
-                        ),
+                        borderRadius: BorderRadius.circular(
+                            Constants.buttonBorderRadius),
+                        border: Border.all(color: Constants.greyTextColor),
                       ),
                       child: Center(
                         child: Padding(
                           padding: const EdgeInsets.symmetric(
-                              vertical: 10,
-                              horizontal: 20), // Adjust the padding as needed
+                              vertical: 10, horizontal: 20),
                           child: Image.asset(
                             'assets/images/facebook.png',
                             height: 20,
@@ -380,26 +400,18 @@ class _LoginState extends State<Login> {
                     },
                     child: Container(
                       margin: const EdgeInsets.symmetric(
-                        vertical: 10,
-                        horizontal: 10,
-                      ),
+                          vertical: 10, horizontal: 10),
                       decoration: BoxDecoration(
                         color: Constants.greyColor,
-                        borderRadius:
-                            BorderRadius.circular(Constants.buttonBorderRadius),
-                        border: Border.all(
-                          color: Constants.greyTextColor,
-                        ),
+                        borderRadius: BorderRadius.circular(
+                            Constants.buttonBorderRadius),
+                        border: Border.all(color: Constants.greyTextColor),
                       ),
                       child: const Center(
                         child: Padding(
                           padding: EdgeInsets.symmetric(
-                              vertical: 10,
-                              horizontal: 20), // Adjust the padding as needed
-                          child: Icon(
-                            Icons.apple,
-                            size: 20,
-                          ),
+                              vertical: 10, horizontal: 20),
+                          child: Icon(Icons.apple, size: 20),
                         ),
                       ),
                     ),
@@ -410,22 +422,17 @@ class _LoginState extends State<Login> {
                     },
                     child: Container(
                       margin: const EdgeInsets.symmetric(
-                        vertical: 10,
-                        horizontal: 10,
-                      ),
+                          vertical: 10, horizontal: 10),
                       decoration: BoxDecoration(
                         color: Constants.greyColor,
-                        borderRadius:
-                            BorderRadius.circular(Constants.buttonBorderRadius),
-                        border: Border.all(
-                          color: Constants.greyTextColor,
-                        ),
+                        borderRadius: BorderRadius.circular(
+                            Constants.buttonBorderRadius),
+                        border: Border.all(color: Constants.greyTextColor),
                       ),
                       child: Center(
                         child: Padding(
                           padding: const EdgeInsets.symmetric(
-                              vertical: 10,
-                              horizontal: 20), // Adjust the padding as needed
+                              vertical: 10, horizontal: 20),
                           child: Image.asset(
                             'assets/images/googleIcon.png',
                             height: 20,
@@ -436,7 +443,8 @@ class _LoginState extends State<Login> {
                   ),
                 ],
               ),
-              //bottom div
+
+              // Bottom Sign up
               const Spacer(),
               Container(
                 margin: const EdgeInsets.only(top: 10, bottom: 20),
@@ -455,9 +463,11 @@ class _LoginState extends State<Login> {
                     GestureDetector(
                       onTap: () {
                         Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const SignUp2()));
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const SignUp2(),
+                          ),
+                        );
                       },
                       child: const Text(
                         " Sign up",
@@ -469,11 +479,10 @@ class _LoginState extends State<Login> {
                         ),
                         textAlign: TextAlign.center,
                       ),
-                    )
+                    ),
                   ],
                 ),
               ),
-            
             ],
           ),
         ),

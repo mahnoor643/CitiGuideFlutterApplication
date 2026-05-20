@@ -1,16 +1,9 @@
-import 'dart:convert';
-import 'dart:typed_data';
-
 import 'package:citi_guide/Constants/constants.dart';
-import 'package:citi_guide/screens/Admin/admin.dart';
-import 'package:citi_guide/screens/Dashboard/dashboard.dart';
 import 'package:citi_guide/screens/Login/login.dart';
 import 'package:citi_guide/widgets/blueButton.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 class SignUp2 extends StatefulWidget {
   const SignUp2({super.key});
@@ -20,9 +13,10 @@ class SignUp2 extends StatefulWidget {
 }
 
 class _SignUp2State extends State<SignUp2> {
-  //Validation
+  // Validation
   final _formKey = GlobalKey<FormState>();
-  //Email validation
+
+  // Email validation
   String? validateEmail(String? email) {
     RegExp emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
     final isEmailValid = emailRegex.hasMatch(email ?? '');
@@ -32,16 +26,17 @@ class _SignUp2State extends State<SignUp2> {
     return null;
   }
 
-  //Password validation
+  // Password validation
   String? validatePwd(String? pwd) {
     RegExp passwordRegex = RegExp(r'^(?=.*[a-zA-Z])(?=.*\d).{8,}$');
     final isPwdValid = passwordRegex.hasMatch(pwd ?? '');
     if (!isPwdValid) {
       return 'Password must be of 8 characters\n including digits and alphabets';
     }
+    return null;
   }
 
-  //Login Successful msg
+  // Success message
   void successMessage(String successMsg) {
     final snackBar = SnackBar(
       content: Text(successMsg),
@@ -50,46 +45,42 @@ class _SignUp2State extends State<SignUp2> {
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
-  //TextField Controllers
-  final TextEditingController username = new TextEditingController();
-  final TextEditingController email = new TextEditingController();
-  final TextEditingController pwd = new TextEditingController();
+  // TextField Controllers
+  final TextEditingController username = TextEditingController();
+  final TextEditingController email = TextEditingController();
+  final TextEditingController pwd = TextEditingController();
 
-  //SignIn Function
+  // SignUp Function
   Future<void> signIn(String email, String pwd, String username) async {
     try {
       final credential = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(email: email, password: pwd);
 
-      // Making users class to add further details
+      // ✅ Firestore mein user data + default profile path + role save karo
       await FirebaseFirestore.instance
           .collection('users')
-          .doc(credential.user!.uid) // Use user's UID as the document ID
+          .doc(credential.user!.uid)
           .set({
         'email': email,
         'id': credential.user!.uid,
         'username': username,
+        'role': 'user',                                         // ✅ default role
+        'profile': 'assets/images/profileDefaultImg.jpg',      // ✅ default profile
       });
-      final FirebaseStorage _storage = FirebaseStorage.instance;
-      Reference ref = _storage.ref().child('profile/${credential.user!.uid}');
-      ByteData data =
-          await rootBundle.load('assets/images/profileDefaultImg.jpg');
-      Uint8List image = data.buffer.asUint8List();
-      UploadTask uploadTask = ref.putData(image);
 
-      String successMsg = 'Account Created Successfully';
-      successMessage(successMsg);
+      successMessage('Account Created Successfully');
       Navigator.push(
-          context, MaterialPageRoute(builder: (context) => const Login()));
-      // username.clear();
-      // this above will work but bete apne stateless widget
-      // use ki hui hai 1 hr laga diya error dhundne mai
+        context,
+        MaterialPageRoute(builder: (context) => const Login()),
+      );
     } catch (error) {
-      print("Error signing in: $error");
+      print("Error signing up: $error");
+      successMessage('Error occurred!! Please try again.');
     }
   }
 
   bool _isObscured = true;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -137,34 +128,34 @@ class _SignUp2State extends State<SignUp2> {
                 ),
               ),
 
-              //Username TextField
+              // Username TextField
               TextFormField(
                 cursorColor: Constants.greyTextColor,
                 controller: username,
-                validator: (email) => email!.length < 3
+                validator: (val) => val!.length < 3
                     ? 'Username should be atleast 3 characters'
                     : null,
                 autovalidateMode: AutovalidateMode.onUserInteraction,
                 keyboardType: TextInputType.name,
                 decoration: InputDecoration(
                   enabledBorder: const OutlineInputBorder(
-                    borderSide: BorderSide(
-                        width: 3, color: Colors.transparent), //<-- SEE HERE
+                    borderSide:
+                        BorderSide(width: 3, color: Colors.transparent),
                   ),
                   filled: true,
                   fillColor: Constants.greyColor,
                   hintText: '   Your username',
                   border: OutlineInputBorder(
-                      borderRadius:
-                          BorderRadius.circular(Constants.buttonBorderRadius),
-                      borderSide: BorderSide(color: Constants.greyColor)),
+                    borderRadius:
+                        BorderRadius.circular(Constants.buttonBorderRadius),
+                    borderSide: BorderSide(color: Constants.greyColor),
+                  ),
                   contentPadding: EdgeInsets.symmetric(
-                      vertical: Constants.searchBarButtonHeight,
-                      horizontal: 15),
+                    vertical: Constants.searchBarButtonHeight,
+                    horizontal: 15,
+                  ),
                 ),
-                style: TextStyle(
-                  color: Constants.greyTextColor,
-                ),
+                style: TextStyle(color: Constants.greyTextColor),
               ),
 
               Container(
@@ -181,7 +172,7 @@ class _SignUp2State extends State<SignUp2> {
                 ),
               ),
 
-              //Email TextField
+              // Email TextField
               TextFormField(
                 cursorColor: Constants.greyTextColor,
                 controller: email,
@@ -190,23 +181,23 @@ class _SignUp2State extends State<SignUp2> {
                 autovalidateMode: AutovalidateMode.onUserInteraction,
                 decoration: InputDecoration(
                   enabledBorder: const OutlineInputBorder(
-                    borderSide: BorderSide(
-                        width: 3, color: Colors.transparent), //<-- SEE HERE
+                    borderSide:
+                        BorderSide(width: 3, color: Colors.transparent),
                   ),
                   filled: true,
                   fillColor: Constants.greyColor,
                   hintText: '   Your email',
                   border: OutlineInputBorder(
-                      borderRadius:
-                          BorderRadius.circular(Constants.buttonBorderRadius),
-                      borderSide: BorderSide(color: Constants.greyColor)),
+                    borderRadius:
+                        BorderRadius.circular(Constants.buttonBorderRadius),
+                    borderSide: BorderSide(color: Constants.greyColor),
+                  ),
                   contentPadding: EdgeInsets.symmetric(
-                      vertical: Constants.searchBarButtonHeight,
-                      horizontal: 15),
+                    vertical: Constants.searchBarButtonHeight,
+                    horizontal: 15,
+                  ),
                 ),
-                style: TextStyle(
-                  color: Constants.greyTextColor,
-                ),
+                style: TextStyle(color: Constants.greyTextColor),
               ),
 
               Container(
@@ -223,7 +214,7 @@ class _SignUp2State extends State<SignUp2> {
                 ),
               ),
 
-              //pwd TextField
+              // Password TextField
               TextFormField(
                 cursorColor: Colors.grey,
                 controller: pwd,
@@ -244,8 +235,8 @@ class _SignUp2State extends State<SignUp2> {
                     borderRadius: BorderRadius.circular(10),
                     borderSide: const BorderSide(color: Colors.grey),
                   ),
-                  contentPadding:
-                      const EdgeInsets.symmetric(vertical: 15, horizontal: 15),
+                  contentPadding: const EdgeInsets.symmetric(
+                      vertical: 15, horizontal: 15),
                   suffixIcon: IconButton(
                     icon: Icon(
                       _isObscured ? Icons.visibility_off : Icons.visibility,
@@ -258,19 +249,15 @@ class _SignUp2State extends State<SignUp2> {
                     },
                   ),
                 ),
-                style: const TextStyle(
-                  color: Colors.grey,
-                ),
+                style: const TextStyle(color: Colors.grey),
                 obscureText: _isObscured,
               ),
+
               Container(
                 margin: const EdgeInsets.only(top: 30),
                 child: const Row(
                   children: [
-                    Icon(
-                      Icons.verified_rounded,
-                      size: 20,
-                    ),
+                    Icon(Icons.verified_rounded, size: 20),
                     Text(
                       "  I accept the term and privacy policy",
                       style: TextStyle(
@@ -283,9 +270,9 @@ class _SignUp2State extends State<SignUp2> {
                   ],
                 ),
               ),
-              const SizedBox(
-                height: 30,
-              ),
+              const SizedBox(height: 30),
+
+              // Sign Up Button
               BlueButton(
                 topBottomPadding: Constants.searchBarButtonHeight,
                 leftRightPadding: 10,
@@ -306,10 +293,11 @@ class _SignUp2State extends State<SignUp2> {
                 topBottomMargin: 0,
                 leftRightMargin: 0,
               ),
-              //bottom div
+
+              // Bottom div
               const Spacer(),
               Container(
-                margin: EdgeInsets.only(top: 10, bottom: 20),
+                margin: const EdgeInsets.only(top: 10, bottom: 20),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -325,9 +313,11 @@ class _SignUp2State extends State<SignUp2> {
                     GestureDetector(
                       onTap: () {
                         Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const Login()));
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const Login(),
+                          ),
+                        );
                       },
                       child: const Text(
                         "Log in",
@@ -339,7 +329,7 @@ class _SignUp2State extends State<SignUp2> {
                         ),
                         textAlign: TextAlign.center,
                       ),
-                    )
+                    ),
                   ],
                 ),
               ),

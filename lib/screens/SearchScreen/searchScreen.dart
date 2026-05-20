@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:citi_guide/Constants/constants.dart';
 import 'package:citi_guide/screens/Cities/cities.dart';
 import 'package:citi_guide/screens/Dashboard/dashboard.dart';
@@ -8,7 +7,6 @@ import 'package:citi_guide/screens/profile/profile.dart';
 import 'package:citi_guide/widgets/blueButton.dart';
 import 'package:citi_guide/widgets/searchSuggestions.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 
@@ -17,252 +15,174 @@ class SearchScreen extends StatefulWidget {
   final String email;
   final String username;
   final String profile;
-  const SearchScreen(
-      {super.key,
-      required this.userId,
-      required this.email,
-      required this.username,
-      required this.profile});
+  const SearchScreen({
+    super.key,
+    required this.userId,
+    required this.email,
+    required this.username,
+    required this.profile,
+  });
 
   @override
   State<SearchScreen> createState() => _SearchScreenState();
 }
 
 class _SearchScreenState extends State<SearchScreen> {
-  TextEditingController searchController = TextEditingController();
- StreamController<List<Widget>> _streamController =
+  final TextEditingController searchController = TextEditingController();
+  final StreamController<List<Widget>> _streamController =
       StreamController<List<Widget>>.broadcast();
+
+  int selectedIndex = 2;
 
   @override
   void initState() {
     super.initState();
-    // Listen to changes in the searchController
-    searchController.addListener(() {
-      // Trigger a new search when the text changes
-      _performSearch();
-    });
+    searchController.addListener(_performSearch);
   }
 
   @override
   void dispose() {
+    searchController.removeListener(_performSearch);
+    searchController.dispose();
     _streamController.close();
     super.dispose();
   }
 
-  // Function to perform the search based on the current text in searchController
-void _performSearch() async {
-  var snapshot = await FirebaseFirestore.instance
-      .collection('destinationDetails')
-      .get();
+  // Search — sirf Firestore imagePath, Firebase Storage nahi
+  void _performSearch() async {
+    final query = searchController.text.toLowerCase();
 
-  var destinationData = snapshot.docs;
+    var snapshot = await FirebaseFirestore.instance
+        .collection('destinationDetails')
+        .get();
 
-  List<Widget> destinationCards = await Future.wait(
-    destinationData
-        .where((doc) =>
-            doc.data()['locationName']
-                .toLowerCase()
-                .contains(searchController.text.toLowerCase()))
-        .map<Future<Widget>>((doc) async {
-          var data = doc.data();
-          String imageUrl = await FirebaseStorage.instance
-              .ref()
-              .child('locations/${doc.id}')
-              .getDownloadURL();
-          return GestureDetector(onTap: () {
-            Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) =>
-                                     DestinationDetails(destinationID: doc.id,url: imageUrl,)));
-          },child: SearchSuggestions(place: data['locationName'],city: data['city'],));
-        })
-        .toList(),
-  );
+    var filtered = snapshot.docs.where((doc) {
+      final name = (doc.data()['locationName'] ?? '').toLowerCase();
+      return name.contains(query);
+    }).toList();
 
-  // Update the stream with the new search results
-  _streamController.add(destinationCards);
-}
+    List<Widget> cards = filtered.map((doc) {
+      var data = doc.data();
+      String imagePath = data['imagePath'] ?? 'assets/images/PC.png';
 
+      return GestureDetector(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => DestinationDetails(
+                destinationID: doc.id,
+                url: imagePath,
+              ),
+            ),
+          );
+        },
+        child: SearchSuggestions(
+          place: data['locationName'] ?? '',
+          city: data['city'] ?? '',
+        ),
+      );
+    }).toList();
 
+    if (!_streamController.isClosed) {
+      _streamController.add(cards);
+    }
+  }
 
-
-
-  int selectedIndex = 2;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
         margin: const EdgeInsets.only(top: 40, left: 20, right: 20),
         child: SingleChildScrollView(
-          scrollDirection: Axis.vertical,
           child: Column(
             children: [
-              // searchbar row //
-              Container(
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        cursorColor: Constants.greyTextColor,
-                        controller: searchController,
-                        decoration: InputDecoration(
-                          enabledBorder: const OutlineInputBorder(
-                            borderSide: BorderSide(
-                                width: 3,
-                                color: Colors.transparent), //<-- SEE HERE
-                          ),
-                          filled: true,
-                          fillColor: Constants.greyColor,
-                          hintText: 'Search Destination',
-                          prefixIcon: Icon(Icons.search,
-                              color: Constants
-                                  .greyTextColor), // Add icon to the left
-                          border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(
-                                  Constants.buttonBorderRadius),
-                              borderSide:
-                                  BorderSide(color: Constants.greyColor)),
-                          contentPadding: EdgeInsets.symmetric(
-                              vertical: Constants.searchBarButtonHeight),
+              // ── Search Bar ──
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      cursorColor: Constants.greyTextColor,
+                      controller: searchController,
+                      decoration: InputDecoration(
+                        enabledBorder: const OutlineInputBorder(
+                          borderSide:
+                              BorderSide(width: 3, color: Colors.transparent),
                         ),
-                        style: TextStyle(
+                        filled: true,
+                        fillColor: Constants.greyColor,
+                        hintText: 'Search Destination',
+                        prefixIcon: Icon(
+                          Icons.search,
                           color: Constants.greyTextColor,
                         ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(
+                              Constants.buttonBorderRadius),
+                          borderSide: BorderSide(color: Constants.greyColor),
+                        ),
+                        contentPadding: EdgeInsets.symmetric(
+                          vertical: Constants.searchBarButtonHeight,
+                        ),
                       ),
+                      style: TextStyle(color: Constants.greyTextColor),
                     ),
-                    const SizedBox(
-                      width: 7,
+                  ),
+                  const SizedBox(width: 7),
+                  BlueButton(
+                    topBottomPadding: Constants.searchBarButtonHeight,
+                    leftRightPadding: 10,
+                    widget_: Icon(
+                      Icons.storage_rounded,
+                      color: Constants.whiteColor,
                     ),
-                    // InkWell(
-                    //   onTap: () {
-                    //     print("tapped");
-                    //   },
-                    //   child: Container(
-                    //     decoration: BoxDecoration(
-                    //       color: Constants.darkBlueColor,
-                    //       borderRadius:
-                    //           BorderRadius.circular(Constants.buttonBorderRadius),
-                    //     ),
-                    //     child: Center(
-                    //       child: Padding(
-                    //         padding: EdgeInsets.symmetric(
-                    //             vertical: Constants.searchBarButtonHeight,
-                    //             horizontal: 10), // Adjust the padding as needed
-                    //         child: Icon(Icons.storage_rounded,
-                    //             color: Constants.whiteColor),
-                    //       ),
-                    //     ),
-                    //   ),
-                    // ),
-
-                    BlueButton(
-                      topBottomPadding: Constants.searchBarButtonHeight,
-                      leftRightPadding: 10,
-                      widget_: Icon(Icons.storage_rounded,
-                          color: Constants.whiteColor),
-                      OntapFunction: () {
-                        print("tapped");
-                      },
-                      topBottomMargin: 0,
-                      leftRightMargin: 0,
-                    ),
-                  ],
-                ),
+                    OntapFunction: () {},
+                    topBottomMargin: 0,
+                    leftRightMargin: 0,
+                  ),
+                ],
               ),
 
-              const SizedBox(
-                height: 10,
+              const SizedBox(height: 10),
+
+              // ── Search Results ──
+              StreamBuilder<List<Widget>>(
+                stream: _streamController.stream,
+                builder: (context, snapshot) {
+                  // Kuch type nahi hua abhi — khaali raho
+                  if (!snapshot.hasData) {
+                    return const SizedBox.shrink();
+                  }
+
+                  List<Widget> cards = snapshot.data!;
+
+                  // Sirf tab dikhao jab results sach mein khaali hon
+                  if (cards.isEmpty) {
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 20),
+                      child: Text(
+                        'No results found.',
+                        style: TextStyle(color: Constants.greyTextColor),
+                      ),
+                    );
+                  }
+
+                  return Column(children: cards);
+                },
               ),
-
-
-
-
-
-
-
-
-
-
-
-
-
-StreamBuilder<List<Widget>>(
-          stream: _streamController.stream,
-          builder: (context, snapshot) {
-            if (!snapshot.hasData) {
-              return const Text(" ");
-            }
-
-            // Display the search results
-            List<Widget> destinationCards = snapshot.data!;
-            return Column(
-              children: destinationCards,
-            );
-          },
-        ),
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//search suggestions
-               
-              // const SearchSuggestions(place: "Badshahi Masjid, Lahore"),
-              // const SearchSuggestions(place: "Monal Restaurant, Islamabad"),
-              // const SearchSuggestions(place: "Super Space, Karachi"),
             ],
           ),
         ),
       ),
 
-// Navigation Bar
+      // ── Bottom Nav Bar ──
       bottomNavigationBar: Container(
         margin: const EdgeInsets.only(bottom: 20, left: 20, right: 20),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(8.0),
-          border: Border.all(
-            color: Constants.whiteColor, // Set your border color
-            width: 1.0, // Set your border width
-          ),
+          border: Border.all(color: Constants.whiteColor, width: 1.0),
           color: Constants.whiteColor,
-          boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 25)],
+          boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 25)],
         ),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 20),
@@ -272,47 +192,57 @@ StreamBuilder<List<Widget>>(
             activeColor: Constants.whiteColor,
             selectedIndex: selectedIndex,
             onTabChange: (index) {
-              // Update the selected index
               setState(() {
                 selectedIndex = index;
               });
-              // Handle tab change
               if (index == 0) {
                 Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => Dashboard(
-                            userId: widget.userId,
-                            email: widget.email,
-                            username: widget.username,
-                            profile: widget.profile)));
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => Dashboard(
+                      userId: widget.userId,
+                      email: widget.email,
+                      username: widget.username,
+                      profile: widget.profile,
+                    ),
+                  ),
+                );
               } else if (index == 1) {
                 Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => CitiesScreen(
-                            userId: widget.userId,
-                            email: widget.email,
-                            username: widget.username,
-                            profile: widget.profile)));
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => CitiesScreen(
+                      userId: widget.userId,
+                      email: widget.email,
+                      username: widget.username,
+                      profile: widget.profile,
+                    ),
+                  ),
+                );
               } else if (index == 2) {
                 Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => SearchScreen(
-                            userId: widget.userId,
-                            email: widget.email,
-                            username: widget.username,
-                            profile: widget.profile)));
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => SearchScreen(
+                      userId: widget.userId,
+                      email: widget.email,
+                      username: widget.username,
+                      profile: widget.profile,
+                    ),
+                  ),
+                );
               } else {
                 Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => ProfileScreen(
-                            userId: widget.userId,
-                            email: widget.email,
-                            username: widget.username,
-                            profile: widget.profile)));
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ProfileScreen(
+                      userId: widget.userId,
+                      email: widget.email,
+                      username: widget.username,
+                      profile: widget.profile,
+                    ),
+                  ),
+                );
               }
             },
             tabBackgroundColor: Constants.OrangeColor,
