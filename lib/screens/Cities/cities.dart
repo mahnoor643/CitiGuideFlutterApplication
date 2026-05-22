@@ -377,8 +377,14 @@ class _CitiesScreenState extends State<CitiesScreen> {
             width: 1.0, // Set your border width
           ),
           color: Constants.whiteColor,
-          boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 25)],
-        ),
+boxShadow: [
+  BoxShadow(
+    color: Colors.black.withOpacity(0.50), // Opacity ko 12% se badha kar 25% kar diya (Bright/Dark look)
+    blurRadius: 22,                       // Shadow ko thoda crisp rakhne ke liye blur kam kiya
+    offset: const Offset(0, 10),           // Shadow ko thoda neeche push kiya taake floating effect aaye
+    spreadRadius: 1,                      // Shadow ko thoda phailane ke liye
+  ),
+],        ),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 20),
           child: GNav(

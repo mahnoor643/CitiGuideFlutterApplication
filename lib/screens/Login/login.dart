@@ -158,6 +158,7 @@ String profileUrlFromFirestore = userData['profile']
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: Container(
         margin: const EdgeInsets.only(left: 20, right: 20, top: 30),
         child: Form(

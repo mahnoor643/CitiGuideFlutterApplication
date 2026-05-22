@@ -1,5 +1,6 @@
 import 'package:citi_guide/Constants/constants.dart';
 import 'package:citi_guide/screens/Login/login.dart';
+import 'package:citi_guide/screens/Cities/SelectCity.dart';
 import 'package:citi_guide/widgets/blueButton.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -13,10 +14,8 @@ class SignUp2 extends StatefulWidget {
 }
 
 class _SignUp2State extends State<SignUp2> {
-  // Validation
   final _formKey = GlobalKey<FormState>();
 
-  // Email validation
   String? validateEmail(String? email) {
     RegExp emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
     final isEmailValid = emailRegex.hasMatch(email ?? '');
@@ -26,7 +25,6 @@ class _SignUp2State extends State<SignUp2> {
     return null;
   }
 
-  // Password validation
   String? validatePwd(String? pwd) {
     RegExp passwordRegex = RegExp(r'^(?=.*[a-zA-Z])(?=.*\d).{8,}$');
     final isPwdValid = passwordRegex.hasMatch(pwd ?? '');
@@ -36,7 +34,6 @@ class _SignUp2State extends State<SignUp2> {
     return null;
   }
 
-  // Success message
   void successMessage(String successMsg) {
     final snackBar = SnackBar(
       content: Text(successMsg),
@@ -45,37 +42,80 @@ class _SignUp2State extends State<SignUp2> {
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
-  // TextField Controllers
   final TextEditingController username = TextEditingController();
-  final TextEditingController email = TextEditingController();
-  final TextEditingController pwd = TextEditingController();
+  final TextEditingController email    = TextEditingController();
+  final TextEditingController pwd      = TextEditingController();
 
-  // SignUp Function
+  bool _isLoading = false;
+
+  // ✅ Fixed SignUp — FirebaseAuthException alag catch kiya
   Future<void> signIn(String email, String pwd, String username) async {
-    try {
-      final credential = await FirebaseAuth.instance
-          .createUserWithEmailAndPassword(email: email, password: pwd);
+    setState(() => _isLoading = true);
 
-      // ✅ Firestore mein user data + default profile path + role save karo
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(credential.user!.uid)
-          .set({
-        'email': email,
-        'id': credential.user!.uid,
-        'username': username,
-        'role': 'user',                                         // ✅ default role
-        'profile': 'assets/images/profileDefaultImg.jpg',      // ✅ default profile
+    try {
+      // ✅ Step 1 — Firebase Auth user banao
+      final UserCredential credential = await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(
+        email: email.trim(),
+        password: pwd.trim(),
+      );
+
+      final String uid = credential.user!.uid;
+
+      // ✅ Step 2 — Firestore mein data save karo
+      await FirebaseFirestore.instance.collection('users').doc(uid).set({
+        'email':    email.trim(),
+        'id':       uid,
+        'username': username.trim(),
+        'role':     'user',
+        'profile':  'assets/images/profileDefaultImg.jpg',
       });
 
       successMessage('Account Created Successfully');
-      Navigator.push(
+
+      if (!mounted) return;
+
+      // ✅ Step 3 — SelectCity pe navigate karo
+      Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const Login()),
+        MaterialPageRoute(
+          builder: (context) => SelectCity(
+            userId:   uid,
+            username: username.trim(),
+            email:    email.trim(),
+            profile:  'assets/images/profileDefaultImg.jpg',
+          ),
+        ),
       );
-    } catch (error) {
-      print("Error signing up: $error");
-      successMessage('Error occurred!! Please try again.');
+
+    } on FirebaseAuthException catch (e) {
+      // ✅ Firebase Auth errors — web pe bhi kaam karta hai
+      String errorMsg;
+      switch (e.code) {
+        case 'email-already-in-use':
+          errorMsg = 'This email is already registered.';
+          break;
+        case 'invalid-email':
+          errorMsg = 'Email address is not valid.';
+          break;
+        case 'weak-password':
+          errorMsg = 'Password is too weak.';
+          break;
+        case 'operation-not-allowed':
+          errorMsg = 'Email/password sign-up is not enabled.';
+          break;
+        default:
+          errorMsg = 'Sign up failed. Please try again.';
+          print('FirebaseAuthException: ${e.code} — ${e.message}');
+      }
+      successMessage(errorMsg);
+
+    } catch (e) {
+      // ✅ General errors
+      print('Signup error: $e');
+      successMessage('Something went wrong. Please try again.');
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -84,6 +124,7 @@ class _SignUp2State extends State<SignUp2> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: Container(
         margin: const EdgeInsets.only(left: 20, right: 20, top: 30),
         child: Form(
@@ -94,10 +135,7 @@ class _SignUp2State extends State<SignUp2> {
               Row(
                 children: [
                   const Spacer(),
-                  Image.asset(
-                    Constants.appLogo,
-                    height: 40,
-                  ),
+                  Image.asset(Constants.appLogo, height: 40),
                 ],
               ),
               Container(
@@ -139,8 +177,7 @@ class _SignUp2State extends State<SignUp2> {
                 keyboardType: TextInputType.name,
                 decoration: InputDecoration(
                   enabledBorder: const OutlineInputBorder(
-                    borderSide:
-                        BorderSide(width: 3, color: Colors.transparent),
+                    borderSide: BorderSide(width: 3, color: Colors.transparent),
                   ),
                   filled: true,
                   fillColor: Constants.greyColor,
@@ -181,8 +218,7 @@ class _SignUp2State extends State<SignUp2> {
                 autovalidateMode: AutovalidateMode.onUserInteraction,
                 decoration: InputDecoration(
                   enabledBorder: const OutlineInputBorder(
-                    borderSide:
-                        BorderSide(width: 3, color: Colors.transparent),
+                    borderSide: BorderSide(width: 3, color: Colors.transparent),
                   ),
                   filled: true,
                   fillColor: Constants.greyColor,
@@ -223,10 +259,7 @@ class _SignUp2State extends State<SignUp2> {
                 autovalidateMode: AutovalidateMode.onUserInteraction,
                 decoration: InputDecoration(
                   enabledBorder: const OutlineInputBorder(
-                    borderSide: BorderSide(
-                      width: 3,
-                      color: Colors.transparent,
-                    ),
+                    borderSide: BorderSide(width: 3, color: Colors.transparent),
                   ),
                   filled: true,
                   fillColor: Constants.greyColor,
@@ -235,18 +268,15 @@ class _SignUp2State extends State<SignUp2> {
                     borderRadius: BorderRadius.circular(10),
                     borderSide: const BorderSide(color: Colors.grey),
                   ),
-                  contentPadding: const EdgeInsets.symmetric(
-                      vertical: 15, horizontal: 15),
+                  contentPadding:
+                      const EdgeInsets.symmetric(vertical: 15, horizontal: 15),
                   suffixIcon: IconButton(
                     icon: Icon(
                       _isObscured ? Icons.visibility_off : Icons.visibility,
                       color: Colors.grey,
                     ),
-                    onPressed: () {
-                      setState(() {
-                        _isObscured = !_isObscured;
-                      });
-                    },
+                    onPressed: () =>
+                        setState(() => _isObscured = !_isObscured),
                   ),
                 ),
                 style: const TextStyle(color: Colors.grey),
@@ -272,19 +302,28 @@ class _SignUp2State extends State<SignUp2> {
               ),
               const SizedBox(height: 30),
 
-              // Sign Up Button
+              // ✅ Sign Up Button — loader bhi hai
               BlueButton(
                 topBottomPadding: Constants.searchBarButtonHeight,
                 leftRightPadding: 10,
-                widget_: Text(
-                  "Sign Up",
-                  style: TextStyle(
-                    color: Constants.whiteColor,
-                    fontFamily: 'myfonts',
-                    fontSize: 12,
-                    fontWeight: FontWeight.w200,
-                  ),
-                ),
+                widget_: _isLoading
+                    ? const SizedBox(
+                        height: 18,
+                        width: 18,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : Text(
+                        "Sign Up",
+                        style: TextStyle(
+                          color: Constants.whiteColor,
+                          fontFamily: 'myfonts',
+                          fontSize: 12,
+                          fontWeight: FontWeight.w200,
+                        ),
+                      ),
                 OntapFunction: () async {
                   if (_formKey.currentState!.validate()) {
                     await signIn(email.text, pwd.text, username.text);
@@ -294,7 +333,6 @@ class _SignUp2State extends State<SignUp2> {
                 leftRightMargin: 0,
               ),
 
-              // Bottom div
               const Spacer(),
               Container(
                 margin: const EdgeInsets.only(top: 10, bottom: 20),
@@ -320,7 +358,7 @@ class _SignUp2State extends State<SignUp2> {
                         );
                       },
                       child: const Text(
-                        "Log in",
+                        " Log in",
                         style: TextStyle(
                           color: Colors.black,
                           fontSize: 14,
