@@ -3,6 +3,7 @@ import 'package:citi_guide/Constants/constants.dart';
 import 'package:citi_guide/screens/Cities/cities.dart';
 import 'package:citi_guide/screens/Dashboard/dashboard.dart';
 import 'package:citi_guide/screens/Details/details.dart';
+import 'package:citi_guide/screens/Saved/Saved.dart';
 import 'package:citi_guide/screens/profile/profile.dart';
 import 'package:citi_guide/widgets/blueButton.dart';
 import 'package:citi_guide/widgets/searchSuggestions.dart';
@@ -52,9 +53,8 @@ class _SearchScreenState extends State<SearchScreen> {
   void _performSearch() async {
     final query = searchController.text.toLowerCase();
 
-    var snapshot = await FirebaseFirestore.instance
-        .collection('destinationDetails')
-        .get();
+    var snapshot =
+        await FirebaseFirestore.instance.collection('destinationDetails').get();
 
     var filtered = snapshot.docs.where((doc) {
       final name = (doc.data()['locationName'] ?? '').toLowerCase();
@@ -73,6 +73,7 @@ class _SearchScreenState extends State<SearchScreen> {
               builder: (context) => DestinationDetails(
                 destinationID: doc.id,
                 url: imagePath,
+                userId: widget.userId,
               ),
             ),
           );
@@ -91,59 +92,110 @@ class _SearchScreenState extends State<SearchScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+
     return Scaffold(
+      backgroundColor: const Color(0xfffbf8f3),
       body: Container(
-        margin: const EdgeInsets.only(top: 40, left: 20, right: 20),
+        margin: EdgeInsets.only(
+          top: 20,
+          left: size.width * 0.05,
+          right: size.width * 0.05,
+        ),
         child: SingleChildScrollView(
           child: Column(
             children: [
+              const SizedBox(height: 12),
+
               // ── Search Bar ──
               Row(
                 children: [
                   Expanded(
-                    child: TextField(
-                      cursorColor: Constants.greyTextColor,
-                      controller: searchController,
-                      decoration: InputDecoration(
-                        enabledBorder: const OutlineInputBorder(
-                          borderSide:
-                              BorderSide(width: 3, color: Colors.transparent),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: const Color(0xffe5e5e5),
+                          width: 1.2,
                         ),
-                        filled: true,
-                        fillColor: Constants.greyColor,
-                        hintText: 'Search Destination',
-                        prefixIcon: Icon(
-                          Icons.search,
-                          color: Constants.greyTextColor,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.04),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: TextField(
+                        cursorColor: Constants.OrangeColor,
+                        controller: searchController,
+                        decoration: InputDecoration(
+                          enabledBorder: InputBorder.none,
+                          focusedBorder: InputBorder.none,
+                          filled: false,
+                          hintText: 'Search Destination',
+                          hintStyle: const TextStyle(
+                            color: Color(0xffaaaaaa),
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          prefixIcon: Padding(
+                            padding: const EdgeInsets.only(left: 12, right: 8),
+                            child: Icon(
+                              Icons.search_rounded,
+                              color: const Color(0xffaaaaaa),
+                              size: 20,
+                            ),
+                          ),
+                          prefixIconConstraints:
+                              const BoxConstraints(minWidth: 0, minHeight: 0),
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 12,
+                            horizontal: 0,
+                          ),
                         ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(
-                              Constants.buttonBorderRadius),
-                          borderSide: BorderSide(color: Constants.greyColor),
-                        ),
-                        contentPadding: EdgeInsets.symmetric(
-                          vertical: Constants.searchBarButtonHeight,
+                        style: const TextStyle(
+                          color: Color(0xff1a1a1a),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
-                      style: TextStyle(color: Constants.greyTextColor),
                     ),
                   ),
-                  const SizedBox(width: 7),
-                  BlueButton(
-                    topBottomPadding: Constants.searchBarButtonHeight,
-                    leftRightPadding: 10,
-                    widget_: Icon(
-                      Icons.storage_rounded,
-                      color: Constants.whiteColor,
+                  const SizedBox(width: 8),
+                  Container(
+                    decoration: BoxDecoration(
+                      gradient: Constants.orangeGradient,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Constants.OrangeColor.withOpacity(0.25),
+                          blurRadius: 10,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
                     ),
-                    OntapFunction: () {},
-                    topBottomMargin: 0,
-                    leftRightMargin: 0,
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(12),
+                        onTap: () {},
+                        child: Padding(
+                          padding: const EdgeInsets.all(10),
+                          child: Icon(
+                            Icons.tune_rounded,
+                            color: Colors.white,
+                            size: 22,
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
                 ],
               ),
 
-              const SizedBox(height: 10),
+              const SizedBox(height: 18),
 
               // ── Search Results ──
               StreamBuilder<List<Widget>>(
@@ -162,7 +214,11 @@ class _SearchScreenState extends State<SearchScreen> {
                       padding: const EdgeInsets.only(top: 20),
                       child: Text(
                         'No results found.',
-                        style: TextStyle(color: Constants.greyTextColor),
+                        style: TextStyle(
+                          color: const Color(0xffaaaaaa),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     );
                   }
@@ -175,92 +231,123 @@ class _SearchScreenState extends State<SearchScreen> {
         ),
       ),
 
-      // ── Bottom Nav Bar ──
-      bottomNavigationBar: Container(
-        margin: const EdgeInsets.only(bottom: 20, left: 20, right: 20),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(8.0),
-          border: Border.all(color: Constants.whiteColor, width: 1.0),
-          color: Constants.whiteColor,
-boxShadow: [
-  BoxShadow(
-    color: Colors.black.withOpacity(0.50), // Opacity ko 12% se badha kar 25% kar diya (Bright/Dark look)
-    blurRadius: 22,                       // Shadow ko thoda crisp rakhne ke liye blur kam kiya
-    offset: const Offset(0, 10),           // Shadow ko thoda neeche push kiya taake floating effect aaye
-    spreadRadius: 1,                      // Shadow ko thoda phailane ke liye
-  ),
-],        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 20),
-          child: GNav(
-            backgroundColor: Constants.whiteColor,
-            color: Constants.greyTextColor,
-            activeColor: Constants.whiteColor,
-            selectedIndex: selectedIndex,
-            onTabChange: (index) {
-              setState(() {
-                selectedIndex = index;
-              });
-              if (index == 0) {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => Dashboard(
-                      userId: widget.userId,
-                      email: widget.email,
-                      username: widget.username,
-                      profile: widget.profile,
-                    ),
-                  ),
-                );
-              } else if (index == 1) {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => CitiesScreen(
-                      userId: widget.userId,
-                      email: widget.email,
-                      username: widget.username,
-                      profile: widget.profile,
-                    ),
-                  ),
-                );
-              } else if (index == 2) {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => SearchScreen(
-                      userId: widget.userId,
-                      email: widget.email,
-                      username: widget.username,
-                      profile: widget.profile,
-                    ),
-                  ),
-                );
-              } else {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ProfileScreen(
-                      userId: widget.userId,
-                      email: widget.email,
-                      username: widget.username,
-                      profile: widget.profile,
-                    ),
-                  ),
-                );
-              }
-            },
-            tabBackgroundColor: Constants.OrangeColor,
-            gap: 8,
-            padding: const EdgeInsets.all(11),
-            tabs: const [
-              GButton(icon: Icons.home, text: "Home"),
-              GButton(icon: Icons.language, text: "Cities"),
-              GButton(icon: Icons.search, text: "Search"),
-              GButton(
-                  icon: Icons.supervised_user_circle_sharp, text: "Profile"),
+      // ── Bottom Navigation Bar ──
+      bottomNavigationBar: Padding(
+        padding: EdgeInsets.only(
+          bottom: size.height * 0.02,
+          left: size.width * 0.05,
+          right: size.width * 0.05,
+        ),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(18),
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.08),
+                blurRadius: 16,
+                offset: const Offset(0, -4),
+                spreadRadius: 1,
+              ),
             ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            child: GNav(
+              backgroundColor: Colors.white,
+              color: const Color(0xffb0b0b0),
+              activeColor: Colors.white,
+              selectedIndex: selectedIndex,
+              onTabChange: (index) {
+                setState(() => selectedIndex = index);
+                if (index == 0) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => Dashboard(
+                        userId: widget.userId,
+                        email: widget.email,
+                        username: widget.username,
+                        profile: widget.profile,
+                      ),
+                    ),
+                  );
+                } else if (index == 1) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => SavedScreen(
+                        userId: widget.userId,
+                        email: widget.email,
+                        username: widget.username,
+                        profile: widget.profile,
+                      ),
+                    ),
+                  );
+                } else if (index == 2) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => SearchScreen(
+                        userId: widget.userId,
+                        email: widget.email,
+                        username: widget.username,
+                        profile: widget.profile,
+                      ),
+                    ),
+                  );
+                } else {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ProfileScreen(
+                        userId: widget.userId,
+                        email: widget.email,
+                        username: widget.username,
+                        profile: widget.profile,
+                      ),
+                    ),
+                  );
+                }
+              },
+              tabBackgroundColor: Constants.OrangeColor,
+              gap: 8,
+              padding: const EdgeInsets.all(10),
+              tabs: const [
+                GButton(
+                  icon: Icons.home_rounded,
+                  text: "Home",
+                  textStyle: TextStyle(
+                      fontSize: 12,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600),
+                ),
+                GButton(
+                  icon: Icons.bookmark_rounded,
+                  text: "Saved",
+                  textStyle: TextStyle(
+                      fontSize: 12,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600),
+                ),
+                GButton(
+                  icon: Icons.search_rounded,
+                  text: "Search",
+                  textStyle: TextStyle(
+                      fontSize: 12,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600),
+                ),
+                GButton(
+                  icon: Icons.person_rounded,
+                  text: "Profile",
+                  textStyle: TextStyle(
+                      fontSize: 12,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600),
+                ),
+              ],
+            ),
           ),
         ),
       ),

@@ -33,7 +33,7 @@ class _SignOutScreenState extends State<SignOutScreen> {
                 height: 250,
                 width: double.infinity,
                 margin: const EdgeInsets.symmetric(vertical: 15),
-                child: Image.asset(Constants.appLogo)),
+                child: Image.asset(Constants.mainLogo)),
             Container(
               margin: const EdgeInsets.symmetric(vertical: 15),
               alignment: Alignment.center,

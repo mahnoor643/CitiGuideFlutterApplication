@@ -1,431 +1,530 @@
 import 'package:citi_guide/Constants/constants.dart';
 import 'package:citi_guide/screens/CityDestinations/cityDestinations.dart';
-import 'package:citi_guide/screens/Dashboard/dashboard.dart';
-import 'package:citi_guide/screens/SearchScreen/searchScreen.dart';
-import 'package:citi_guide/screens/profile/profile.dart';
-import 'package:citi_guide/widgets/blueButton.dart';
-import 'package:citi_guide/widgets/card.dart';
-import 'package:citi_guide/widgets/transparentButton.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:google_nav_bar/google_nav_bar.dart';
 
 class CitiesScreen extends StatefulWidget {
   final String userId;
   final String email;
   final String username;
   final String profile;
-  const CitiesScreen({super.key, required this.userId, required this.email, required this.username, required this.profile});
+
+  const CitiesScreen({
+    super.key,
+    required this.userId,
+    required this.email,
+    required this.username,
+    required this.profile,
+  });
 
   @override
   State<CitiesScreen> createState() => _CitiesScreenState();
 }
 
 class _CitiesScreenState extends State<CitiesScreen> {
-  int selectedIndex = 1;
+  final TextEditingController _searchController = TextEditingController();
+  final FocusNode _searchFocus = FocusNode();
+
+  List<Map<String, dynamic>> _allCities = [];
+  List<Map<String, dynamic>> _filteredCities = [];
+  bool _isLoading = true;
+  String _searchQuery = '';
+
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        margin: const EdgeInsets.only(top: 40, left: 20, right: 20),
-        child: Column(
-          children: [
-            // searchbar row //
-            Container(
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-  readOnly: true, // Set readOnly to true to prevent typing
-  onTap: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => SearchScreen(
-          userId: widget.userId,
-          email: widget.email,
-          username: widget.username,
-          profile: widget.profile,
+  void initState() {
+    super.initState();
+    _fetchCities();
+    _searchController.addListener(_onSearchChanged);
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _searchFocus.dispose();
+    super.dispose();
+  }
+
+  // ─── Firestore fetch ──────────────────────────────────────────────────────
+  // Firestore fields: city (String), img (String — asset path)
+  Future<void> _fetchCities() async {
+    try {
+      final snapshot =
+          await FirebaseFirestore.instance.collection('cities').get();
+
+      final cities = snapshot.docs.map((doc) {
+        final data = doc.data();
+        return {
+          'id': doc.id,
+          'name': (data['city'] ?? '').toString(),
+          'img': (data['img'] ?? '').toString(),
+        };
+      }).toList();
+
+      // A-Z sort
+      cities.sort((a, b) =>
+          (a['name'] as String).compareTo(b['name'] as String));
+
+      if (mounted) {
+        setState(() {
+          _allCities = cities;
+          _filteredCities = cities;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('Cities fetch error: $e');
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  // ─── Search — city name se filter ─────────────────────────────────────────
+  void _onSearchChanged() {
+    final query = _searchController.text.toLowerCase().trim();
+    setState(() {
+      _searchQuery = query;
+      _filteredCities = query.isEmpty
+          ? _allCities
+          : _allCities
+              .where((c) =>
+                  (c['name'] as String).toLowerCase().contains(query))
+              .toList();
+    });
+  }
+
+  void _clearSearch() {
+    _searchController.clear();
+    _searchFocus.unfocus();
+  }
+
+  // ─── City Card ────────────────────────────────────────────────────────────
+  Widget _buildCityCard(Map<String, dynamic> city) {
+    final String name = city['name'] as String;
+    final String imgPath = city['img'] as String;
+
+    return GestureDetector(
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => CityDestinations(cityFetch: name, userId: widget.userId),
         ),
       ),
-    );
-  },
-  cursorColor: Constants.greyTextColor,
-  decoration: InputDecoration(
-    enabledBorder: const OutlineInputBorder(
-      borderSide: BorderSide(
-        width: 3,
-        color: Colors.transparent,
-      ),
-    ),
-    filled: true,
-    fillColor: Constants.greyColor,
-    hintText: 'Search Destination',
-    prefixIcon: Icon(
-      Icons.search,
-      color: Constants.greyTextColor,
-    ),
-    border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(Constants.buttonBorderRadius),
-      borderSide: BorderSide(color: Constants.greyColor),
-    ),
-    contentPadding: EdgeInsets.symmetric(
-      vertical: Constants.searchBarButtonHeight,
-    ),
-  ),
-  style: TextStyle(
-    color: Constants.greyTextColor,
-  ),
-)
-
-                  ),
-                  const SizedBox(
-                    width: 7,
-                  ),
-                  // InkWell(
-                  //   onTap: () {
-                  //     print("tapped");
-                  //   },
-                  //   child: Container(
-                  //     decoration: BoxDecoration(
-                  //       color: Constants.darkBlueColor,
-                  //       borderRadius:
-                  //           BorderRadius.circular(Constants.buttonBorderRadius),
-                  //     ),
-                  //     child: Center(
-                  //       child: Padding(
-                  //         padding: EdgeInsets.symmetric(
-                  //             vertical: Constants.searchBarButtonHeight,
-                  //             horizontal: 10), // Adjust the padding as needed
-                  //         child: Icon(Icons.storage_rounded,
-                  //             color: Constants.whiteColor),
-                  //       ),
-                  //     ),
-                  //   ),
-                  // ),
-
-                  BlueButton(
-                    topBottomPadding: Constants.searchBarButtonHeight,
-                    leftRightPadding: 10,
-                    widget_: Icon(Icons.storage_rounded,
-                        color: Constants.whiteColor),
-                    OntapFunction: () {
-                      print("tapped");
-                    },
-                    topBottomMargin: 0,
-                    leftRightMargin: 0,
-                  ),
-                ],
-              ),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.18),
+              blurRadius: 18,
+              offset: const Offset(0, 7),
             ),
-
-            const SizedBox(
-              height: 10,
-            ),
-
-//City Cards
-            SingleChildScrollView(
-              scrollDirection: Axis.vertical,
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.push(context,
-                    MaterialPageRoute(builder: (context) =>  CityDestinations(cityFetch: "Karachi")));
-                        },
-                        child: CityImgCard(
-                            Widthcard: 150,
-                            ImgHeight: 150,
-                            OpacityHeight: 50,
-                            firstOpacityDivRow: Row(
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.only(
-                                      left: 10, right: 10, top: 5),
-                                  child: Text(
-                                    "Karachi",
-                                    style: TextStyle(
-                                      color: Constants.greyColor,
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            secondOpacityDivRow: Row(
-                              children: [
-                                TransparentButton(
-                                    OpacitySet: 0.1,
-                                    topBottomPadding: 2,
-                                    leftRightPadding: 7,
-                                    widget_: Row(
-                                      children: [
-                                        Icon(
-                                          Icons.location_on_outlined,
-                                          color: Constants.greyColor,
-                                          size: 10,
-                                        ),
-                                        Text(
-                                          "Location",
-                                          style: TextStyle(
-                                            fontSize: 10,
-                                            color: Constants.greyColor,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    OntapFunction: () {
-                                      print("navigation button");
-                                    },
-                                    topBottomMargin: 2,
-                                    leftRightMargin: 0),
-                              ],
-                            ),
-                            OpacityAboveRemainingHeightForMargin: 100,
-                            cityImg: 'assets/images/Karachi.jpg'),
-                      ),
-                      const Spacer(),
-                      GestureDetector(
-                        onTap: () {
-                           Navigator.push(context,
-                    MaterialPageRoute(builder: (context) =>  CityDestinations(cityFetch: "Lahore")));
-                        },
-                        child: CityImgCard(
-                            Widthcard: 150,
-                            ImgHeight: 150,
-                            OpacityHeight: 50,
-                            firstOpacityDivRow: Row(
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.only(
-                                      left: 10, right: 10, top: 5),
-                                  child: Text(
-                                    "Lahore",
-                                    style: TextStyle(
-                                      color: Constants.greyColor,
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            secondOpacityDivRow: Row(
-                              children: [
-                                TransparentButton(
-                                    OpacitySet: 0.1,
-                                    topBottomPadding: 2,
-                                    leftRightPadding: 7,
-                                    widget_: Row(
-                                      children: [
-                                        Icon(
-                                          Icons.location_on_outlined,
-                                          color: Constants.greyColor,
-                                          size: 10,
-                                        ),
-                                        Text(
-                                          "Location",
-                                          style: TextStyle(
-                                            fontSize: 10,
-                                            color: Constants.greyColor,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    OntapFunction: () {
-                                      print("navigation button");
-                                    },
-                                    topBottomMargin: 2,
-                                    leftRightMargin: 0),
-                              ],
-                            ),
-                            OpacityAboveRemainingHeightForMargin: 100,
-                            cityImg: 'assets/images/Lahore.jpg'),
-                      ),
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      GestureDetector(
-                        onTap: () {
-                           Navigator.push(context,
-                    MaterialPageRoute(builder: (context) =>  CityDestinations(cityFetch: "Quetta")));
-                        },
-                        child: CityImgCard(
-                            Widthcard: 150,
-                            ImgHeight: 150,
-                            OpacityHeight: 50,
-                            firstOpacityDivRow: Row(
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.only(
-                                      left: 10, right: 10, top: 5),
-                                  child: Text(
-                                    "Quetta",
-                                    style: TextStyle(
-                                      color: Constants.greyColor,
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            secondOpacityDivRow: Row(
-                              children: [
-                                TransparentButton(
-                                    OpacitySet: 0.1,
-                                    topBottomPadding: 2,
-                                    leftRightPadding: 7,
-                                    widget_: Row(
-                                      children: [
-                                        Icon(
-                                          Icons.location_on_outlined,
-                                          color: Constants.greyColor,
-                                          size: 10,
-                                        ),
-                                        Text(
-                                          "Location",
-                                          style: TextStyle(
-                                            fontSize: 10,
-                                            color: Constants.greyColor,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    OntapFunction: () {
-                                      print("navigation button");
-                                    },
-                                    topBottomMargin: 2,
-                                    leftRightMargin: 0),
-                              ],
-                            ),
-                            OpacityAboveRemainingHeightForMargin: 100,
-                            cityImg: 'assets/images/Quetta.jpg'),
-                      ),
-                      const Spacer(),
-                      GestureDetector(
-                        onTap: () {
-                           Navigator.push(context,
-                    MaterialPageRoute(builder: (context) =>  CityDestinations(cityFetch: "Peshawar")));
-                        },
-                        child: CityImgCard(
-                            Widthcard: 150,
-                            ImgHeight: 150,
-                            OpacityHeight: 50,
-                            firstOpacityDivRow: Row(
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.only(
-                                      left: 10, right: 10, top: 5),
-                                  child: Text(
-                                    "Peshawar",
-                                    style: TextStyle(
-                                      color: Constants.greyColor,
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            secondOpacityDivRow: Row(
-                              children: [
-                                TransparentButton(
-                                    OpacitySet: 0.1,
-                                    topBottomPadding: 2,
-                                    leftRightPadding: 7,
-                                    widget_: Row(
-                                      children: [
-                                        Icon(
-                                          Icons.location_on_outlined,
-                                          color: Constants.greyColor,
-                                          size: 10,
-                                        ),
-                                        Text(
-                                          "Location",
-                                          style: TextStyle(
-                                            fontSize: 10,
-                                            color: Constants.greyColor,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    OntapFunction: () {
-                                      print("navigation button");
-                                    },
-                                    topBottomMargin: 2,
-                                    leftRightMargin: 0),
-                              ],
-                            ),
-                            OpacityAboveRemainingHeightForMargin: 100,
-                            cityImg: 'assets/images/Peshawar.jpg'),
-                      ),
-                    ],
-                  )
-                ],
-              ),
-            )
           ],
         ),
-      ),
-// Navigation Bar
-      bottomNavigationBar: Container(
-        margin: const EdgeInsets.only(bottom: 20, left: 20, right: 20),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(8.0),
-          border: Border.all(
-            color: Constants.whiteColor, // Set your border color
-            width: 1.0, // Set your border width
-          ),
-          color: Constants.whiteColor,
-boxShadow: [
-  BoxShadow(
-    color: Colors.black.withOpacity(0.50), // Opacity ko 12% se badha kar 25% kar diya (Bright/Dark look)
-    blurRadius: 22,                       // Shadow ko thoda crisp rakhne ke liye blur kam kiya
-    offset: const Offset(0, 10),           // Shadow ko thoda neeche push kiya taake floating effect aaye
-    spreadRadius: 1,                      // Shadow ko thoda phailane ke liye
-  ),
-],        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 20),
-          child: GNav(
-            backgroundColor: Constants.whiteColor,
-            color: Constants.greyTextColor,
-            activeColor: Constants.whiteColor,
-            tabBackgroundColor: Constants.OrangeColor,
-                        selectedIndex: selectedIndex,
-            onTabChange: (index) {
-              // Update the selected index
-            setState(() {
-              selectedIndex = index;
-            });
-              // Handle tab change
-              if (index == 0) {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) =>  Dashboard(userId: widget.userId, email: widget.email, username: widget.username, profile: widget.profile)));
-              } else if (index == 1) {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) =>  CitiesScreen(userId: widget.userId, email: widget.email, username: widget.username, profile: widget.profile)));
-              } else if (index == 2) {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) =>  SearchScreen(userId: widget.userId, email: widget.email, username: widget.username, profile: widget.profile)));
-              } else {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => ProfileScreen(userId: widget.userId, email: widget.email, username: widget.username, profile: widget.profile)));
-              }
-            },
-            gap: 8,
-            padding: EdgeInsets.all(11),
-            tabs: const [
-              GButton(icon: Icons.home, text: "Home"),
-              GButton(icon: Icons.language, text: "Cities"),
-              GButton(icon: Icons.search, text: "Search"),
-              GButton(
-                  icon: Icons.supervised_user_circle_sharp, text: "Profile"),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              // ── Asset image ────────────────────────────────────────
+              imgPath.isNotEmpty
+                  ? Image.asset(
+                      imgPath,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => _fallback(name),
+                    )
+                  : _fallback(name),
+
+              // ── Bottom gradient overlay ────────────────────────────
+              Positioned.fill(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.transparent,
+                        Colors.black.withOpacity(0.15),
+                        Colors.black.withOpacity(0.78),
+                      ],
+                      stops: const [0.35, 0.6, 1.0],
+                    ),
+                  ),
+                ),
+              ),
+
+              // ── Top-right: subtle red tint badge ──────────────────
+              Positioned(
+                top: 10,
+                right: 10,
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    gradient: Constants.redGradient,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Constants.redColor.withOpacity(0.4),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.explore_outlined,
+                          color: Colors.white, size: 10),
+                      SizedBox(width: 3),
+                      Text(
+                        'Explore',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 9,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              // ── Bottom: city info ──────────────────────────────────
+              Positioned(
+                left: 12,
+                right: 12,
+                bottom: 12,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      name,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.2,
+                        shadows: [
+                          Shadow(
+                            color: Colors.black54,
+                            blurRadius: 8,
+                            offset: Offset(0, 1),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.location_on,
+                          color: Constants.OrangeColor.withOpacity(0.9),
+                          size: 11,
+                        ),
+                        const SizedBox(width: 3),
+                        Text(
+                          'Pakistan',
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.75),
+                            fontSize: 10,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
         ),
       ),
+    );
+  }
 
- );
+  // ─── Fallback widget ──────────────────────────────────────────────────────
+  Widget _fallback(String name) {
+    return Container(
+      decoration: BoxDecoration(gradient: Constants.redGradient),
+      child: Center(
+        child: Text(
+          name.isNotEmpty ? name[0].toUpperCase() : '?',
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 52,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ─── Empty search state ───────────────────────────────────────────────────
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Constants.greyColor,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(Icons.search_off_rounded,
+                size: 40, color: Constants.greyTextColor),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            '"$_searchQuery" nahi mila',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: Colors.grey.shade700,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Koi aur city try karein',
+            style: TextStyle(
+              fontSize: 13,
+              color: Constants.greyTextColor,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ─── Build ────────────────────────────────────────────────────────────────
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Constants.greyColor,
+      body: CustomScrollView(
+        physics: const BouncingScrollPhysics(),
+        slivers: [
+          // ── SliverAppBar — collapsible header ─────────────────────
+          SliverAppBar(
+            expandedHeight: 150,
+            pinned: true,
+            elevation: 0,
+            backgroundColor: Constants.redColor,
+            iconTheme: const IconThemeData(color: Colors.white),
+            flexibleSpace: FlexibleSpaceBar(
+              collapseMode: CollapseMode.parallax,
+              background: Container(
+                decoration: BoxDecoration(
+                  gradient: Constants.redGradient,
+                 
+                ),
+                child: SafeArea(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Row(
+                                children: [
+                                  Image.asset(
+                                    Constants.appLogo,
+                                    width: 26,
+                                    height: 26,
+                                    color: Colors.white,
+                                    errorBuilder: (_, __, ___) =>
+                                        const Icon(Icons.map,
+                                            color: Colors.white, size: 26),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  const Text(
+                                    'Discover Cities',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.w800,
+                                      letterSpacing: -0.5,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              
+                              Padding(
+                                padding: const EdgeInsets.only(left: 36.0),
+                                child: Text(
+                                  'Search bestest for Pakistan',
+                                  
+                                  style: TextStyle(
+                                    color: Colors.white.withOpacity(0.75),
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                            ],
+                          ),
+                        ),
+                        // City count badge
+                        if (_allCities.isNotEmpty)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.18),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                  color: Colors.white.withOpacity(0.3)),
+                            ),
+                            child: Text(
+                              '${_allCities.length} Cities',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+             
+              titlePadding: const EdgeInsets.only(left: 56, bottom: 14),
+            ),
+          ),
+
+          // ── Search bar ─────────────────────────────────────────────
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Constants.whiteColor,
+                  borderRadius:
+                      BorderRadius.circular(Constants.buttonBorderRadius + 4),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.07),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: TextField(
+                  controller: _searchController,
+                  focusNode: _searchFocus,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: Color(0xFF1A1A1A),
+                  ),
+                  decoration: InputDecoration(
+                    hintText: 'City search karein...',
+                    hintStyle: TextStyle(
+                      color: Constants.greyTextColor,
+                      fontSize: 14,
+                    ),
+                    prefixIcon: Padding(
+                      padding: const EdgeInsets.only(left: 14, right: 8),
+                      child: Icon(
+                        Icons.search_rounded,
+                        color: Constants.redColor,
+                        size: 22,
+                      ),
+                    ),
+                    prefixIconConstraints: const BoxConstraints(minWidth: 50),
+                    suffixIcon: _searchQuery.isNotEmpty
+                        ? GestureDetector(
+                            onTap: _clearSearch,
+                            child: Padding(
+                              padding: const EdgeInsets.only(right: 12),
+                              child: Icon(
+                                Icons.close_rounded,
+                                color: Constants.greyTextColor,
+                                size: 20,
+                              ),
+                            ),
+                          )
+                        : null,
+                    suffixIconConstraints: const BoxConstraints(minWidth: 40),
+                    border: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(
+                      vertical: 2,
+                      horizontal: 4,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          // ── Result count ───────────────────────────────────────────
+          if (!_isLoading)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 14, 20, 2),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 3,
+                      height: 14,
+                      decoration: BoxDecoration(
+                        gradient: Constants.redGradient,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      _searchQuery.isEmpty
+                          ? 'All cities — ${_allCities.length} available'
+                          : '${_filteredCities.length} results found',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Constants.greyTextColor,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+          // ── Grid / Loading / Empty ─────────────────────────────────
+          if (_isLoading)
+            SliverFillRemaining(
+              child: Center(
+                child: CircularProgressIndicator(
+                  color: Constants.redColor,
+                  strokeWidth: 2.5,
+                ),
+              ),
+            )
+          else if (_filteredCities.isEmpty)
+            SliverFillRemaining(child: _buildEmptyState())
+          else
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 30),
+              sliver: SliverGrid(
+                delegate: SliverChildBuilderDelegate(
+                  (_, i) => _buildCityCard(_filteredCities[i]),
+                  childCount: _filteredCities.length,
+                ),
+                gridDelegate:
+                    const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 14,
+                  mainAxisSpacing: 14,
+                  childAspectRatio: 0.82,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
   }
 }

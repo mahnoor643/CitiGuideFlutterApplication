@@ -1,12 +1,16 @@
 import 'package:citi_guide/Constants/constants.dart';
 import 'package:citi_guide/screens/Admin/admin.dart';
+import 'package:citi_guide/screens/Admin/fetchData.dart';
+import 'package:citi_guide/screens/Cities/SelectCity.dart';
 import 'package:citi_guide/screens/Dashboard/dashboard.dart';
 import 'package:citi_guide/screens/SignUpPages/signUp2.dart';
 import 'package:citi_guide/screens/forgotPassword/forgotPwd.dart';
 import 'package:citi_guide/widgets/blueButton.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -16,145 +20,322 @@ class Login extends StatefulWidget {
 }
 
 class _LoginState extends State<Login> {
-  // Validation
   final _formKey = GlobalKey<FormState>();
+  bool _isLoading = false;
+  bool _isObscured = true;
 
-  // Email validation
-  String? validateEmail(String? email) {
-    RegExp emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-    final isEmailValid = emailRegex.hasMatch(email ?? '');
-    if (!isEmailValid) {
-      return 'Please enter a valid email';
-    }
-    return null;
-  }
-
-  // Password validation
-  String? validatePwd(String? pwd) {
-    RegExp passwordRegex = RegExp(r'^(?=.*[a-zA-Z])(?=.*\d).{8,}$');
-    final isPwdValid = passwordRegex.hasMatch(pwd ?? '');
-    if (!isPwdValid) {
-      return 'Password must be of 8 characters\n including digits and alphabets';
-    }
-    return null;
-  }
-
-  // Error message
-  void showErrorMessage(String errorToShow) {
-    final snackBar = SnackBar(
-      content: Text(errorToShow),
-      backgroundColor: Constants.OrangeColor,
-    );
-    ScaffoldMessenger.of(context).showSnackBar(snackBar);
-  }
-
-  // TextField Controllers
-  final TextEditingController username = TextEditingController();
   final TextEditingController email = TextEditingController();
   final TextEditingController pwd = TextEditingController();
 
-  // Login Function
-  void loginbtn(String email, String pwd) async {
-    try {
-      // Firebase Auth
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: email,
-        password: pwd,
+  final GoogleSignIn _googleSignIn = GoogleSignIn(scopes: ['email']);
+
+  @override
+  void dispose() {
+    email.dispose();
+    pwd.dispose();
+    super.dispose();
+  }
+
+  // ── Firestore user sync with first-time check ────────────────
+  Future<void> _handleFirestoreUserSync(User user) async {
+    final userDoc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .get();
+
+    // ✅ Check if first-time login
+    final bool isFirstTimeLogin = !userDoc.exists;
+
+    if (isFirstTimeLogin) {
+      // Create new user document for first-time login
+      await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+        'email': user.email ?? '',
+        'id': user.uid,
+        'username': user.displayName ?? 'User',
+        'role': 'user',
+        'profile': user.photoURL ?? 'assets/images/profileDefaultImg.jpg',
+        'city': '', // Empty for first-time
+        'interests': [], // Empty for first-time
+      });
+    }
+
+    await _navigateBasedOnLogin(user.uid, isFirstTimeLogin);
+  }
+
+  // ── Navigation based on login type (first-time or returning) ──
+  Future<void> _navigateBasedOnLogin(String uid, bool isFirstTimeLogin) async {
+    final userDoc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .get();
+
+    if (!mounted) return;
+
+    if (!userDoc.exists) {
+      showErrorMessage('User data not found!');
+      return;
+    }
+
+    final userData = userDoc.data() as Map<String, dynamic>;
+
+    final String emailVal = userData['email'] ?? '';
+    final String usernameVal = userData['username'] ?? '';
+    final String idVal = userData['id'] ?? uid;
+    final String roleVal = userData['role'] ?? 'user';
+    final String profileVal =
+        userData['profile'] ?? 'assets/images/profileDefaultImg.jpg';
+    final String cityVal = userData['city'] ?? '';
+    final List<dynamic> interestsVal = userData['interests'] ?? [];
+
+    debugPrint('✅ Login Check:');
+    debugPrint('   isFirstTimeLogin: $isFirstTimeLogin');
+    debugPrint('   roleVal: $roleVal');
+    debugPrint('   cityVal: "$cityVal"');
+    debugPrint('   interestsVal: $interestsVal');
+
+    // ✅ LOGIC: Check user role first, then check if first-time login
+    if (roleVal == 'admin') {
+      debugPrint('🔴 Navigating to Admin');
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(
+          builder: (_) => AdminScreen(
+            userId: idVal,
+            email: emailVal,
+            username: usernameVal,
+            profile: profileVal,
+          ),
+        ),
+        (route) => false,
       );
-
-      // Fetch user data from Firestore
-      CollectionReference users =
-          FirebaseFirestore.instance.collection('users');
-      QuerySnapshot querySnapshot =
-          await users.where('email', isEqualTo: email).get();
-
-      if (querySnapshot.docs.isNotEmpty) {
-        var userData =
-            querySnapshot.docs.first.data() as Map<String, dynamic>;
-
-        String emailFromFirestore    = userData['email']    ?? '';
-        String usernameFromFirestore = userData['username'] ?? '';
-        String idFromFirestore       = userData['id']       ?? '';
-        String roleFromFirestore     = userData['role']     ?? 'user'; // ✅ role check
-
-        // Profile image — try Firebase Storage, fallback to empty
-        // Storage try/catch ki jagah ye likho:
-String profileUrlFromFirestore = userData['profile'] 
-    ?? 'assets/images/profileDefaultImg.jpg'; // ✅
-        try {
-          // agar aap profile image storage mein rakh rahi hain
-          // to ye uncomment karo aur firebase_storage import karo
-          // final refImg = FirebaseStorage.instance
-          //     .ref()
-          //     .child('profile/${userData['id']}');
-          // profileUrlFromFirestore = await refImg.getDownloadURL();
-        } catch (e) {
-          print('Profile image not found: $e');
-        }
-
-        // ✅ Role ke hisaab se navigate karo
-        if (roleFromFirestore == 'admin') {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => AdminScreen(
-                userId:   idFromFirestore,
-                email:    emailFromFirestore,
-                username: usernameFromFirestore,
-                profile:  profileUrlFromFirestore,
-              ),
+    } else {
+      // Regular user
+      if (isFirstTimeLogin) {
+        // ✅ First time: Go to SelectCity (need to select city and interests)
+        debugPrint('🟡 First-time user → SelectCity');
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(
+            builder: (_) => SelectCity(
+              userId: idVal,
+              email: emailVal,
+              username: usernameVal,
+              profile: profileVal,
             ),
-          );
-        } else {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => Dashboard(
-                userId:   idFromFirestore,
-                email:    emailFromFirestore,
-                username: usernameFromFirestore,
-                profile:  profileUrlFromFirestore,
-              ),
+          ),
+          (route) => false,
+        );
+      } else if (cityVal.isNotEmpty && interestsVal.isNotEmpty) {
+        // ✅ Returning user with complete profile: Go to Dashboard
+        debugPrint('🟢 Returning user with profile → Dashboard');
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(
+            builder: (_) => Dashboard(
+              userId: idVal,
+              email: emailVal,
+              username: usernameVal,
+              profile: profileVal,
             ),
-          );
-        }
-
-        print('Email: $emailFromFirestore');
-        print('Username: $usernameFromFirestore');
-        print('Role: $roleFromFirestore');
-
+          ),
+          (route) => false,
+        );
       } else {
-        showErrorMessage('No user found!!');
-        print('No matching documents');
+        // ✅ Returning user but missing city/interests: Go to SelectCity
+        debugPrint('🟡 Returning user incomplete profile → SelectCity');
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(
+            builder: (_) => SelectCity(
+              userId: idVal,
+              email: emailVal,
+              username: usernameVal,
+              profile: profileVal,
+            ),
+          ),
+          (route) => false,
+        );
       }
-    } on FirebaseAuthException catch (e) {
-      String errorToShow;
-      switch (e.code) {
-        case 'user-not-found':
-          errorToShow = 'No user found for that email.';
-          break;
-        case 'wrong-password':
-          errorToShow = 'Wrong password provided.';
-          break;
-        case 'invalid-email':
-          errorToShow = 'Email address is not valid.';
-          break;
-        case 'invalid-credential':
-          errorToShow = 'Invalid email or password.';
-          break;
-        default:
-          errorToShow = 'User not found!!';
-          print("Firebase Error: ${e.message}");
-      }
-      showErrorMessage(errorToShow);
-    } catch (e) {
-      print("Error: $e");
-      showErrorMessage('User not found!!');
     }
   }
 
-  bool _isObscured = true;
+  // ── Navigation for email login ──
+  Future<void> _navigateBasedOnRole(String uid) async {
+    final userDoc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .get();
 
+    if (!mounted) return;
+
+    if (!userDoc.exists) {
+      showErrorMessage('User data not found!');
+      return;
+    }
+
+    final userData = userDoc.data() as Map<String, dynamic>;
+
+    final String emailVal = userData['email'] ?? '';
+    final String usernameVal = userData['username'] ?? '';
+    final String idVal = userData['id'] ?? uid;
+    final String roleVal = userData['role'] ?? 'user';
+    final String profileVal =
+        userData['profile'] ?? 'assets/images/profileDefaultImg.jpg';
+    final String cityVal = userData['city'] ?? '';
+    final List<dynamic> interestsVal = userData['interests'] ?? [];
+
+    if (roleVal == 'admin') {
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(
+          builder: (_) => FetchData(
+            userId: idVal,
+            email: emailVal,
+            username: usernameVal,
+            profile: profileVal,
+          ),
+        ),
+        (route) => false,
+      );
+    } else {
+      // ✅ For email login: Check if city and interests are set
+      if (cityVal.isNotEmpty && interestsVal.isNotEmpty) {
+        // Has completed profile: Go to Dashboard
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(
+            builder: (_) => Dashboard(
+              userId: idVal,
+              email: emailVal,
+              username: usernameVal,
+              profile: profileVal,
+            ),
+          ),
+          (route) => false,
+        );
+      } else {
+        // Missing city/interests: Go to SelectCity
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(
+            builder: (_) => SelectCity(
+              userId: idVal,
+              email: emailVal,
+              username: usernameVal,
+              profile: profileVal,
+            ),
+          ),
+          (route) => false,
+        );
+      }
+    }
+  }
+
+  // ── Validators ─────────────────────────────────────────────────
+  String? validateEmail(String? value) {
+    final regex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    if (!regex.hasMatch(value ?? '')) return 'Please enter a valid email';
+    return null;
+  }
+
+  String? validatePwd(String? value) {
+    final regex = RegExp(r'^(?=.*[a-zA-Z])(?=.*\d).{8,}$');
+    if (!regex.hasMatch(value ?? '')) {
+      return 'Password must be 8+ characters\nincluding digits and alphabets';
+    }
+    return null;
+  }
+
+  void showErrorMessage(String msg) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(msg),
+        backgroundColor: Constants.OrangeColor,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        margin: const EdgeInsets.all(16),
+      ),
+    );
+  }
+
+  // ── Email Login ────────────────────────────────────────────────
+  Future<void> _loginWithEmail() async {
+    if (!_formKey.currentState!.validate()) return;
+    setState(() => _isLoading = true);
+    try {
+      final cred = await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: email.text.trim(),
+        password: pwd.text.trim(),
+      );
+      await _navigateBasedOnRole(cred.user!.uid);
+    } on FirebaseAuthException catch (e) {
+      final msg = switch (e.code) {
+        'user-not-found' => 'No user found for that email.',
+        'wrong-password' => 'Wrong password provided.',
+        'invalid-email' => 'Email address is not valid.',
+        'invalid-credential' => 'Invalid email or password.',
+        _ => 'Login failed. Please try again.',
+      };
+      showErrorMessage(msg);
+      debugPrint("FirebaseAuthException: ${e.message}");
+    } catch (e) {
+      showErrorMessage('Something went wrong. Try again.');
+      debugPrint("Login error: $e");
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  // ── Google Sign-In ─────────────────────────────────────────────
+  Future<void> _handleGoogleSignIn() async {
+    setState(() => _isLoading = true);
+    try {
+      if (kIsWeb) {
+        // ✅ WEB: Firebase ka built-in Google popup
+        final GoogleAuthProvider googleProvider = GoogleAuthProvider();
+        googleProvider.addScope('email');
+
+        final UserCredential userCredential =
+            await FirebaseAuth.instance.signInWithPopup(googleProvider);
+
+        if (userCredential.user != null) {
+          await _handleFirestoreUserSync(userCredential.user!);
+        }
+      } else {
+        // ✅ MOBILE: google_sign_in package
+        final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+
+        if (googleUser == null) {
+          setState(() => _isLoading = false);
+          return;
+        }
+
+        final GoogleSignInAuthentication googleAuth =
+            await googleUser.authentication;
+
+        final AuthCredential credential = GoogleAuthProvider.credential(
+          accessToken: googleAuth.accessToken,
+          idToken: googleAuth.idToken,
+        );
+
+        final UserCredential userCredential =
+            await FirebaseAuth.instance.signInWithCredential(credential);
+
+        await _handleFirestoreUserSync(userCredential.user!);
+      }
+    } on FirebaseAuthException catch (e) {
+      debugPrint('Google Sign-In Firebase error: ${e.code} — ${e.message}');
+      if (mounted) showErrorMessage('Google Sign-In failed: ${e.message}');
+    } catch (e) {
+      debugPrint('Google Sign-In error: $e');
+      if (mounted) showErrorMessage('Google Sign-In failed. Try again.');
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  // ── Build ──────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -166,15 +347,15 @@ String profileUrlFromFirestore = userData['profile']
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
+              // Logo
               Row(
                 children: [
                   const Spacer(),
-                  Image.asset(
-                    Constants.appLogo,
-                    height: 40,
-                  ),
+                  Image.asset(Constants.appLogo, height: 40),
                 ],
               ),
+
+              // Title
               Container(
                 margin: const EdgeInsets.symmetric(vertical: 20),
                 alignment: Alignment.centerLeft,
@@ -189,6 +370,7 @@ String profileUrlFromFirestore = userData['profile']
                 ),
               ),
 
+              // Email Label
               Container(
                 margin: const EdgeInsets.only(bottom: 10),
                 alignment: Alignment.centerLeft,
@@ -203,7 +385,7 @@ String profileUrlFromFirestore = userData['profile']
                 ),
               ),
 
-              // Email TextField
+              // Email Field
               TextFormField(
                 cursorColor: Constants.greyTextColor,
                 controller: email,
@@ -218,8 +400,7 @@ String profileUrlFromFirestore = userData['profile']
                   fillColor: Constants.greyColor,
                   hintText: '   Your email',
                   border: OutlineInputBorder(
-                    borderRadius:
-                        BorderRadius.circular(Constants.buttonBorderRadius),
+                    borderRadius: BorderRadius.circular(Constants.buttonBorderRadius),
                     borderSide: BorderSide(color: Constants.greyColor),
                   ),
                   contentPadding: EdgeInsets.symmetric(
@@ -245,11 +426,11 @@ String profileUrlFromFirestore = userData['profile']
                 ),
               ),
 
-              // Password TextField
+              // Password Field
               TextFormField(
                 cursorColor: Colors.grey,
                 controller: pwd,
-                keyboardType: TextInputType.text,
+                obscureText: _isObscured,
                 validator: validatePwd,
                 autovalidateMode: AutovalidateMode.onUserInteraction,
                 decoration: InputDecoration(
@@ -263,22 +444,18 @@ String profileUrlFromFirestore = userData['profile']
                     borderRadius: BorderRadius.circular(10),
                     borderSide: const BorderSide(color: Colors.grey),
                   ),
-                  contentPadding: const EdgeInsets.symmetric(
-                      vertical: 15, horizontal: 15),
+                  contentPadding:
+                      const EdgeInsets.symmetric(vertical: 15, horizontal: 15),
                   suffixIcon: IconButton(
                     icon: Icon(
                       _isObscured ? Icons.visibility_off : Icons.visibility,
                       color: Colors.grey,
                     ),
-                    onPressed: () {
-                      setState(() {
-                        _isObscured = !_isObscured;
-                      });
-                    },
+                    onPressed: () =>
+                        setState(() => _isObscured = !_isObscured),
                   ),
                 ),
                 style: const TextStyle(color: Colors.grey),
-                obscureText: _isObscured,
               ),
 
               // Forgot Password
@@ -288,6 +465,11 @@ String profileUrlFromFirestore = userData['profile']
                   children: [
                     const Spacer(),
                     GestureDetector(
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const ForgotPwdScreen()),
+                      ),
                       child: const Text(
                         "Forgot password?",
                         style: TextStyle(
@@ -297,14 +479,6 @@ String profileUrlFromFirestore = userData['profile']
                           fontWeight: FontWeight.w200,
                         ),
                       ),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const ForgotPwdScreen(),
-                          ),
-                        );
-                      },
                     ),
                   ],
                 ),
@@ -315,138 +489,89 @@ String profileUrlFromFirestore = userData['profile']
               BlueButton(
                 topBottomPadding: Constants.searchBarButtonHeight,
                 leftRightPadding: 10,
-                widget_: Text(
-                  "Log in",
-                  style: TextStyle(
-                    color: Constants.greyColor,
-                    fontFamily: 'myfonts',
-                    fontSize: 12,
-                    fontWeight: FontWeight.w200,
-                  ),
-                ),
-                OntapFunction: () async {
-                  if (_formKey.currentState!.validate()) {
-                    loginbtn(email.text, pwd.text);
-                  }
-                },
+                widget_: _isLoading
+                    ? const SizedBox(
+                        height: 18,
+                        width: 18,
+                        child: CircularProgressIndicator(
+                            color: Colors.white, strokeWidth: 2),
+                      )
+                    : Text(
+                        "Log in",
+                        style: TextStyle(
+                          color: Constants.greyColor,
+                          fontFamily: 'myfonts',
+                          fontSize: 12,
+                          fontWeight: FontWeight.w200,
+                        ),
+                      ),
+                OntapFunction: _isLoading ? () {} : _loginWithEmail,
                 topBottomMargin: 0,
                 leftRightMargin: 0,
               ),
               const SizedBox(height: 20),
 
-              // Or Login with
-              Container(
-                alignment: Alignment.bottomCenter,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      height: 1,
-                      width: 60,
-                      color: Colors.black,
-                      margin: const EdgeInsets.symmetric(horizontal: 20),
-                    ),
-                    const Text(
-                      "Or Login with",
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontFamily: 'myfonts',
-                        fontSize: 12,
-                        fontWeight: FontWeight.w100,
-                      ),
-                    ),
-                    Container(
-                      height: 1,
-                      width: 60,
-                      color: Colors.black,
-                      margin: const EdgeInsets.symmetric(horizontal: 20),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
-
-              // Social Login Buttons
+              // Divider
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  InkWell(
-                    onTap: () {
-                      print("navigation btn");
-                    },
-                    child: Container(
-                      margin: const EdgeInsets.symmetric(
-                          vertical: 10, horizontal: 10),
-                      decoration: BoxDecoration(
-                        color: Constants.greyColor,
-                        borderRadius: BorderRadius.circular(
-                            Constants.buttonBorderRadius),
-                        border: Border.all(color: Constants.greyTextColor),
-                      ),
-                      child: Center(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 10, horizontal: 20),
-                          child: Image.asset(
-                            'assets/images/facebook.png',
-                            height: 20,
-                          ),
-                        ),
-                      ),
+                  Container(
+                      height: 1,
+                      width: 60,
+                      color: Colors.black,
+                      margin: const EdgeInsets.symmetric(horizontal: 20)),
+                  const Text(
+                    "Or Login with",
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontFamily: 'myfonts',
+                      fontSize: 12,
+                      fontWeight: FontWeight.w100,
                     ),
                   ),
-                  InkWell(
-                    onTap: () {
-                      print("navigation btn");
-                    },
-                    child: Container(
-                      margin: const EdgeInsets.symmetric(
-                          vertical: 10, horizontal: 10),
-                      decoration: BoxDecoration(
-                        color: Constants.greyColor,
-                        borderRadius: BorderRadius.circular(
-                            Constants.buttonBorderRadius),
-                        border: Border.all(color: Constants.greyTextColor),
-                      ),
-                      child: const Center(
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(
-                              vertical: 10, horizontal: 20),
-                          child: Icon(Icons.apple, size: 20),
-                        ),
-                      ),
-                    ),
+                  Container(
+                      height: 1,
+                      width: 60,
+                      color: Colors.black,
+                      margin: const EdgeInsets.symmetric(horizontal: 20)),
+                ],
+              ),
+              const SizedBox(height: 20),
+
+              // Social Buttons Row
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Facebook
+                  _socialIconButton(
+                    onTap: () => debugPrint("Facebook btn"),
+                    child: Image.asset('assets/images/facebook.png', height: 20),
                   ),
-                  InkWell(
-                    onTap: () {
-                      print("navigation btn");
-                    },
-                    child: Container(
-                      margin: const EdgeInsets.symmetric(
-                          vertical: 10, horizontal: 10),
-                      decoration: BoxDecoration(
-                        color: Constants.greyColor,
-                        borderRadius: BorderRadius.circular(
-                            Constants.buttonBorderRadius),
-                        border: Border.all(color: Constants.greyTextColor),
-                      ),
-                      child: Center(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 10, horizontal: 20),
-                          child: Image.asset(
-                            'assets/images/googleIcon.png',
+
+                  // Apple
+                  _socialIconButton(
+                    onTap: () => debugPrint("Apple btn"),
+                    child: const Icon(Icons.apple, size: 20),
+                  ),
+
+                  // Google
+                  _socialIconButton(
+                    onTap: _isLoading ? null : _handleGoogleSignIn,
+                    child: _isLoading
+                        ? const SizedBox(
                             height: 20,
-                          ),
-                        ),
-                      ),
-                    ),
+                            width: 20,
+                            child: CircularProgressIndicator(
+                                strokeWidth: 2, color: Colors.grey),
+                          )
+                        : Image.asset('assets/images/googleIcon.png', height: 20),
                   ),
                 ],
               ),
 
-              // Bottom Sign up
               const Spacer(),
+
+              // Sign Up
               Container(
                 margin: const EdgeInsets.only(top: 10, bottom: 20),
                 child: Row(
@@ -455,21 +580,15 @@ String profileUrlFromFirestore = userData['profile']
                     const Text(
                       "Don't have an account?",
                       style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w200,
-                      ),
-                      textAlign: TextAlign.center,
+                          color: Colors.black,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w200),
                     ),
                     GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const SignUp2(),
-                          ),
-                        );
-                      },
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const SignUp2()),
+                      ),
                       child: const Text(
                         " Sign up",
                         style: TextStyle(
@@ -478,7 +597,6 @@ String profileUrlFromFirestore = userData['profile']
                           fontWeight: FontWeight.w700,
                           decoration: TextDecoration.underline,
                         ),
-                        textAlign: TextAlign.center,
                       ),
                     ),
                   ],
@@ -486,6 +604,24 @@ String profileUrlFromFirestore = userData['profile']
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _socialIconButton({required Widget child, VoidCallback? onTap}) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+        decoration: BoxDecoration(
+          color: Constants.greyColor,
+          borderRadius: BorderRadius.circular(Constants.buttonBorderRadius),
+          border: Border.all(color: Constants.greyTextColor),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+          child: child,
         ),
       ),
     );

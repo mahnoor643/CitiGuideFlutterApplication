@@ -1,6 +1,7 @@
 import 'package:citi_guide/Constants/constants.dart';
 import 'package:citi_guide/screens/Login/login.dart';
 import 'package:citi_guide/widgets/blueButton.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class ForgotPwdScreen extends StatefulWidget {
@@ -11,9 +12,52 @@ class ForgotPwdScreen extends StatefulWidget {
 }
 
 class _ForgotPwdScreenState extends State<ForgotPwdScreen> {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  // Forgot Password Function
+  Future<void> sendPasswordReset(BuildContext context, String email) async {
+    try {
+      if (email.trim().isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Kindly enter your email address first.")),
+        );
+        return;
+      }
+
+      // Firebase ka built-in function
+      await _auth.sendPasswordResetEmail(email: email.trim());
+
+      // Success Message
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Password reset link sent! Check your email inbox/spam."),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } on FirebaseAuthException catch (e) {
+      // Error Message
+      String errorMessage = "An error occurred. Please try again.";
+      if (e.code == 'user-not-found') {
+        errorMessage = "No user found with this email.";
+      } else if (e.code == 'invalid-email') {
+        errorMessage = "The email address is not valid.";
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(errorMessage),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } catch (e) {
+      print(e.toString());
+    }
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         actions: [
           Container(

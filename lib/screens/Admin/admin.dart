@@ -1,6 +1,11 @@
 import 'package:citi_guide/Constants/constants.dart';
-import 'package:citi_guide/widgets/blueButton.dart';
+import 'package:citi_guide/screens/Admin/addDestination.dart';
+import 'package:citi_guide/screens/Admin/fetchData.dart';
+import 'package:citi_guide/screens/Cities/cities.dart';
+import 'package:citi_guide/screens/Login/login.dart';
+import 'package:citi_guide/widgets/adminDrawer.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class AdminScreen extends StatefulWidget {
@@ -8,6 +13,7 @@ class AdminScreen extends StatefulWidget {
   final String email;
   final String username;
   final String profile;
+
   const AdminScreen({
     super.key,
     required this.userId,
@@ -21,385 +27,668 @@ class AdminScreen extends StatefulWidget {
 }
 
 class _AdminScreenState extends State<AdminScreen> {
-  // Success/Error message
-  void successMessage(String msg) {
-    final snackBar = SnackBar(
-      content: Text(msg),
-      backgroundColor: Constants.OrangeColor,
-    );
-    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  String get _greeting {
+    final hour = DateTime.now().hour;
+    if (hour < 12) return 'Good Morning';
+    if (hour < 17) return 'Good Afternoon';
+    return 'Good Evening';
   }
 
-  // Add Details to Firestore
-  Future<void> addDetails(
-    String city,
-    String location,
-    String timings,
-    String distance,
-    String description,
-    String contact,
-    String locationName,
-  ) async {
-    try {
-      if (imageNameController.text.trim().isEmpty) {
-        successMessage('Please enter image name!');
-        return;
-      }
-
-      await FirebaseFirestore.instance
-          .collection('destinationDetails')
-          .add({
-        'city': city,
-        'location': location,
-        'timings': timings,
-        'distance': distance,
-        'description': description,
-        'contact': contact,
-        'locationName': locationName,
-        'imagePath': 'assets/images/${imageNameController.text.trim()}', // ✅ asset path
-      });
-
-      successMessage('Data added successfully!');
-
-      // Clear all fields after success
-      cityController.clear();
-      locationNameController.clear();
-      locationController.clear();
-      timingsController.clear();
-      contactController.clear();
-      distanceController.clear();
-      imageNameController.clear();
-      descriptionController.clear();
-
-    } catch (error) {
-      print(error);
-      successMessage('Error occurred!!');
-    }
-  }
-
-  // Validation
-  final _formKey = GlobalKey<FormState>();
-
-  // Location Validation
-  String? validateLocation(String? location) {
-    RegExp locationRegex = RegExp(r'^-?\d+(\.\d+)?,\s*-?\d+(\.\d+)?$');
-    final isValid = locationRegex.hasMatch(location ?? '');
-    if (!isValid) {
-      return 'Add Longitude and Latitude';
-    }
-    return null;
-  }
-
-  // Contact Number Validation
-  String? validateContact(String? contact) {
-    RegExp contactRegex = RegExp(r'^\+92[0-9]{10}$');
-    final isValid = contactRegex.hasMatch(contact ?? '');
-    if (!isValid) {
-      return 'Add number starting with +92';
-    }
-    return null;
-  }
-
-  // TextField Controllers
-  final TextEditingController cityController = TextEditingController();
-  final TextEditingController locationController = TextEditingController();
-  final TextEditingController timingsController = TextEditingController();
-  final TextEditingController distanceController = TextEditingController();
-  final TextEditingController descriptionController = TextEditingController();
-  final TextEditingController contactController = TextEditingController();
-  final TextEditingController locationNameController = TextEditingController(); // ✅ fixed
-  final TextEditingController imageNameController = TextEditingController();   // ✅ new
-
-  // Helper: InputDecoration
-  InputDecoration buildInputDecoration(String hint) {
-    return InputDecoration(
-      isDense: true,
-      hintText: hint,
-      border: OutlineInputBorder(
-        borderSide: BorderSide(color: Constants.greyTextColor),
-        borderRadius: BorderRadius.circular(30.0),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderSide: BorderSide(color: Constants.greyTextColor),
-        borderRadius: BorderRadius.circular(30.0),
-      ),
-      errorBorder: OutlineInputBorder(
-        borderSide: const BorderSide(color: Colors.red),
-        borderRadius: BorderRadius.circular(30.0),
-      ),
-      focusedErrorBorder: OutlineInputBorder(
-        borderSide: const BorderSide(color: Colors.red),
-        borderRadius: BorderRadius.circular(30.0),
+  void _showLogoutDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Logout?',
+            style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
+        content: const Text('Are you sure you want to logout?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Cancel', style: TextStyle(color: Constants.greyTextColor)),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              await FirebaseAuth.instance.signOut();
+              if (!mounted) return;
+              Navigator.pushReplacement(
+                  context, MaterialPageRoute(builder: (_) => const Login()));
+            },
+            child: Text('Logout',
+                style: TextStyle(
+                    color: Constants.OrangeColor, fontWeight: FontWeight.w700)),
+          ),
+        ],
       ),
     );
   }
 
-  // Helper: Label
-  Widget buildLabel(String label) {
-    return Row(
-      children: [
-        Text(
-          label,
-          style: TextStyle(fontSize: 13, color: Constants.greyTextColor),
+  // ── Stat Card ────────────────────────────────────────────────────
+  Widget _statCard({
+    required String label,
+    required IconData icon,
+    required Color color,
+    required Stream<QuerySnapshot> stream,
+  }) {
+    return Expanded(
+      child: StreamBuilder<QuerySnapshot>(
+        stream: stream,
+        builder: (context, snap) {
+          final count = snap.hasData ? snap.data!.docs.length : 0;
+          return Container(
+            padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: color.withOpacity(0.12),
+                  blurRadius: 14,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+              border: Border.all(color: color.withOpacity(0.15)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(icon, color: color, size: 18),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  snap.connectionState == ConnectionState.waiting ? '—' : '$count',
+                  style: TextStyle(
+                      fontSize: 24, fontWeight: FontWeight.w800, color: color),
+                ),
+                const SizedBox(height: 2),
+                Text(label,
+                    style: TextStyle(
+                        fontSize: 10,
+                        color: Constants.greyTextColor,
+                        fontWeight: FontWeight.w500)),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  // ── Quick Action Tile ────────────────────────────────────────────
+  Widget _actionTile({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.06),
+              blurRadius: 12,
+              offset: const Offset(0, 3),
+            ),
+          ],
         ),
-      ],
+        child: Row(
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Icon(icon, color: color, size: 22),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title,
+                      style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.black87)),
+                  const SizedBox(height: 2),
+                  Text(subtitle,
+                      style: TextStyle(
+                          fontSize: 12, color: Constants.greyTextColor)),
+                ],
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(Icons.arrow_forward_ios, size: 12, color: color),
+            ),
+          ],
+        ),
+      ),
     );
   }
+
+  // ── Recent Destination Item ───────────────────────────────────────
+  Widget _recentItem(QueryDocumentSnapshot doc) {
+    final data      = doc.data() as Map<String, dynamic>;
+    final imagePath = data['imagePath'] ?? 'assets/images/PC.png';
+    final name      = data['locationName'] ?? 'Unknown';
+    final city      = data['city'] ?? '';
+    final category  = data['category'] ?? '';
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: imagePath.startsWith('http')
+                ? Image.network(imagePath,
+                    width: 52, height: 52, fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => _imgFallback())
+                : Image.asset(imagePath,
+                    width: 52, height: 52, fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => _imgFallback()),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(name,
+                    style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.black87),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis),
+                const SizedBox(height: 3),
+                Row(
+                  children: [
+                    Icon(Icons.location_on,
+                        size: 11, color: Constants.OrangeColor),
+                    const SizedBox(width: 3),
+                    Text(city,
+                        style: TextStyle(
+                            fontSize: 11, color: Constants.greyTextColor)),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          if (category.isNotEmpty)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: Constants.OrangeColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(category,
+                  style: TextStyle(
+                      fontSize: 9,
+                      color: Constants.OrangeColor,
+                      fontWeight: FontWeight.w600)),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _imgFallback() => Container(
+        width: 52,
+        height: 52,
+        decoration: BoxDecoration(
+            color: Colors.grey.shade100,
+            borderRadius: BorderRadius.circular(10)),
+        child: Icon(Icons.image_not_supported,
+            color: Colors.grey.shade400, size: 20),
+      );
 
   @override
   Widget build(BuildContext context) {
+    final double sw = MediaQuery.of(context).size.width;
+
     return Scaffold(
-      appBar: AppBar(),
-      body: Column(
-        children: [
-          // Profile design
-          Stack(
-            children: [
-              Container(
-                width: double.infinity,
-                child: Image.asset(
-                  'assets/images/profileScreenAbove.png',
-                  fit: BoxFit.cover,
-                ),
-              ),
-              Center(
-                child: Container(
-                  padding: const EdgeInsets.only(top: 80),
-                  child: ClipOval(
-                    child: CircleAvatar(
-                      radius: 90,
-                      backgroundColor: Colors.transparent,
-                      backgroundImage:
-                          const AssetImage('assets/images/profile2.png'),
-                      child: Container(
+      key: _scaffoldKey,
+      backgroundColor: const Color(0xFFF7F8FA),
+
+      appBar: AppBar(
+        backgroundColor: Constants.redColor,
+        elevation: 0,
+        toolbarHeight: 56,
+        leading: IconButton(
+          icon: const Icon(Icons.menu, color: Colors.white, size: 26),
+          onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+        ),
+        title: const Text('Admin Panel',
+            style: TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w700)),
+        centerTitle: true,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: GestureDetector(
+              onTap: _showLogoutDialog,
+              child: const Icon(Icons.logout, color: Colors.white, size: 22),
+            ),
+          ),
+        ],
+      ),
+
+      // ── Drawer ──────────────────────────────────────────────────
+      drawer: Drawer(
+        backgroundColor: Colors.white,
+        child: Column(
+          children: [
+            Container(
+              width: double.infinity,
+              decoration: BoxDecoration(gradient: Constants.redGradient),
+              child: SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(3),
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          border: Border.all(
-                            color: Constants.whiteColor,
-                            width: 4.0,
-                          ),
+                          border: Border.all(color: Colors.grey, width: 2.5),
+                        ),
+                        child: CircleAvatar(
+                          radius: 32,
+                          backgroundImage: widget.profile.startsWith('http')
+                              ? NetworkImage(widget.profile)
+                              : AssetImage(widget.profile) as ImageProvider,
+                          backgroundColor: Colors.white,
                         ),
                       ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-
-          // Form
-          Expanded(
-            child: Container(
-              margin: const EdgeInsets.only(top: 5, left: 20, right: 20),
-              child: SingleChildScrollView(
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      // Admin Name
-                      const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            "Admin",
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 20,
-                              fontWeight: FontWeight.w900,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 5),
-
-                      // Admin Email
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            widget.email,
-                            style: TextStyle(
-                              color: Constants.greyTextColor,
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 20),
-
-                      // City Name
-                      buildLabel("Add A New City"),
-                      const SizedBox(height: 5),
-                      TextFormField(
-                        validator: (val) =>
-                            val!.length < 3 ? 'Invalid City Name' : null,
-                        autovalidateMode: AutovalidateMode.onUserInteraction,
-                        cursorColor: Constants.greyTextColor,
-                        controller: cityController,
-                        decoration: buildInputDecoration('Enter City Name'),
-                        style: TextStyle(color: Constants.greyTextColor),
-                      ),
+                      const SizedBox(height: 12),
+                      Text(widget.username,
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700)),
+                      const SizedBox(height: 2),
+                      Text(widget.email,
+                          style: TextStyle(
+                              color: Colors.white.withOpacity(0.85),
+                              fontSize: 12)),
                       const SizedBox(height: 10),
-
-                      // Location Name
-                      buildLabel("Name for Location"),
-                      const SizedBox(height: 5),
-                      TextFormField(
-                        validator: (val) =>
-                            val!.length < 3 ? 'Invalid' : null,
-                        autovalidateMode: AutovalidateMode.onUserInteraction,
-                        cursorColor: Constants.greyTextColor,
-                        controller: locationNameController, // ✅ fixed
-                        decoration:
-                            buildInputDecoration('Enter Your Destination'),
-                        style: TextStyle(color: Constants.greyTextColor),
-                      ),
-                      const SizedBox(height: 10),
-
-                      // Location Coordinates
-                      buildLabel("Add Location (Latitude, Longitude)"),
-                      const SizedBox(height: 5),
-                      TextFormField(
-                        cursorColor: Constants.greyTextColor,
-                        controller: locationController,
-                        validator: validateLocation,
-                        autovalidateMode: AutovalidateMode.onUserInteraction,
-                        decoration: buildInputDecoration(
-                            'e.g 24.8607, 67.0011'),
-                        style: TextStyle(color: Constants.greyTextColor),
-                      ),
-                      const SizedBox(height: 10),
-
-                      // Timings
-                      buildLabel("Add Opening Timings"),
-                      const SizedBox(height: 5),
-                      TextFormField(
-                        cursorColor: Constants.greyTextColor,
-                        controller: timingsController,
-                        validator: (val) =>
-                            val!.length < 3 ? 'Add time with its unit' : null,
-                        autovalidateMode: AutovalidateMode.onUserInteraction,
-                        decoration:
-                            buildInputDecoration('Enter Opening Timings'),
-                        style: TextStyle(color: Constants.greyTextColor),
-                      ),
-                      const SizedBox(height: 10),
-
-                      // Contact
-                      buildLabel("Add Contact Number"),
-                      const SizedBox(height: 5),
-                      TextFormField(
-                        cursorColor: Constants.greyTextColor,
-                        controller: contactController,
-                        validator: validateContact,
-                        autovalidateMode: AutovalidateMode.onUserInteraction,
-                        decoration:
-                            buildInputDecoration('Enter Contact Number'),
-                        style: TextStyle(color: Constants.greyTextColor),
-                      ),
-                      const SizedBox(height: 10),
-
-                      // Distance
-                      buildLabel("Add Distance"),
-                      const SizedBox(height: 5),
-                      TextFormField(
-                        cursorColor: Constants.greyTextColor,
-                        controller: distanceController,
-                        validator: (val) =>
-                            val!.length < 3 ? 'Add distance with unit' : null,
-                        autovalidateMode: AutovalidateMode.onUserInteraction,
-                        decoration:
-                            buildInputDecoration('Enter Distance e.g 3.2 Km'),
-                        style: TextStyle(color: Constants.greyTextColor),
-                      ),
-                      const SizedBox(height: 10),
-
-                      // ✅ Image Name TextField
-                      buildLabel("Add Image Name"),
-                      const SizedBox(height: 5),
-                      TextFormField(
-                        cursorColor: Constants.greyTextColor,
-                        controller: imageNameController,
-                        validator: (val) =>
-                            val!.trim().isEmpty ? 'Image name required' : null,
-                        autovalidateMode: AutovalidateMode.onUserInteraction,
-                        decoration: buildInputDecoration(
-                            'Enter image name e.g karachi.png'),
-                        style: TextStyle(color: Constants.greyTextColor),
-                      ),
-                      const SizedBox(height: 5),
-                      Row(
-                        children: [
-                          Icon(Icons.info_outline,
-                              size: 12, color: Constants.greyTextColor),
-                          const SizedBox(width: 4),
-                          Text(
-                            'Image must exist in assets/images/ folder',
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: Constants.greyTextColor,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-
-                      // Description
-                      buildLabel("Add Description"),
-                      const SizedBox(height: 5),
-                      TextFormField(
-                        cursorColor: Constants.greyTextColor,
-                        controller: descriptionController,
-                        maxLines: 3,
-                        validator: (val) => val!.length < 20
-                            ? 'Must contain 20 characters'
-                            : null,
-                        autovalidateMode: AutovalidateMode.onUserInteraction,
-                        decoration: buildInputDecoration('Enter Description'),
-                        style: TextStyle(color: Constants.greyTextColor),
-                      ),
-                      const SizedBox(height: 10),
-
-                      // Submit Button
-                      BlueButton(
-                        topBottomPadding: 10,
-                        leftRightPadding: 20,
-                        widget_: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(20),
+                          border:
+                              Border.all(color: Colors.white.withOpacity(0.5)),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            Text(
-                              "Add details",
-                              style: TextStyle(color: Constants.whiteColor),
-                            ),
-                            Icon(Icons.arrow_forward,
-                                color: Constants.whiteColor),
+                            Icon(Icons.verified, color: Colors.white, size: 12),
+                            SizedBox(width: 4),
+                            Text('Admin',
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600)),
                           ],
                         ),
-                        OntapFunction: () async {
-                          if (_formKey.currentState!.validate()) {
-                            await addDetails(
-                              cityController.text,
-                              locationController.text,
-                              timingsController.text,
-                              distanceController.text,
-                              descriptionController.text,
-                              contactController.text,
-                              locationNameController.text, // ✅ fixed
-                            );
-                          }
-                        },
-                        topBottomMargin: 20,
-                        leftRightMargin: 90,
                       ),
                     ],
                   ),
                 ),
               ),
             ),
-          ),
-        ],
+            const SizedBox(height: 8),
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                children: [
+                  AdminDrawerItem(
+                    icon: Icons.dashboard_outlined,
+                    title: 'Dashboard',
+                    onTap: () => Navigator.pop(context),
+                  ),
+                  const Divider(height: 1, indent: 16, endIndent: 16),
+                  AdminDrawerItem(
+                    icon: Icons.add_location_alt_outlined,
+                    title: 'Add Destination',
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(context, MaterialPageRoute(
+                        builder: (_) => AddDestinationScreen(
+                          userId: widget.userId, email: widget.email,
+                          username: widget.username, profile: widget.profile,
+                        ),
+                      ));
+                    },
+                  ),
+                  const Divider(height: 1, indent: 16, endIndent: 16),
+                  AdminDrawerItem(
+                    icon: Icons.list_alt_rounded,
+                    title: 'All Destinations',
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(context, MaterialPageRoute(
+                        builder: (_) => FetchData(
+                          userId: widget.userId, email: widget.email,
+                          username: widget.username, profile: widget.profile,
+                        ),
+                      ));
+                    },
+                  ),
+                  const Divider(height: 1, indent: 16, endIndent: 16),
+                  AdminDrawerItem(
+                    icon: Icons.location_city,
+                    title: 'Cities',
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(context, MaterialPageRoute(
+                        builder: (_) => CitiesScreen(
+                          userId: widget.userId, email: widget.email,
+                          username: widget.username, profile: widget.profile,
+                        ),
+                      ));
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: AdminDrawerItem(
+                      icon: Icons.logout_rounded,
+                      title: 'Logout',
+                      onTap: () {
+                        Navigator.pop(context);
+                        _showLogoutDialog();
+                      },
+                      isRed: true,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 20),
+              child: Text('Citi Guide v1.0',
+                  style: TextStyle(fontSize: 11, color: Colors.grey.shade400)),
+            ),
+          ],
+        ),
+      ),
+
+      body: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        child: Column(
+          children: [
+            // ── Header Banner ─────────────────────────────────────
+            Container(
+              width: double.infinity,
+              padding: EdgeInsets.fromLTRB(sw * 0.05, 22, sw * 0.05, 30),
+              decoration: BoxDecoration(
+                color: Constants.redColor,
+                borderRadius: const BorderRadius.only(
+                  bottomLeft: Radius.circular(28),
+                  bottomRight: Radius.circular(28),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(3),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 2.5),
+                    ),
+                    child: CircleAvatar(
+                      radius: 24,
+                      backgroundImage: widget.profile.startsWith('http')
+                          ? NetworkImage(widget.profile)
+                          : AssetImage(widget.profile) as ImageProvider,
+                      backgroundColor: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(_greeting,
+                            style: TextStyle(
+                                color: Colors.white.withOpacity(0.85),
+                                fontSize: 12)),
+                        Text(widget.username,
+                            style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 17,
+                                fontWeight: FontWeight.w800)),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 10, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(20),
+                      border:
+                          Border.all(color: Colors.white.withOpacity(0.5)),
+                    ),
+                    child: const Row(
+                      children: [
+                        Icon(Icons.verified, color: Colors.white, size: 12),
+                        SizedBox(width: 4),
+                        Text('Admin',
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            Padding(
+              padding:
+                  EdgeInsets.symmetric(horizontal: sw * 0.05, vertical: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+
+                  // ── Stats ──────────────────────────────────────
+                  const Text('Overview',
+                      style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.black87)),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      _statCard(
+                        label: 'Destinations',
+                        icon: Icons.place_outlined,
+                        color: Constants.OrangeColor,
+                        stream: FirebaseFirestore.instance
+                            .collection('destinationDetails')
+                            .snapshots(),
+                      ),
+                      const SizedBox(width: 10),
+                      _statCard(
+                        label: 'Users',
+                        icon: Icons.people_outline,
+                        color: const Color(0xFF4C8BF5),
+                        stream: FirebaseFirestore.instance
+                            .collection('users')
+                            .snapshots(),
+                      ),
+                      const SizedBox(width: 10),
+                      _statCard(
+                        label: 'Cities',
+                        icon: Icons.location_city_outlined,
+                        color: const Color(0xFF34C77B),
+                        stream: FirebaseFirestore.instance
+                            .collection('cities')
+                            .snapshots(),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // ── Quick Actions ───────────────────────────────
+                  const Text('Quick Actions',
+                      style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.black87)),
+                  const SizedBox(height: 12),
+                  _actionTile(
+                    icon: Icons.add_location_alt_outlined,
+                    title: 'Add New Destination',
+                    subtitle: 'Upload a new place to the guide',
+                    color: Constants.OrangeColor,
+                    onTap: () => Navigator.push(context, MaterialPageRoute(
+                      builder: (_) => AddDestinationScreen(
+                        userId: widget.userId, email: widget.email,
+                        username: widget.username, profile: widget.profile,
+                      ),
+                    )),
+                  ),
+                  const SizedBox(height: 10),
+                  _actionTile(
+                    icon: Icons.list_alt_rounded,
+                    title: 'Manage Destinations',
+                    subtitle: 'View, edit or delete destinations',
+                    color: const Color(0xFF4C8BF5),
+                    onTap: () => Navigator.push(context, MaterialPageRoute(
+                      builder: (_) => FetchData(
+                        userId: widget.userId, email: widget.email,
+                        username: widget.username, profile: widget.profile,
+                      ),
+                    )),
+                  ),
+                  const SizedBox(height: 10),
+                  _actionTile(
+                    icon: Icons.location_city_outlined,
+                    title: 'Manage Cities',
+                    subtitle: 'Add or update city details',
+                    color: const Color(0xFF34C77B),
+                    onTap: () => Navigator.push(context, MaterialPageRoute(
+                      builder: (_) => CitiesScreen(
+                        userId: widget.userId, email: widget.email,
+                        username: widget.username, profile: widget.profile,
+                      ),
+                    )),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // ── Recent Destinations ─────────────────────────
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('Recent Destinations',
+                          style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.black87)),
+                      GestureDetector(
+                        onTap: () => Navigator.push(context,
+                            MaterialPageRoute(
+                              builder: (_) => FetchData(
+                                userId: widget.userId, email: widget.email,
+                                username: widget.username,
+                                profile: widget.profile,
+                              ),
+                            )),
+                        child: Text('See all',
+                            style: TextStyle(
+                                fontSize: 13,
+                                color: Constants.OrangeColor,
+                                fontWeight: FontWeight.w600)),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  StreamBuilder<QuerySnapshot>(
+                    stream: FirebaseFirestore.instance
+                        .collection('destinationDetails')
+                        .limit(5)
+                        .snapshots(),
+                    builder: (context, snap) {
+                      if (snap.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                      if (!snap.hasData || snap.data!.docs.isEmpty) {
+                        return Center(
+                          child: Padding(
+                            padding:
+                                const EdgeInsets.symmetric(vertical: 20),
+                            child: Column(
+                              children: [
+                                Icon(Icons.location_off,
+                                    size: 40, color: Colors.grey.shade300),
+                                const SizedBox(height: 8),
+                                Text('No destinations yet',
+                                    style: TextStyle(
+                                        color: Colors.grey.shade400,
+                                        fontSize: 13)),
+                              ],
+                            ),
+                          ),
+                        );
+                      }
+                      return Column(
+                        children: snap.data!.docs
+                            .map((doc) => _recentItem(doc))
+                            .toList(),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

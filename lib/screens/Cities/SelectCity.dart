@@ -21,38 +21,87 @@ class SelectCity extends StatefulWidget {
   State<SelectCity> createState() => _SelectCityState();
 }
 
-class _SelectCityState extends State<SelectCity> {
+class _SelectCityState extends State<SelectCity>
+    with SingleTickerProviderStateMixin {
   final TextEditingController _searchController = TextEditingController();
-  String _selectedCity = '';
-  String _searchQuery = '';
-  bool _isLoading = false;
 
-  // ✅ Asset imgs hata diye — sirf icon aur name
-  final List<Map<String, dynamic>> _cities = [
-    {'name': 'Karachi',   'icon': Icons.location_city},
-    {'name': 'Lahore',    'icon': Icons.account_balance},
-    {'name': 'Islamabad', 'icon': Icons.park},
-    {'name': 'Multan',    'icon': Icons.mosque},
-  ];
+  // ─── State ────────────────────────────────────────────────────────────────
+  List<Map<String, dynamic>> _allCities = [];
+  List<Map<String, dynamic>> _filteredCities = [];
+  String _selectedCity = '';
+  String _selectedImg = '';
+  String _searchQuery = '';
+  bool _isLoadingCities = true;
+  bool _isSaving = false;
+  late AnimationController _fadeController;
+
+  @override
+  void initState() {
+    super.initState();
+    _fadeController = AnimationController(
+      duration: const Duration(milliseconds: 600),
+      vsync: this,
+    );
+    _fetchCities();
+    _searchController.addListener(_onSearchChanged);
+  }
 
   @override
   void dispose() {
     _searchController.dispose();
+    _fadeController.dispose();
     super.dispose();
   }
 
-  List<Map<String, dynamic>> get _filteredCities {
-    if (_searchQuery.isEmpty) return _cities;
-    return _cities
-        .where((c) =>
-            (c['name'] as String)
-                .toLowerCase()
-                .contains(_searchQuery.toLowerCase()))
-        .toList();
+  // ─── Firestore: cities collection fetch ───────────────────────────────────
+  Future<void> _fetchCities() async {
+    try {
+      final snapshot =
+          await FirebaseFirestore.instance.collection('cities').get();
+
+      final cities = snapshot.docs.map((doc) {
+        final data = doc.data();
+        return {
+          'name': (data['city'] ?? '').toString(),
+          'img': (data['img'] ?? '').toString(),
+        };
+      }).toList();
+
+      cities.sort((a, b) =>
+          (a['name'] as String).compareTo(b['name'] as String));
+
+      if (mounted) {
+        setState(() {
+          _allCities = cities;
+          _filteredCities = cities;
+          _isLoadingCities = false;
+        });
+        _fadeController.forward();
+      }
+    } catch (e) {
+      debugPrint('City fetch error: $e');
+      if (mounted) setState(() => _isLoadingCities = false);
+    }
   }
 
+  // ─── Search filter ────────────────────────────────────────────────────────
+  void _onSearchChanged() {
+    final query = _searchController.text.toLowerCase().trim();
+    setState(() {
+      _searchQuery = query;
+      _filteredCities = query.isEmpty
+          ? _allCities
+          : _allCities
+              .where((c) =>
+                  (c['name'] as String).toLowerCase().contains(query))
+              .toList();
+    });
+  }
+
+  // ─── Save city to Firestore + navigate ───────────────────────────────────
   Future<void> _saveCityAndNavigate() async {
-    setState(() => _isLoading = true);
+    if (_selectedCity.isEmpty) return;
+    setState(() => _isSaving = true);
 
     try {
       await FirebaseFirestore.instance
@@ -64,288 +113,513 @@ class _SelectCityState extends State<SelectCity> {
 
       Navigator.push(
         context,
-        MaterialPageRoute(
-          builder: (context) => SelectInterestPage(
-            userId:   widget.userId,
-            email:    widget.email,
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              SelectInterestPage(
+            userId: widget.userId,
+            email: widget.email,
             username: widget.username,
-            profile:  widget.profile,
-            city:     _selectedCity,
+            profile: widget.profile,
+            city: _selectedCity,
           ),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(
+              opacity: animation,
+              child: child,
+            );
+          },
         ),
       );
     } catch (e) {
-      print("City save error: $e");
+      debugPrint('City save error: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('City save nahi hui, dobara try karein'),
+            backgroundColor: Constants.redColor,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16)),
+            margin: const EdgeInsets.all(16),
+          ),
+        );
+      }
     } finally {
-      if (mounted) setState(() => _isLoading = false);
+      if (mounted) setState(() => _isSaving = false);
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final screenHeight = MediaQuery.of(context).size.height;
-    final screenWidth  = MediaQuery.of(context).size.width;
+  // ─── City tile with icon design ───────────────────────────────────────────
+  Widget _buildCityTile(Map<String, dynamic> city, int index) {
+    final String name = city['name'] as String;
+    final bool isSelected = _selectedCity == name;
 
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Column(
-          children: [
-            // ── Scrollable content ──
-            Expanded(
-              child: SingleChildScrollView(
-                padding: EdgeInsets.symmetric(
-                  horizontal: screenWidth * 0.06,
-                  vertical: 16,
+    return GestureDetector(
+      onTap: () => setState(() {
+        _selectedCity = name;
+        _selectedImg = '';
+      }),
+      child: TweenAnimationBuilder(
+        tween: Tween<double>(begin: 0, end: 1),
+        duration: Duration(milliseconds: 280 + (index * 25)),
+        builder: (context, value, child) {
+          return Transform.translate(
+            offset: Offset(0, (1 - value) * 15),
+            child: Opacity(
+              opacity: value,
+              child: child,
+            ),
+          );
+        },
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 240),
+          curve: Curves.easeInOut,
+          margin: const EdgeInsets.only(bottom: 10),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? Constants.OrangeColor.withOpacity(0.08)
+                : Colors.white,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: isSelected
+                  ? Constants.OrangeColor
+                  : const Color(0xffe5e5e5),
+              width: isSelected ? 2 : 1.3,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: isSelected
+                    ? Constants.OrangeColor.withOpacity(0.12)
+                    : Colors.black.withOpacity(0.04),
+                blurRadius: isSelected ? 10 : 6,
+                offset: Offset(0, isSelected ? 3 : 1),
+              ),
+            ],
+          ),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(14),
+              onTap: () => setState(() {
+                _selectedCity = name;
+                _selectedImg = '';
+              }),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 11,
                 ),
-                child: Column(
+                child: Row(
                   children: [
-                    SizedBox(height: screenHeight * 0.02),
+                    // ── City icon ──────────────────────────────────────
+                    _buildCityIcon(name, isSelected),
 
-                    // ── Logo ──
-                    Image.asset(
-                      'assets/images/citiGuideIcon.png',
-                      height: screenHeight * 0.22,
-                      fit: BoxFit.contain,
-                    ),
+                    const SizedBox(width: 14),
 
-                    SizedBox(height: screenHeight * 0.025),
-
-                    // ── Welcome Text ──
-                    Text(
-                      'Welcome, ${widget.username}!',
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w900,
-                        color: Colors.black,
-                        letterSpacing: 0.2,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-
-                    const SizedBox(height: 8),
-
-                    Text(
-                      "First, let's select your city to\nget personalized suggestions.",
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.black.withOpacity(0.55),
-                        height: 1.5,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-
-                    SizedBox(height: screenHeight * 0.025),
-
-                    // ── Search Bar ──
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(30),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.06),
-                            blurRadius: 10,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: TextField(
-                        controller: _searchController,
-                        onChanged: (val) =>
-                            setState(() => _searchQuery = val),
-                        style: const TextStyle(fontSize: 14),
-                        decoration: InputDecoration(
-                          hintText: 'Search or Select City',
-                          hintStyle: TextStyle(
-                            color: Colors.black.withOpacity(0.35),
-                            fontSize: 14,
-                          ),
-                          prefixIcon: Icon(
-                            Icons.search,
-                            color: Colors.black.withOpacity(0.35),
-                            size: 20,
-                          ),
-                          border: InputBorder.none,
-                          contentPadding:
-                              const EdgeInsets.symmetric(vertical: 14),
+                    // ── City name ───────────────────────────────────────
+                    Expanded(
+                      child: Text(
+                        name,
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: isSelected
+                              ? FontWeight.w700
+                              : FontWeight.w600,
+                          color: isSelected
+                              ? Constants.OrangeColor
+                              : const Color(0xff2a2a2a),
+                          letterSpacing: 0.1,
                         ),
                       ),
                     ),
 
-                    const SizedBox(height: 16),
+                    // ── Check icon ──────────────────────────────────────
+                    if (isSelected)
+                      AnimatedScale(
+                        duration: const Duration(milliseconds: 200),
+                        scale: isSelected ? 1.0 : 0.0,
+                        child: Icon(
+                          Icons.check_circle_rounded,
+                          color: Constants.OrangeColor,
+                          size: 22,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 
-                    // ── City List ──
-                    _filteredCities.isEmpty
-                        ? Padding(
-                            padding: const EdgeInsets.only(top: 20),
-                            child: Text(
-                              'No city found.',
-                              style: TextStyle(
-                                color: Colors.black.withOpacity(0.4),
-                                fontSize: 14,
-                              ),
-                            ),
-                          )
-                        : Column(
-                            children: _filteredCities.map((city) {
-                              final bool isSelected =
-                                  _selectedCity == city['name'];
-                              final IconData cityIcon =
-                                  city['icon'] as IconData;
+  // ─── City icon builder ─────────────────────────────────────────────────────
+  Widget _buildCityIcon(String cityName, bool isSelected) {
+    IconData icon;
+    Color iconColor = isSelected ? Constants.OrangeColor : const Color(0xff888888);
 
-                              return GestureDetector(
-                                onTap: () => setState(
-                                    () => _selectedCity = city['name']),
-                                child: AnimatedContainer(
-                                  duration:
-                                      const Duration(milliseconds: 200),
-                                  margin:
-                                      const EdgeInsets.only(bottom: 10),
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                    vertical: 14,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: isSelected
-                                        ? Constants.OrangeColor
-                                            .withOpacity(0.15)
-                                        : Colors.white,
-                                    borderRadius:
-                                        BorderRadius.circular(16),
-                                    border: Border.all(
-                                      color: isSelected
-                                          ? Constants.OrangeColor
-                                          : Colors.transparent,
-                                      width: 1.5,
-                                    ),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black
-                                            .withOpacity(0.04),
-                                        blurRadius: 8,
-                                        offset: const Offset(0, 2),
-                                      ),
-                                    ],
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      // ✅ Sirf icon — no asset image
-                                      Container(
-                                        width: 36,
-                                        height: 36,
-                                        decoration: BoxDecoration(
-                                          color: isSelected
-                                              ? Constants.OrangeColor
-                                                  .withOpacity(0.15)
-                                              : Constants.greyColor,
-                                          borderRadius:
-                                              BorderRadius.circular(10),
-                                        ),
-                                        child: Icon(
-                                          cityIcon,
-                                          color: isSelected
-                                              ? Constants.OrangeColor
-                                              : Colors.black
-                                                  .withOpacity(0.5),
-                                          size: 20,
-                                        ),
-                                      ),
+    // Select icon based on city name
+    switch (cityName.toLowerCase()) {
+      case 'karachi':
+        icon = Icons.location_city_rounded;
+        break;
+      case 'lahore':
+        icon = Icons.location_city_rounded;
+        break;
+      case 'islamabad':
+        icon = Icons.domain_rounded;
+        break;
+      case 'multan':
+        icon = Icons.location_city_rounded;
+        break;
+      case 'hyderabad':
+        icon = Icons.location_city_rounded;
+        break;
+      case 'peshawar':
+        icon = Icons.location_city_rounded;
+        break;
+      case 'quetta':
+        icon = Icons.location_city_rounded;
+        break;
+      case 'faisalabad':
+        icon = Icons.location_city_rounded;
+        break;
+      case 'rawalpindi':
+        icon = Icons.location_city_rounded;
+        break;
+      case 'gujranwala':
+        icon = Icons.location_city_rounded;
+        break;
+      default:
+        icon = Icons.location_on_rounded;
+    }
 
-                                      const SizedBox(width: 14),
+    return Container(
+      width: 42,
+      height: 42,
+      decoration: BoxDecoration(
+        color: isSelected
+            ? Constants.OrangeColor.withOpacity(0.1)
+            : const Color(0xfff5f5f5),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: isSelected
+              ? Constants.OrangeColor.withOpacity(0.3)
+              : const Color(0xffe8e8e8),
+          width: 1,
+        ),
+      ),
+      child: Center(
+        child: Icon(
+          icon,
+          color: iconColor,
+          size: 22,
+        ),
+      ),
+    );
+  }
 
-                                      // City name
-                                      Expanded(
-                                        child: Text(
-                                          city['name'] as String,
-                                          style: TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: isSelected
-                                                ? FontWeight.w700
-                                                : FontWeight.w500,
-                                            color: isSelected
-                                                ? Constants.OrangeColor
-                                                : Colors.black,
-                                          ),
-                                        ),
-                                      ),
+  // ─── Build ────────────────────────────────────────────────────────────────
+  @override
+  Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
 
-                                      // Check icon
-                                      if (isSelected)
-                                        Icon(
-                                          Icons.check_circle,
-                                          color: Constants.OrangeColor,
-                                          size: 20,
-                                        ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            }).toList(),
-                          ),
+    return Scaffold(
+      backgroundColor: Constants.pageBackgroundColor,
+      body: SafeArea(
+        child: Column(
+          children: [
+            // ── Clean Header with Logo ────────────────────────────────────
+            _buildCleanHeader(size),
 
-                    SizedBox(height: screenHeight * 0.02),
+            // ── Scrollable content ────────────────────────────────────────
+            Expanded(
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                padding: EdgeInsets.symmetric(
+                  horizontal: size.width * 0.05,
+                  vertical: 20,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // ── Search bar ─────────────────────────────────────
+                    _buildSearchBar(size),
+
+                    const SizedBox(height: 18),
+
+                    // ── City list ──────────────────────────────────────
+                    _buildCityList(),
+
+                    SizedBox(height: size.height * 0.02),
                   ],
                 ),
               ),
             ),
 
-            // ── Next Button ──
-            Padding(
-              padding: EdgeInsets.fromLTRB(
-                screenWidth * 0.06,
-                0,
-                screenWidth * 0.06,
-                screenHeight * 0.03,
-              ),
-              child: Container(
-                width: double.infinity,
-                height: 54,
-                decoration: BoxDecoration(
-                  gradient: _selectedCity.isEmpty
-                      ? LinearGradient(
-                          colors: [
-                            Constants.OrangeColor.withOpacity(0.4),
-                            Constants.OrangeColor.withOpacity(0.4),
-                          ],
-                        )
-                      : Constants.orangeGradient,
-                  borderRadius: BorderRadius.circular(30),
+            // ── Next Button ───────────────────────────────────────────
+            _buildNextButton(size),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ─── Clean Header builder (no appbar, just logo & text) ──────────────────
+  Widget _buildCleanHeader(Size size) {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+        size.width * 0.05,
+        16,
+        size.width * 0.05,
+        8,
+      ),
+      child: Column(
+        children: [
+          // ── Logo (MainLogo.png) with shadow ────────────────────────
+          Container(
+            decoration: BoxDecoration(
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.11),
+                  blurRadius: 18,
+                  offset: const Offset(0, 6),
+                  spreadRadius: 1,
                 ),
-                child: ElevatedButton(
-                  onPressed: (_selectedCity.isEmpty || _isLoading)
-                      ? null
-                      : _saveCityAndNavigate,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.transparent,
-                    shadowColor: Colors.transparent,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                    elevation: 0,
-                  ),
-                  child: _isLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2,
-                          ),
-                        )
-                      : const Text(
-                          'Next',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                ),
+              ],
+            ),
+            child: Image.asset(
+              Constants.mainLogo,
+              height: 190,
+              fit: BoxFit.contain,
+              errorBuilder: (_, __, ___) => Icon(
+                Icons.map_outlined,
+                size: 190,
+                color: Constants.OrangeColor,
               ),
             ),
-          ],
+          ),
+
+          const SizedBox(height: 16),
+
+          // ── Welcome text ───────────────────────────────────────────
+          Text(
+            'Welcome, ${widget.username}!',
+            style: const TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.w900,
+              color: Color(0xff1a1a1a),
+              letterSpacing: 0.2,
+            ),
+            textAlign: TextAlign.center,
+          ),
+
+          const SizedBox(height: 6),
+
+          // ── Subtitle ────────────────────────────────────────────────
+          Text(
+            'First, let\'s select your city to get personalized suggestions',
+            style: TextStyle(
+              fontSize: 13.5,
+              color: const Color(0xff888888),
+              height: 1.5,
+              fontWeight: FontWeight.w500,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ─── Search bar builder ────────────────────────────────────────────────────
+  Widget _buildSearchBar(Size size) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: const Color(0xffe0e0e0),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: TextField(
+        controller: _searchController,
+        style: const TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+          color: Color(0xff1a1a1a),
+        ),
+        decoration: InputDecoration(
+          hintText: 'Search or Select City',
+          hintStyle: TextStyle(
+            color: const Color(0xffaaaaaa),
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+          ),
+          prefixIcon: Padding(
+            padding: const EdgeInsets.only(left: 12, right: 8),
+            child: Icon(
+              Icons.search_rounded,
+              color: const Color(0xffaaaaaa),
+              size: 20,
+            ),
+          ),
+          prefixIconConstraints:
+              const BoxConstraints(minWidth: 0, minHeight: 0),
+          suffixIcon: _searchQuery.isNotEmpty
+              ? GestureDetector(
+                  onTap: () {
+                    _searchController.clear();
+                    FocusScope.of(context).unfocus();
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 12),
+                    child: Icon(
+                      Icons.close_rounded,
+                      color: const Color(0xffaaaaaa),
+                      size: 18,
+                    ),
+                  ),
+                )
+              : null,
+          suffixIconConstraints:
+              const BoxConstraints(minWidth: 0, minHeight: 0),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(
+            vertical: 12,
+            horizontal: 0,
+          ),
+        ),
+        cursorColor: Constants.OrangeColor,
+        cursorRadius: const Radius.circular(2),
+      ),
+    );
+  }
+
+  // ─── City list builder ─────────────────────────────────────────────────────
+  Widget _buildCityList() {
+    if (_isLoadingCities) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.only(top: 30),
+          child: SizedBox(
+            width: 32,
+            height: 32,
+            child: CircularProgressIndicator(
+              color: Constants.OrangeColor,
+              strokeWidth: 2.8,
+            ),
+          ),
+        ),
+      );
+    }
+
+    if (_filteredCities.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.only(top: 30),
+          child: Column(
+            children: [
+              Icon(
+                Icons.location_off_rounded,
+                size: 42,
+                color: const Color(0xffe0e0e0),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                '"$_searchQuery" nahi mila',
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: Color(0xff999999),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return Column(
+      children: List.generate(
+        _filteredCities.length,
+        (index) => _buildCityTile(_filteredCities[index], index),
+      ),
+    );
+  }
+
+  // ─── Next button builder ───────────────────────────────────────────────────
+  Widget _buildNextButton(Size size) {
+    final isEnabled = _selectedCity.isNotEmpty && !_isSaving;
+
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+        size.width * 0.05,
+        12,
+        size.width * 0.05,
+        size.height * 0.03,
+      ),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 280),
+        width: double.infinity,
+        height: 52,
+        decoration: BoxDecoration(
+          gradient: isEnabled
+              ? Constants.orangeGradient
+              : LinearGradient(
+                  colors: [
+                    const Color(0xffdddddd),
+                    const Color(0xffd0d0d0),
+                  ],
+                ),
+          borderRadius: BorderRadius.circular(26),
+          boxShadow: isEnabled
+              ? [
+                  BoxShadow(
+                    color: Constants.OrangeColor.withOpacity(0.3),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  )
+                ]
+              : [],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(26),
+            onTap: isEnabled ? _saveCityAndNavigate : null,
+            child: Center(
+              child: _isSaving
+                  ? SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2.5,
+                      ),
+                    )
+                  : Text(
+                      'Next',
+                      style: TextStyle(
+                        color: isEnabled
+                            ? Colors.white
+                            : const Color(0xff999999),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+            ),
+          ),
         ),
       ),
     );

@@ -6,8 +6,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 class CityDestinations extends StatefulWidget {
+    final String userId;
   final String cityFetch;
-  const CityDestinations({super.key, required this.cityFetch});
+  const CityDestinations({super.key, required this.cityFetch, required this.userId});
 
   @override
   State<CityDestinations> createState() => _CityDestinationsState();
@@ -67,6 +68,7 @@ class _CityDestinationsState extends State<CityDestinations> {
                                   builder: (context) => DestinationDetails(
                                     destinationID: dID,
                                     url: imagePath,
+                                    userId: widget.userId,
                                   ),
                                 ),
                               );
