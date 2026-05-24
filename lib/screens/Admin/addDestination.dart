@@ -94,7 +94,7 @@ class _AddDestinationScreenState extends State<AddDestinationScreen> {
       await FirebaseFirestore.instance
           .collection('destinationDetails')
           .add({
-        'city':         cityController.text.trim(),
+        'city':         _selectedCity,
         'location':     locationController.text.trim(),
         'timings':      timingsController.text.trim(),
         'distance':     distanceController.text.trim(),

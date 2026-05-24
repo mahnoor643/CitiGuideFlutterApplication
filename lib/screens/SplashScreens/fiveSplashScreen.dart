@@ -50,7 +50,7 @@ class _FifthSplashScreenState extends State<FifthSplashScreen>
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Center(
-            child: Image.asset(Constants.mainLogo),
+            child: Image.asset(Constants.mainLogo,scale: 0.8),
           ),
           SizedBox(
             height: 60,

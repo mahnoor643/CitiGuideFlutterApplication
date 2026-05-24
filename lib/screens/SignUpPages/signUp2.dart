@@ -124,7 +124,7 @@ class _SignUp2State extends State<SignUp2> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Constants.pageBackgroundColor,
       body: Container(
         margin: const EdgeInsets.only(left: 20, right: 20, top: 30),
         child: Form(
@@ -363,7 +363,6 @@ class _SignUp2State extends State<SignUp2> {
                           color: Colors.black,
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
-                          decoration: TextDecoration.underline,
                         ),
                         textAlign: TextAlign.center,
                       ),

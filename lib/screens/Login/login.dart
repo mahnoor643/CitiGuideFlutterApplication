@@ -339,7 +339,7 @@ class _LoginState extends State<Login> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Constants.pageBackgroundColor,
       body: Container(
         margin: const EdgeInsets.only(left: 20, right: 20, top: 30),
         child: Form(
@@ -595,7 +595,6 @@ class _LoginState extends State<Login> {
                           color: Colors.black,
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
-                          decoration: TextDecoration.underline,
                         ),
                       ),
                     ),
