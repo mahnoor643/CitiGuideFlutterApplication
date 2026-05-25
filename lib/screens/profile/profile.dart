@@ -16,6 +16,7 @@ class ProfileScreen extends StatefulWidget {
   final String email;
   final String username;
   final String profile;
+
   const ProfileScreen({
     super.key,
     required this.userId,
@@ -59,15 +60,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
     super.dispose();
   }
 
-ImageProvider getImageProvider() {
-  if (widget.profile.isEmpty || widget.profile == 'assets/images/profileDefaultImg.jpg') {
-    return AssetImage('assets/images/profileDefaultImg.jpg');
+  ImageProvider getImageProvider() {
+    if (widget.profile.isEmpty ||
+        widget.profile == 'assets/images/profileDefaultImg.jpg') {
+      return const AssetImage('assets/images/profileDefaultImg.jpg');
+    }
+    if (widget.profile.startsWith('http')) {
+      return NetworkImage(widget.profile);
+    }
+    return AssetImage(widget.profile);
   }
-  if (widget.profile.startsWith('http')) {
-    return NetworkImage(widget.profile);
-  }
-  return AssetImage(widget.profile);
-}
 
   void showMessage(String msg) {
     final snackBar = SnackBar(
@@ -231,15 +233,17 @@ ImageProvider getImageProvider() {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
+    final isSmallScreen = size.height < 700;
 
     return Scaffold(
       backgroundColor: const Color(0xfffbf8f3),
       body: SafeArea(
+        bottom: false,
         child: SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
           child: Column(
             children: [
-              const SizedBox(height: 20),
+              SizedBox(height: isSmallScreen ? 16 : 20),
 
               // ── Profile Avatar ──
               Container(
@@ -247,57 +251,70 @@ ImageProvider getImageProvider() {
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
+                      color: Constants.greyTextColor.withOpacity(0.2),
                       blurRadius: 20,
                       offset: const Offset(0, 8),
+                      spreadRadius: 2,
                     ),
                   ],
                 ),
                 child: ClipOval(
                   child: CircleAvatar(
-                    radius: 70,
+                    radius: isSmallScreen ? 55 : 70,
                     backgroundColor: Colors.grey.shade100,
                     backgroundImage: getImageProvider(),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: Colors.white,
-                          width: 3.0,
-                        ),
-                      ),
-                    ),
+                    onBackgroundImageError: (exception, stackTrace) {
+                      debugPrint('Profile image error: $exception');
+                    },
+                    child: widget.profile.isEmpty ||
+                            widget.profile ==
+                                'assets/images/profileDefaultImg.jpg'
+                        ? Icon(
+                            Icons.person_rounded,
+                            size: isSmallScreen ? 40 : 50,
+                            color: Colors.grey.shade400,
+                          )
+                        : null,
                   ),
                 ),
               ),
 
-              const SizedBox(height: 20),
+              SizedBox(height: isSmallScreen ? 16 : 20),
 
               // ── User Info ──
-              Text(
-                widget.username,
-                style: const TextStyle(
-                  color: Color(0xff1a1a1a),
-                  fontSize: 22,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: -0.3,
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: size.width * 0.05),
+                child: Column(
+                  children: [
+                    Text(
+                      widget.username,
+                      style: TextStyle(
+                        color: const Color(0xff1a1a1a),
+                        fontSize: isSmallScreen ? 20 : 24,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -0.3,
+                      ),
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      widget.email,
+                      style: TextStyle(
+                        color: const Color(0xff888888),
+                        fontSize: isSmallScreen ? 11 : 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
                 ),
-                textAlign: TextAlign.center,
               ),
 
-              const SizedBox(height: 6),
-
-              Text(
-                widget.email,
-                style: const TextStyle(
-                  color: Color(0xff888888),
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                ),
-                textAlign: TextAlign.center,
-              ),
-
-              const SizedBox(height: 28),
+              SizedBox(height: isSmallScreen ? 20 : 28),
 
               // ── Form Container ──
               Padding(
@@ -318,10 +335,11 @@ ImageProvider getImageProvider() {
                             : null,
                       ),
 
-                      const SizedBox(height: 20),
+                      SizedBox(height: isSmallScreen ? 16 : 20),
 
                       // ── Password Field ──
-                      _buildFieldLabel("New Password (optional)", Icons.lock_rounded),
+                      _buildFieldLabel(
+                          "New Password (optional)", Icons.lock_rounded),
                       const SizedBox(height: 8),
                       _buildPasswordField(
                         controller: pwdController,
@@ -329,7 +347,7 @@ ImageProvider getImageProvider() {
                         validator: validatePwd,
                       ),
 
-                      const SizedBox(height: 24),
+                      SizedBox(height: isSmallScreen ? 18 : 24),
 
                       // ── Admin Options ──
                       if (widget.email == 'admin12@gmail.com') ...[
@@ -394,7 +412,7 @@ ImageProvider getImageProvider() {
                             ],
                           ),
                         ),
-                        const SizedBox(height: 24),
+                        SizedBox(height: isSmallScreen ? 18 : 24),
                       ],
 
                       // ── Action Buttons ──
@@ -424,8 +442,8 @@ ImageProvider getImageProvider() {
                                     }
                                   },
                                   child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: 12,
+                                    padding: EdgeInsets.symmetric(
+                                      vertical: isSmallScreen ? 10 : 12,
                                       horizontal: 16,
                                     ),
                                     child: Row(
@@ -435,11 +453,11 @@ ImageProvider getImageProvider() {
                                         const Icon(Icons.check_rounded,
                                             color: Colors.white, size: 18),
                                         const SizedBox(width: 8),
-                                        const Text(
+                                        Text(
                                           'Update Profile',
                                           style: TextStyle(
                                             color: Colors.white,
-                                            fontSize: 14,
+                                            fontSize: isSmallScreen ? 12 : 14,
                                             fontWeight: FontWeight.w700,
                                           ),
                                         ),
@@ -473,7 +491,7 @@ ImageProvider getImageProvider() {
                               child: InkWell(
                                 borderRadius: BorderRadius.circular(12),
                                 onTap: () {
-                                  Navigator.push(
+                                  Navigator.pushReplacement(
                                     context,
                                     MaterialPageRoute(
                                       builder: (context) =>
@@ -495,7 +513,7 @@ ImageProvider getImageProvider() {
                         ],
                       ),
 
-                      const SizedBox(height: 30),
+                      SizedBox(height: isSmallScreen ? 20 : 30),
                     ],
                   ),
                 ),
@@ -506,121 +524,125 @@ ImageProvider getImageProvider() {
       ),
 
       // ── Bottom Navigation Bar ──
-      bottomNavigationBar: Padding(
-        padding: EdgeInsets.only(
-          bottom: size.height * 0.02,
-          left: size.width * 0.05,
-          right: size.width * 0.05,
-        ),
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(18),
-            color: Colors.white,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.08),
-                blurRadius: 16,
-                offset: const Offset(0, -4),
-                spreadRadius: 1,
-              ),
-            ],
+      bottomNavigationBar: SafeArea(
+        top: false,
+        child: Padding(
+          padding: EdgeInsets.only(
+            bottom: size.height * 0.02,
+            left: size.width * 0.05,
+            right: size.width * 0.05,
+            top: 8,
           ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-            child: GNav(
-              backgroundColor: Colors.white,
-              color: const Color(0xffb0b0b0),
-              activeColor: Colors.white,
-              selectedIndex: selectedIndex,
-              onTabChange: (index) {
-                setState(() => selectedIndex = index);
-                if (index == 0) {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => Dashboard(
-                        userId: widget.userId,
-                        email: widget.email,
-                        username: widget.username,
-                        profile: widget.profile,
-                      ),
-                    ),
-                  );
-                } else if (index == 1) {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => SavedScreen(
-                        userId: widget.userId,
-                        email: widget.email,
-                        username: widget.username,
-                        profile: widget.profile,
-                      ),
-                    ),
-                  );
-                } else if (index == 2) {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => SearchScreen(
-                        userId: widget.userId,
-                        email: widget.email,
-                        username: widget.username,
-                        profile: widget.profile,
-                      ),
-                    ),
-                  );
-                } else {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ProfileScreen(
-                        userId: widget.userId,
-                        email: widget.email,
-                        username: widget.username,
-                        profile: widget.profile,
-                      ),
-                    ),
-                  );
-                }
-              },
-              tabBackgroundColor: Constants.OrangeColor,
-              gap: 8,
-              padding: const EdgeInsets.all(10),
-              tabs: const [
-                GButton(
-                  icon: Icons.home_rounded,
-                  text: "Home",
-                  textStyle: TextStyle(
-                      fontSize: 12,
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600),
-                ),
-                GButton(
-                  icon: Icons.bookmark_rounded,
-                  text: "Saved",
-                  textStyle: TextStyle(
-                      fontSize: 12,
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600),
-                ),
-                GButton(
-                  icon: Icons.search_rounded,
-                  text: "Search",
-                  textStyle: TextStyle(
-                      fontSize: 12,
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600),
-                ),
-                GButton(
-                  icon: Icons.person_rounded,
-                  text: "Profile",
-                  textStyle: TextStyle(
-                      fontSize: 12,
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600),
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(18),
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.08),
+                  blurRadius: 16,
+                  offset: const Offset(0, -4),
+                  spreadRadius: 1,
                 ),
               ],
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              child: GNav(
+                backgroundColor: Colors.white,
+                color: const Color(0xffb0b0b0),
+                activeColor: Colors.white,
+                selectedIndex: selectedIndex,
+                onTabChange: (index) {
+                  setState(() => selectedIndex = index);
+                  if (index == 0) {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => Dashboard(
+                          userId: widget.userId,
+                          email: widget.email,
+                          username: widget.username,
+                          profile: widget.profile,
+                        ),
+                      ),
+                    );
+                  } else if (index == 1) {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => SavedScreen(
+                          userId: widget.userId,
+                          email: widget.email,
+                          username: widget.username,
+                          profile: widget.profile,
+                        ),
+                      ),
+                    );
+                  } else if (index == 2) {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => SearchScreen(
+                          userId: widget.userId,
+                          email: widget.email,
+                          username: widget.username,
+                          profile: widget.profile,
+                        ),
+                      ),
+                    );
+                  } else {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ProfileScreen(
+                          userId: widget.userId,
+                          email: widget.email,
+                          username: widget.username,
+                          profile: widget.profile,
+                        ),
+                      ),
+                    );
+                  }
+                },
+                tabBackgroundColor: Constants.OrangeColor,
+                gap: 8,
+                padding: const EdgeInsets.all(10),
+                tabs: const [
+                  GButton(
+                    icon: Icons.home_rounded,
+                    text: "Home",
+                    textStyle: TextStyle(
+                        fontSize: 12,
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600),
+                  ),
+                  GButton(
+                    icon: Icons.bookmark_rounded,
+                    text: "Saved",
+                    textStyle: TextStyle(
+                        fontSize: 12,
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600),
+                  ),
+                  GButton(
+                    icon: Icons.search_rounded,
+                    text: "Search",
+                    textStyle: TextStyle(
+                        fontSize: 12,
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600),
+                  ),
+                  GButton(
+                    icon: Icons.person_rounded,
+                    text: "Profile",
+                    textStyle: TextStyle(
+                        fontSize: 12,
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -673,6 +695,10 @@ ImageProvider getImageProvider() {
           borderSide: BorderSide(color: Constants.OrangeColor),
           borderRadius: BorderRadius.circular(12),
         ),
+        enabledBorder: OutlineInputBorder(
+          borderSide: const BorderSide(color: Color(0xffe5e5e5)),
+          borderRadius: BorderRadius.circular(12),
+        ),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 14,
           vertical: 12,
@@ -713,9 +739,15 @@ ImageProvider getImageProvider() {
           borderSide: BorderSide(color: Constants.OrangeColor),
           borderRadius: BorderRadius.circular(12),
         ),
+        enabledBorder: OutlineInputBorder(
+          borderSide: const BorderSide(color: Color(0xffe5e5e5)),
+          borderRadius: BorderRadius.circular(12),
+        ),
         suffixIcon: IconButton(
           icon: Icon(
-            _isObscured ? Icons.visibility_off_rounded : Icons.visibility_rounded,
+            _isObscured
+                ? Icons.visibility_off_rounded
+                : Icons.visibility_rounded,
             color: const Color(0xff999999),
             size: 18,
           ),

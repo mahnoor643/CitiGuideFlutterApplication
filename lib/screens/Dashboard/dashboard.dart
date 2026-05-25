@@ -33,7 +33,6 @@ class Dashboard extends StatefulWidget {
 class _DashboardState extends State<Dashboard> {
   int selectedIndex = 0;
 
-  // ✅ User interests + city
   List<String> _userInterests = [];
   String _userCity = '';
   bool _userLoaded = false;
@@ -46,7 +45,6 @@ class _DashboardState extends State<Dashboard> {
     _loadUserData();
   }
 
-  // ✅ Firestore se user ka city + interests fetch
   Future<void> _loadUserData() async {
     try {
       final doc = await FirebaseFirestore.instance
@@ -60,7 +58,7 @@ class _DashboardState extends State<Dashboard> {
         _userCity = (data['city'] ?? '').toString().trim();
         _userLoaded = true;
       });
-      debugPrint('✅ City loaded: "$_userCity" (length: ${_userCity.length})');
+      debugPrint('✅ City loaded: "$_userCity"');
       debugPrint('✅ Interests loaded: $_userInterests');
     } catch (e) {
       debugPrint('❌ Error loading user: $e');
@@ -69,6 +67,9 @@ class _DashboardState extends State<Dashboard> {
   }
 
   ImageProvider getImageProvider(String path) {
+    if (path.isEmpty || path == 'assets/images/profileDefaultImg.jpg') {
+      return const AssetImage('assets/images/profileDefaultImg.jpg');
+    }
     if (path.startsWith('http')) return NetworkImage(path);
     return AssetImage(path);
   }
@@ -220,6 +221,7 @@ class _DashboardState extends State<Dashboard> {
 
               return SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
+                physics: const BouncingScrollPhysics(),
                 child: Row(
                   children: filtered.asMap().entries.map((entry) {
                     final index = entry.key;
@@ -256,23 +258,7 @@ class _DashboardState extends State<Dashboard> {
                         ),
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(14),
-                          child: imagePath.startsWith('http')
-                              ? Image.network(
-                                  imagePath,
-                                  height: cardWidth,
-                                  width: cardWidth,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (_, __, ___) =>
-                                      _cardFallback(cardWidth),
-                                )
-                              : Image.asset(
-                                  imagePath,
-                                  height: cardWidth,
-                                  width: cardWidth,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (_, __, ___) =>
-                                      _cardFallback(cardWidth),
-                                ),
+                          child: _buildImageWidget(imagePath, cardWidth),
                         ),
                       ),
                     );
@@ -283,6 +269,58 @@ class _DashboardState extends State<Dashboard> {
           ),
         ],
       ],
+    );
+  }
+
+  // ✅ FIX: Properly handle asset paths without URL errors
+  Widget _buildImageWidget(String imagePath, double size) {
+    // Clean up the path - remove file:// if present
+    String cleanPath = imagePath.replaceFirst('file://', '').trim();
+
+    debugPrint('📸 Loading image: $cleanPath');
+
+    // If it's an asset path, load as asset directly
+    if (cleanPath.startsWith('assets/')) {
+      return Image.asset(
+        cleanPath,
+        height: size,
+        width: size,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) {
+          debugPrint('❌ Asset load failed: $cleanPath');
+          return _cardFallback(size);
+        },
+      );
+    }
+
+    // If it's a network URL, load as network
+    if (cleanPath.startsWith('http://') || cleanPath.startsWith('https://')) {
+      return Image.network(
+        cleanPath,
+        height: size,
+        width: size,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) {
+          debugPrint('❌ Network load failed: $cleanPath, trying local asset');
+          return Image.asset(
+            'assets/images/PC.png',
+            height: size,
+            width: size,
+            fit: BoxFit.cover,
+            errorBuilder: (_, __, ___) => _cardFallback(size),
+          );
+        },
+      );
+    }
+
+    // If path doesn't have protocol, treat as local asset
+    debugPrint('📸 Treating as local asset: assets/images/$cleanPath');
+    return Image.asset(
+      cleanPath.startsWith('assets/') ? cleanPath : 'assets/images/PC.png',
+      height: size,
+      width: size,
+      fit: BoxFit.cover,
+      errorBuilder: (_, __, ___) => _cardFallback(size),
     );
   }
 
@@ -304,193 +342,220 @@ class _DashboardState extends State<Dashboard> {
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
-      backgroundColor: Constants.pageBackgroundColor,
+      backgroundColor: const Color(0xfffbf8f3),
       body: SafeArea(
-        child: Container(
-          margin: EdgeInsets.symmetric(
-            horizontal: size.width * 0.05,
-            vertical: 0,
-          ),
-          child: ListView(
-            children: [
-              const SizedBox(height: 24),
-              _buildProfileRow(),
-              const SizedBox(height: 20),
-              _buildSearchBar(),
-              const SizedBox(height: 14),
-              
-              // ✅ FIXED: Only show categories after _userCity is loaded
-              if (_userLoaded && _userCity.isNotEmpty)
-                _buildCityCategories()
-              else if (_userLoaded)
-                const SizedBox(
-                  height: 50,
-                  child: Center(
-                    child: Text(
-                      'No city selected',
-                      style: TextStyle(color: Color(0xffaaaaaa)),
+        bottom: false,
+        child: Column(
+          children: [
+            Expanded(
+              child: Container(
+                margin: EdgeInsets.symmetric(
+                  horizontal: size.width * 0.05,
+                  vertical: 0,
+                ),
+                child: ListView(
+                  physics: const BouncingScrollPhysics(),
+                  children: [
+                    const SizedBox(height: 24),
+                    _buildProfileRow(),
+                    const SizedBox(height: 20),
+                    _buildSearchBar(),
+                    const SizedBox(height: 14),
+                    if (_userLoaded && _userCity.isNotEmpty)
+                      _buildCityCategories()
+                    else if (_userLoaded)
+                      const SizedBox(
+                        height: 50,
+                        child: Center(
+                          child: Text(
+                            'No city selected',
+                            style: TextStyle(color: Color(0xffaaaaaa)),
+                          ),
+                        ),
+                      )
+                    else
+                      const SizedBox(height: 50),
+                    const SizedBox(height: 16),
+                    _buildDestinationCards(),
+                    const SizedBox(height: 12),
+                    FutureBuilder<List<Widget>>(
+                      future: fetchPC(),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const SizedBox.shrink();
+                        }
+                        if (snapshot.hasError) {
+                          return Center(
+                              child: Text('Error: ${snapshot.error}'));
+                        }
+                        return Column(children: snapshot.data ?? []);
+                      },
+                    ),
+                    if (_userLoaded && _userInterests.isNotEmpty)
+                      StreamBuilder<QuerySnapshot>(
+                        stream: FirebaseFirestore.instance
+                            .collection('destinationDetails')
+                            .snapshots(),
+                        builder: (context, snapshot) {
+                          if (!snapshot.hasData)
+                            return const SizedBox.shrink();
+
+                          final allDocs = snapshot.data!.docs;
+
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: _userInterests.map((interest) {
+                              final cityFiltered = _userCity.isNotEmpty
+                                  ? allDocs
+                                      .where((d) {
+                                        final data =
+                                            d.data() as Map<String, dynamic>;
+                                        return (data['city'] ?? '')
+                                                .toString()
+                                                .toLowerCase() ==
+                                            _userCity.toLowerCase();
+                                      })
+                                      .toList()
+                                  : allDocs;
+
+                              return _buildInterestRow(
+                                  interest, cityFiltered);
+                            }).toList(),
+                          );
+                        },
+                      ),
+                    const SizedBox(height: 30),
+                  ],
+                ),
+              ),
+            ),
+            // ✅ FIX: Footer inside SafeArea
+            SafeArea(
+              top: false,
+              child: Padding(
+                padding: EdgeInsets.only(
+                  bottom: size.height * 0.02,
+                  left: size.width * 0.05,
+                  right: size.width * 0.05,
+                  top: 8,
+                ),
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(18),
+                    color: Colors.white,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.08),
+                        blurRadius: 16,
+                        offset: const Offset(0, -4),
+                        spreadRadius: 1,
+                      ),
+                    ],
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 12),
+                    child: GNav(
+                      backgroundColor: Colors.white,
+                      color: const Color(0xffb0b0b0),
+                      activeColor: Colors.white,
+                      selectedIndex: selectedIndex,
+                      onTabChange: (index) {
+                        setState(() => selectedIndex = index);
+                        if (index == 0) {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => Dashboard(
+                                userId: widget.userId,
+                                email: widget.email,
+                                username: widget.username,
+                                profile: widget.profile,
+                              ),
+                            ),
+                          );
+                        } else if (index == 1) {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => SavedScreen(
+                                userId: widget.userId,
+                                email: widget.email,
+                                username: widget.username,
+                                profile: widget.profile,
+                              ),
+                            ),
+                          );
+                        } else if (index == 2) {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => SearchScreen(
+                                userId: widget.userId,
+                                email: widget.email,
+                                username: widget.username,
+                                profile: widget.profile,
+                              ),
+                            ),
+                          );
+                        } else {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ProfileScreen(
+                                userId: widget.userId,
+                                email: widget.email,
+                                username: widget.username,
+                                profile: widget.profile,
+                              ),
+                            ),
+                          );
+                        }
+                      },
+                      tabBackgroundColor: Constants.OrangeColor,
+                      gap: 8,
+                      padding: const EdgeInsets.all(10),
+                      tabs: const [
+                        GButton(
+                          icon: Icons.home_rounded,
+                          text: "Home",
+                          textStyle: TextStyle(
+                              fontSize: 12,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600),
+                        ),
+                        GButton(
+                          icon: Icons.bookmark_rounded,
+                          text: "Saved",
+                          textStyle: TextStyle(
+                              fontSize: 12,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600),
+                        ),
+                        GButton(
+                          icon: Icons.search_rounded,
+                          text: "Search",
+                          textStyle: TextStyle(
+                              fontSize: 12,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600),
+                        ),
+                        GButton(
+                          icon: Icons.person_rounded,
+                          text: "Profile",
+                          textStyle: TextStyle(
+                              fontSize: 12,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600),
+                        ),
+                      ],
                     ),
                   ),
-                )
-              else
-                const SizedBox(height: 50),
-
-              const SizedBox(height: 16),
-              _buildDestinationCards(),
-              const SizedBox(height: 12),
-              FutureBuilder<List<Widget>>(
-                future: fetchPC(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const SizedBox.shrink();
-                  }
-                  if (snapshot.hasError) {
-                    return Center(child: Text('Error: ${snapshot.error}'));
-                  }
-                  return Column(children: snapshot.data ?? []);
-                },
+                ),
               ),
-              if (_userLoaded && _userInterests.isNotEmpty)
-                StreamBuilder<QuerySnapshot>(
-                  stream: FirebaseFirestore.instance
-                      .collection('destinationDetails')
-                      .snapshots(),
-                  builder: (context, snapshot) {
-                    if (!snapshot.hasData) return const SizedBox.shrink();
-
-                    final allDocs = snapshot.data!.docs;
-
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: _userInterests.map((interest) {
-                        final cityFiltered = _userCity.isNotEmpty
-                            ? allDocs
-                                .where((d) {
-                                  final data =
-                                      d.data() as Map<String, dynamic>;
-                                  return (data['city'] ?? '')
-                                          .toString()
-                                          .toLowerCase() ==
-                                      _userCity.toLowerCase();
-                                })
-                                .toList()
-                            : allDocs;
-
-                        return _buildInterestRow(interest, cityFiltered);
-                      }).toList(),
-                    );
-                  },
-                ),
-              const SizedBox(height: 30),
-            ],
-          ),
-        ),
-      ),
-      bottomNavigationBar: Padding(
-        padding: EdgeInsets.only(
-          bottom: size.height * 0.02,
-          left: size.width * 0.05,
-          right: size.width * 0.05,
-        ),
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(18),
-            color: Colors.white,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.08),
-                blurRadius: 16,
-                offset: const Offset(0, -4),
-                spreadRadius: 1,
-              ),
-            ],
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-            child: GNav(
-              backgroundColor: Colors.white,
-              color: const Color(0xffb0b0b0),
-              activeColor: Colors.white,
-              selectedIndex: selectedIndex,
-              onTabChange: (index) {
-                setState(() => selectedIndex = index);
-                if (index == 0) {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => Dashboard(
-                        userId: widget.userId,
-                        email: widget.email,
-                        username: widget.username,
-                        profile: widget.profile,
-                      ),
-                    ),
-                  );
-                } else if (index == 1) {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => SavedScreen(
-                        userId: widget.userId,
-                        email: widget.email,
-                        username: widget.username,
-                        profile: widget.profile,
-                      ),
-                    ),
-                  );
-                } else if (index == 2) {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => SearchScreen(
-                        userId: widget.userId,
-                        email: widget.email,
-                        username: widget.username,
-                        profile: widget.profile,
-                      ),
-                    ),
-                  );
-                } else {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ProfileScreen(
-                        userId: widget.userId,
-                        email: widget.email,
-                        username: widget.username,
-                        profile: widget.profile,
-                      ),
-                    ),
-                  );
-                }
-              },
-              tabBackgroundColor: Constants.OrangeColor,
-              gap: 8,
-              padding: const EdgeInsets.all(10),
-              tabs: const [
-                GButton(
-                  icon: Icons.home_rounded,
-                  text: "Home",
-                  textStyle: TextStyle(fontSize: 12, color: Colors.white,  fontWeight: FontWeight.w600),
-                ),
-                GButton(
-                  icon: Icons.bookmark_rounded,
-                  text: "Saved",
-                  textStyle: TextStyle(fontSize: 12, color: Colors.white, fontWeight: FontWeight.w600),
-                ),
-                GButton(
-                  icon: Icons.search_rounded,
-                  text: "Search",
-                  textStyle: TextStyle(fontSize: 12, color: Colors.white, fontWeight: FontWeight.w600),
-                ),
-                GButton(
-                  icon: Icons.person_rounded,
-                  text: "Profile",
-                  textStyle: TextStyle(fontSize: 12, color: Colors.white, fontWeight: FontWeight.w600),
-                ),
-              ],
             ),
-          ),
+          ],
         ),
       ),
     );
@@ -504,7 +569,7 @@ class _DashboardState extends State<Dashboard> {
           decoration: BoxDecoration(
             borderRadius: const BorderRadius.all(Radius.circular(20)),
             border: Border.all(
-              color: Constants.greyTextColor,
+              color: Constants.greyTextColor.withOpacity(0.3),
               width: 1.5,
             ),
             boxShadow: [
@@ -516,21 +581,22 @@ class _DashboardState extends State<Dashboard> {
             ],
           ),
           child: ClipOval(
-  child: CircleAvatar(
-    radius: 26,
-    backgroundImage: getImageProvider(widget.profile),
-    onBackgroundImageError: (exception, stackTrace) {
-      debugPrint('Profile image error: $exception');
-    },
-    child: widget.profile.isEmpty || widget.profile == 'assets/images/profileDefaultImg.jpg'
-        ? Icon(
-            Icons.person_rounded,
-            size: 30,
-            color: Colors.grey.shade400,
-          )
-        : null,
-  ),
-),
+            child: CircleAvatar(
+              radius: 26,
+              backgroundImage: getImageProvider(widget.profile),
+              onBackgroundImageError: (exception, stackTrace) {
+                debugPrint('Profile image error: $exception');
+              },
+              child: widget.profile.isEmpty ||
+                      widget.profile == 'assets/images/profileDefaultImg.jpg'
+                  ? Icon(
+                      Icons.person_rounded,
+                      size: 30,
+                      color: Colors.grey.shade400,
+                    )
+                  : null,
+            ),
+          ),
         ),
         const SizedBox(width: 14),
         Expanded(
@@ -689,19 +755,12 @@ class _DashboardState extends State<Dashboard> {
             .where((city) => city.isNotEmpty)
             .toList();
 
-        debugPrint('📍 All Cities: $cities');
-        debugPrint('👤 User City: "$_userCity" (trimmed, length: ${_userCity.length})');
-
         return SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           physics: const BouncingScrollPhysics(),
           child: Row(
             children: cities.map((city) {
               final isUserCity = city.toLowerCase() == _userCity.toLowerCase();
-              
-              debugPrint('✅ "$city".toLowerCase() = "${city.toLowerCase()}"');
-              debugPrint('✅ "$_userCity".toLowerCase() = "${_userCity.toLowerCase()}"');
-              debugPrint('👉 Match? $isUserCity');
 
               return Padding(
                 padding: const EdgeInsets.only(right: 8),
@@ -761,26 +820,29 @@ class _DashboardState extends State<Dashboard> {
   }
 
   Widget _buildDestinationCards() {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      physics: const BouncingScrollPhysics(),
-      child: StreamBuilder(
-        stream: FirebaseFirestore.instance
-            .collection('destinationDetails')
-            .snapshots(),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) return const SizedBox.shrink();
-          var destinationData = snapshot.data?.docs ?? [];
-          if (destinationData.isEmpty) {
-            return const Center(child: Text('No destinations found.'));
-          }
+  return SingleChildScrollView(
+    scrollDirection: Axis.horizontal,
+    physics: const BouncingScrollPhysics(),
+    child: StreamBuilder(
+      stream: FirebaseFirestore.instance
+          .collection('destinationDetails')
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) return const SizedBox.shrink();
+        var destinationData = snapshot.data?.docs ?? [];
+        if (destinationData.isEmpty) {
+          return const Center(child: Text('No destinations found.'));
+        }
 
-          Future<List<Widget>> fetchUrls() async {
-            return Future.wait(destinationData.map((doc) async {
+        // ✅ FIX: Add proper padding for horizontal scroll
+        return Padding(
+          padding: const EdgeInsets.only(right: 16),
+          child: Row(
+            children: destinationData.map((doc) {
               var data = doc.data();
               String dID = doc.id;
-              String imagePath =
-                  data['imagePath'] ?? 'assets/images/PC.png';
+              String imagePath = data['imagePath'] ?? 'assets/images/PC.png';
+              
               return GestureDetector(
                 onTap: () => Navigator.push(
                   context,
@@ -792,30 +854,21 @@ class _DashboardState extends State<Dashboard> {
                     ),
                   ),
                 ),
-                child: DestinationCards(
-                  imgPath: imagePath,
-                  location: data['locationName'],
-                  city: data['city'],
-                  distance: data['distance'],
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 12),
+                  child: DestinationCards(
+                    imgPath: imagePath,
+                    location: data['locationName'],
+                    city: data['city'],
+                    distance: data['distance'],
+                  ),
                 ),
               );
-            }).toList());
-          }
-
-          return FutureBuilder<List<Widget>>(
-            future: fetchUrls(),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const SizedBox.shrink();
-              }
-              if (snapshot.hasError) {
-                return Text('Error: ${snapshot.error}');
-              }
-              return Row(children: snapshot.data!);
-            },
-          );
-        },
-      ),
-    );
-  }
+            }).toList(),
+          ),
+        );
+      },
+    ),
+  );
+}
 }

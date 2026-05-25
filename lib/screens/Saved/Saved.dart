@@ -1,6 +1,7 @@
 import 'package:citi_guide/Constants/constants.dart';
 import 'package:citi_guide/screens/Cities/cities.dart';
 import 'package:citi_guide/screens/Dashboard/dashboard.dart';
+import 'package:citi_guide/screens/Details/details.dart';
 import 'package:citi_guide/screens/SearchScreen/searchScreen.dart';
 import 'package:citi_guide/screens/profile/profile.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -75,7 +76,6 @@ class _SavedScreenState extends State<SavedScreen> {
 
       if (!mounted) return;
 
-      // Theme matching clean english Snack-bar toggle notification
       ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -86,7 +86,7 @@ class _SavedScreenState extends State<SavedScreen> {
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  '$locationName removed from saved places',
+                  '$locationName removed from saved',
                   style: const TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
@@ -95,8 +95,7 @@ class _SavedScreenState extends State<SavedScreen> {
               ),
             ],
           ),
-          backgroundColor: Constants
-              .OrangeColor, // Matching theme orange color
+          backgroundColor: Constants.OrangeColor,
           behavior: SnackBarBehavior.floating,
           duration: const Duration(seconds: 2),
           shape:
@@ -112,46 +111,101 @@ class _SavedScreenState extends State<SavedScreen> {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
+    final isSmallScreen = size.height < 700;
 
     return Scaffold(
       backgroundColor: const Color(0xfffbf8f3),
       body: SafeArea(
+        bottom: false,
         child: Column(
           children: [
-            // ── Top Bar ──
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            // ── Enhanced Top Header ──
+            Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: size.width * 0.05,
+                vertical: isSmallScreen ? 12 : 16,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.04),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
               child: Row(
                 children: [
                   GestureDetector(
-                    onTap: () => Navigator.pop(context),
-                    child: const Icon(Icons.arrow_back_ios,
-                        size: 20, color: Colors.black),
+                    onTap: () => Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => Dashboard(
+                          userId: widget.userId,
+                          email: widget.email,
+                          username: widget.username,
+                          profile: widget.profile,
+                        ),
+                      ),
+                    ),
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xfffbf8f3),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Icon(
+                        Icons.arrow_back_ios_rounded,
+                        size: 18,
+                        color: Constants.OrangeColor,
+                      ),
+                    ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 16),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Saved',
+                        'Saved Places',
                         style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          color: Constants.OrangeColor,
+                          fontSize: isSmallScreen ? 18 : 22,
+                          fontWeight: FontWeight.w900,
+                          color: const Color(0xff1a1a1a),
+                          letterSpacing: -0.3,
                         ),
                       ),
+                      const SizedBox(height: 4),
                       Container(
-                        height: 2,
-                        width: 40,
-                        color: Constants.OrangeColor,
+                        height: 2.5,
+                        width: 50,
+                        decoration: BoxDecoration(
+                          gradient: Constants.orangeGradient,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
                       ),
                     ],
+                  ),
+                  const Spacer(),
+                  // ── Icon Badge ──
+                  Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: isSmallScreen ? 8 : 12,
+                      vertical: isSmallScreen ? 6 : 8,
+                    ),
+                    decoration: BoxDecoration(
+                      gradient: Constants.orangeGradient,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(
+                      Icons.bookmark_rounded,
+                      size: isSmallScreen ? 16 : 20,
+                      color: Colors.white,
+                    ),
                   ),
                 ],
               ),
             ),
-
-            const Divider(height: 1, color: Color(0xFFEEEEEE)),
 
             // ── Grid Content ──
             Expanded(
@@ -160,8 +214,11 @@ class _SavedScreenState extends State<SavedScreen> {
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return Center(
-                        child: CircularProgressIndicator(
-                            color: Constants.OrangeColor));
+                      child: CircularProgressIndicator(
+                        color: Constants.OrangeColor,
+                        strokeWidth: 2,
+                      ),
+                    );
                   }
 
                   if (!snapshot.hasData || snapshot.data!.isEmpty) {
@@ -169,15 +226,47 @@ class _SavedScreenState extends State<SavedScreen> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.bookmark_border_rounded,
-                              size: 60, color: Colors.grey.shade300),
-                          const SizedBox(height: 12),
+                          Container(
+                            padding: const EdgeInsets.all(24),
+                            decoration: BoxDecoration(
+                              gradient: Constants.orangeGradient,
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Constants.OrangeColor.withOpacity(0.2),
+                                  blurRadius: 20,
+                                  spreadRadius: 5,
+                                ),
+                              ],
+                            ),
+                            child: Icon(
+                              Icons.bookmark_border_rounded,
+                              size: 50,
+                              color: Colors.white,
+                            ),
+                          ),
+                          const SizedBox(height: 20),
                           Text(
-                            'No saved places yet!',
+                            'No Saved Places Yet!',
                             style: TextStyle(
-                              color: Colors.grey.shade400,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
+                              color: const Color(0xff1a1a1a),
+                              fontSize: isSmallScreen ? 16 : 18,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: -0.2,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 32),
+                            child: Text(
+                              'Start exploring and save your favorite destinations',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: const Color(0xff999999),
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                                height: 1.5,
+                              ),
                             ),
                           ),
                         ],
@@ -188,15 +277,15 @@ class _SavedScreenState extends State<SavedScreen> {
                   final items = snapshot.data!;
 
                   return Padding(
-                    padding: const EdgeInsets.all(12),
+                    padding: EdgeInsets.all(size.width * 0.04),
                     child: GridView.builder(
                       physics: const BouncingScrollPhysics(),
                       gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        crossAxisSpacing: 12,
-                        mainAxisSpacing: 12,
-                        childAspectRatio: 1.0,
+                          SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: isSmallScreen ? 2 : 2,
+                        crossAxisSpacing: isSmallScreen ? 10 : 14,
+                        mainAxisSpacing: isSmallScreen ? 10 : 14,
+                        childAspectRatio: 0.85,
                       ),
                       itemCount: items.length,
                       itemBuilder: (context, index) {
@@ -205,15 +294,30 @@ class _SavedScreenState extends State<SavedScreen> {
                             item['imagePath'] ?? 'assets/images/PC.png';
                         final String locationName =
                             item['locationName'] ?? 'Unknown';
-
-                        // ✅ Fix: ID safe fallbacks ensuring the document map path matches properly
                         final String destinationId =
                             item['destinationId'] ?? item['id'] ?? '';
 
-                        return _buildSavedCard(
-                          imagePath: imagePath,
-                          locationName: locationName,
-                          destinationId: destinationId,
+                        return GestureDetector(
+                          onTap: () {
+                            if (destinationId.isNotEmpty) {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => DestinationDetails(
+                                    destinationID: destinationId,
+                                    url: imagePath,
+                                    userId: widget.userId,
+                                  ),
+                                ),
+                              );
+                            }
+                          },
+                          child: _buildSavedCard(
+                            imagePath: imagePath,
+                            locationName: locationName,
+                            destinationId: destinationId,
+                            index: index,
+                          ),
                         );
                       },
                     ),
@@ -225,122 +329,126 @@ class _SavedScreenState extends State<SavedScreen> {
         ),
       ),
 
-      // ── Navigation Bar ──
-      bottomNavigationBar: Padding(
-        padding: EdgeInsets.only(
-          bottom: size.height * 0.02,
-          left: size.width * 0.05,
-          right: size.width * 0.05,
-        ),
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(18),
-            color: Colors.white,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.08),
-                blurRadius: 16,
-                offset: const Offset(0, -4),
-                spreadRadius: 1,
-              ),
-            ],
+      // ── Bottom Navigation ──
+      bottomNavigationBar: SafeArea(
+        top: false,
+        child: Padding(
+          padding: EdgeInsets.only(
+            bottom: size.height * 0.02,
+            left: size.width * 0.05,
+            right: size.width * 0.05,
+            top: 8,
           ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-            child: GNav(
-              backgroundColor: Colors.white,
-              color: const Color(0xffb0b0b0),
-              activeColor: Colors.white,
-              selectedIndex: selectedIndex,
-              onTabChange: (index) {
-                setState(() => selectedIndex = index);
-                if (index == 0) {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => Dashboard(
-                        userId: widget.userId,
-                        email: widget.email,
-                        username: widget.username,
-                        profile: widget.profile,
-                      ),
-                    ),
-                  );
-                } else if (index == 1) {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => SavedScreen(
-                        userId: widget.userId,
-                        email: widget.email,
-                        username: widget.username,
-                        profile: widget.profile,
-                      ),
-                    ),
-                  );
-                } else if (index == 2) {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => SearchScreen(
-                        userId: widget.userId,
-                        email: widget.email,
-                        username: widget.username,
-                        profile: widget.profile,
-                      ),
-                    ),
-                  );
-                } else {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ProfileScreen(
-                        userId: widget.userId,
-                        email: widget.email,
-                        username: widget.username,
-                        profile: widget.profile,
-                      ),
-                    ),
-                  );
-                }
-              },
-              tabBackgroundColor: Constants.OrangeColor,
-              gap: 8,
-              padding: const EdgeInsets.all(10),
-              tabs: const [
-                GButton(
-                  icon: Icons.home_rounded,
-                  text: "Home",
-                  textStyle: TextStyle(
-                      fontSize: 12,
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600),
-                ),
-                GButton(
-                  icon: Icons.bookmark_rounded,
-                  text: "Saved",
-                  textStyle: TextStyle(
-                      fontSize: 12,
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600),
-                ),
-                GButton(
-                  icon: Icons.search_rounded,
-                  text: "Search",
-                  textStyle: TextStyle(
-                      fontSize: 12,
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600),
-                ),
-                GButton(
-                  icon: Icons.person_rounded,
-                  text: "Profile",
-                  textStyle: TextStyle(
-                      fontSize: 12,
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600),
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(18),
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.08),
+                  blurRadius: 16,
+                  offset: const Offset(0, -4),
+                  spreadRadius: 1,
                 ),
               ],
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              child: GNav(
+                backgroundColor: Colors.white,
+                color: const Color(0xffb0b0b0),
+                activeColor: Colors.white,
+                selectedIndex: selectedIndex,
+                onTabChange: (index) {
+                  setState(() => selectedIndex = index);
+                  if (index == 0) {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => Dashboard(
+                          userId: widget.userId,
+                          email: widget.email,
+                          username: widget.username,
+                          profile: widget.profile,
+                        ),
+                      ),
+                    );
+                  } else if (index == 1) {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => SavedScreen(
+                          userId: widget.userId,
+                          email: widget.email,
+                          username: widget.username,
+                          profile: widget.profile,
+                        ),
+                      ),
+                    );
+                  } else if (index == 2) {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => SearchScreen(
+                          userId: widget.userId,
+                          email: widget.email,
+                          username: widget.username,
+                          profile: widget.profile,
+                        ),
+                      ),
+                    );
+                  } else {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ProfileScreen(
+                          userId: widget.userId,
+                          email: widget.email,
+                          username: widget.username,
+                          profile: widget.profile,
+                        ),
+                      ),
+                    );
+                  }
+                },
+                tabBackgroundColor: Constants.OrangeColor,
+                gap: 8,
+                padding: const EdgeInsets.all(10),
+                tabs: const [
+                  GButton(
+                    icon: Icons.home_rounded,
+                    text: "Home",
+                    textStyle: TextStyle(
+                        fontSize: 12,
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600),
+                  ),
+                  GButton(
+                    icon: Icons.bookmark_rounded,
+                    text: "Saved",
+                    textStyle: TextStyle(
+                        fontSize: 12,
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600),
+                  ),
+                  GButton(
+                    icon: Icons.search_rounded,
+                    text: "Search",
+                    textStyle: TextStyle(
+                        fontSize: 12,
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600),
+                  ),
+                  GButton(
+                    icon: Icons.person_rounded,
+                    text: "Profile",
+                    textStyle: TextStyle(
+                        fontSize: 12,
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -348,50 +456,57 @@ class _SavedScreenState extends State<SavedScreen> {
     );
   }
 
-  // ── Saved Card Widget ──
+  // ── Enhanced Saved Card Widget ──
   Widget _buildSavedCard({
     required String imagePath,
     required String locationName,
     required String destinationId,
+    required int index,
   }) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(16),
       child: Stack(
         fit: StackFit.expand,
         children: [
-          // ── Image ──
-          imagePath.startsWith('http')
-              ? Image.network(
-                  imagePath,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Container(
-                    color: Colors.grey.shade200,
-                    child: const Icon(Icons.image_not_supported,
-                        color: Colors.grey),
-                  ),
-                )
-              : Image.asset(
-                  imagePath,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Container(
-                    color: Colors.grey.shade200,
-                    child: const Icon(Icons.image_not_supported,
-                        color: Colors.grey),
-                  ),
-                ),
+          // ── Image with proper loading ──
+          _buildCardImage(imagePath),
 
-          // ── Dark gradient bottom ──
+          // ── Dark gradient overlay (bottom) ──
           Positioned(
             bottom: 0,
             left: 0,
             right: 0,
             child: Container(
-              height: 60,
-              decoration: const BoxDecoration(
+              height: 80,
+              decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.bottomCenter,
                   end: Alignment.topCenter,
-                  colors: [Colors.black87, Colors.transparent],
+                  colors: [
+                    Colors.black.withOpacity(0.7),
+                    Colors.black.withOpacity(0.3),
+                    Colors.transparent,
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          // ── Light gradient overlay (top) ──
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              height: 60,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.black.withOpacity(0.2),
+                    Colors.transparent,
+                  ],
                 ),
               ),
             ),
@@ -399,43 +514,102 @@ class _SavedScreenState extends State<SavedScreen> {
 
           // ── Location Name ──
           Positioned(
-            bottom: 10,
-            left: 10,
-            right: 40,
-            child: Text(
-              locationName,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+            bottom: 12,
+            left: 12,
+            right: 50,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  locationName,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.3,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
             ),
           ),
 
-          // ── Star / Unsave Toggle Icon Button ──
+          // ── Star / Unsave Button ──
           Positioned(
-            top: 8,
-            right: 8,
+            top: 10,
+            right: 10,
             child: GestureDetector(
-              onTap: () => _unsave(destinationId, locationName),
+              onTap: () {
+                // Stop propagation to parent GestureDetector
+                // This ensures only unsave happens, no navigation
+                _unsave(destinationId, locationName);
+              },
               child: Container(
-                padding: const EdgeInsets.all(6),
+                padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.black
-                      .withOpacity(0.4), // Thoda visually readable background contrast ke liye
+                  gradient: Constants.orangeGradient,
                   shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Constants.OrangeColor.withOpacity(0.3),
+                      blurRadius: 8,
+                      spreadRadius: 1,
+                    ),
+                  ],
                 ),
                 child: const Icon(
-                  Icons.star_rounded, // Better filled rounded clean star icon
-                  color: Colors.amber,
-                  size: 20,
+                  Icons.star_rounded,
+                  color: Colors.white,
+                  size: 18,
                 ),
               ),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  // ── Helper: Build card image with proper error handling ──
+  Widget _buildCardImage(String imagePath) {
+    String cleanPath = imagePath.replaceFirst('file://', '').trim();
+
+    if (cleanPath.startsWith('assets/')) {
+      return Image.asset(
+        cleanPath,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => _cardFallback(),
+      );
+    }
+
+    if (cleanPath.startsWith('http://') || cleanPath.startsWith('https://')) {
+      return Image.network(
+        cleanPath,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => Image.asset(
+          'assets/images/PC.png',
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => _cardFallback(),
+        ),
+      );
+    }
+
+    return Image.asset(
+      'assets/images/PC.png',
+      fit: BoxFit.cover,
+      errorBuilder: (_, __, ___) => _cardFallback(),
+    );
+  }
+
+  // ── Fallback widget ──
+  Widget _cardFallback() {
+    return Container(
+      color: Colors.grey.shade200,
+      child: Icon(
+        Icons.image_not_supported_rounded,
+        color: Colors.grey.shade400,
+        size: 40,
       ),
     );
   }

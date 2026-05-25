@@ -45,7 +45,6 @@ class _CitiesScreenState extends State<CitiesScreen> {
   }
 
   // ─── Firestore fetch ──────────────────────────────────────────────────────
-  // Firestore fields: city (String), img (String — asset path)
   Future<void> _fetchCities() async {
     try {
       final snapshot =
@@ -97,7 +96,7 @@ class _CitiesScreenState extends State<CitiesScreen> {
   }
 
   // ─── City Card ────────────────────────────────────────────────────────────
-  Widget _buildCityCard(Map<String, dynamic> city) {
+  Widget _buildCityCard(Map<String, dynamic> city, bool isSmallScreen) {
     final String name = city['name'] as String;
     final String imgPath = city['img'] as String;
 
@@ -105,7 +104,8 @@ class _CitiesScreenState extends State<CitiesScreen> {
       onTap: () => Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (_) => CityDestinations(cityFetch: name, userId: widget.userId),
+          builder: (_) =>
+              CityDestinations(cityFetch: name, userId: widget.userId),
         ),
       ),
       child: Container(
@@ -153,11 +153,13 @@ class _CitiesScreenState extends State<CitiesScreen> {
 
               // ── Top-right: subtle red tint badge ──────────────────
               Positioned(
-                top: 10,
-                right: 10,
+                top: isSmallScreen ? 8 : 10,
+                right: isSmallScreen ? 8 : 10,
                 child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isSmallScreen ? 6 : 8,
+                    vertical: isSmallScreen ? 3 : 4,
+                  ),
                   decoration: BoxDecoration(
                     gradient: Constants.redGradient,
                     borderRadius: BorderRadius.circular(20),
@@ -169,17 +171,18 @@ class _CitiesScreenState extends State<CitiesScreen> {
                       ),
                     ],
                   ),
-                  child: const Row(
+                  child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(Icons.explore_outlined,
-                          color: Colors.white, size: 10),
-                      SizedBox(width: 3),
+                          color: Colors.white,
+                          size: isSmallScreen ? 9 : 10),
+                      SizedBox(width: isSmallScreen ? 2 : 3),
                       Text(
                         'Explore',
                         style: TextStyle(
                           color: Colors.white,
-                          fontSize: 9,
+                          fontSize: isSmallScreen ? 8 : 9,
                           fontWeight: FontWeight.w700,
                           letterSpacing: 0.3,
                         ),
@@ -191,21 +194,21 @@ class _CitiesScreenState extends State<CitiesScreen> {
 
               // ── Bottom: city info ──────────────────────────────────
               Positioned(
-                left: 12,
-                right: 12,
-                bottom: 12,
+                left: isSmallScreen ? 10 : 12,
+                right: isSmallScreen ? 10 : 12,
+                bottom: isSmallScreen ? 10 : 12,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
                       name,
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: Colors.white,
-                        fontSize: 17,
+                        fontSize: isSmallScreen ? 14 : 17,
                         fontWeight: FontWeight.w800,
                         letterSpacing: 0.2,
-                        shadows: [
+                        shadows: const [
                           Shadow(
                             color: Colors.black54,
                             blurRadius: 8,
@@ -213,21 +216,23 @@ class _CitiesScreenState extends State<CitiesScreen> {
                           ),
                         ],
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 4),
+                    SizedBox(height: isSmallScreen ? 3 : 4),
                     Row(
                       children: [
                         Icon(
                           Icons.location_on,
                           color: Constants.OrangeColor.withOpacity(0.9),
-                          size: 11,
+                          size: isSmallScreen ? 10 : 11,
                         ),
-                        const SizedBox(width: 3),
+                        SizedBox(width: isSmallScreen ? 2 : 3),
                         Text(
                           'Pakistan',
                           style: TextStyle(
                             color: Colors.white.withOpacity(0.75),
-                            fontSize: 10,
+                            fontSize: isSmallScreen ? 9 : 10,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -261,7 +266,7 @@ class _CitiesScreenState extends State<CitiesScreen> {
   }
 
   // ─── Empty search state ───────────────────────────────────────────────────
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(bool isSmallScreen) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -273,22 +278,23 @@ class _CitiesScreenState extends State<CitiesScreen> {
               shape: BoxShape.circle,
             ),
             child: Icon(Icons.search_off_rounded,
-                size: 40, color: Constants.greyTextColor),
+                size: isSmallScreen ? 35 : 40,
+                color: Constants.greyTextColor),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: isSmallScreen ? 12 : 16),
           Text(
             '"$_searchQuery" nahi mila',
             style: TextStyle(
-              fontSize: 16,
+              fontSize: isSmallScreen ? 14 : 16,
               fontWeight: FontWeight.w700,
               color: Colors.grey.shade700,
             ),
           ),
-          const SizedBox(height: 6),
+          SizedBox(height: isSmallScreen ? 4 : 6),
           Text(
             'Koi aur city try karein',
             style: TextStyle(
-              fontSize: 13,
+              fontSize: isSmallScreen ? 12 : 13,
               color: Constants.greyTextColor,
             ),
           ),
@@ -300,28 +306,35 @@ class _CitiesScreenState extends State<CitiesScreen> {
   // ─── Build ────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final isSmallScreen = size.height < 700;
+
     return Scaffold(
       backgroundColor: Constants.greyColor,
-      body: CustomScrollView(
-        physics: const BouncingScrollPhysics(),
-        slivers: [
-          // ── SliverAppBar — collapsible header ─────────────────────
-          SliverAppBar(
-            expandedHeight: 150,
-            pinned: true,
-            elevation: 0,
-            backgroundColor: Constants.redColor,
-            iconTheme: const IconThemeData(color: Colors.white),
-            flexibleSpace: FlexibleSpaceBar(
-              collapseMode: CollapseMode.parallax,
-              background: Container(
-                decoration: BoxDecoration(
-                  gradient: Constants.redGradient,
-                 
-                ),
-                child: SafeArea(
+      body: SafeArea(
+        child: CustomScrollView(
+          physics: const BouncingScrollPhysics(),
+          slivers: [
+            // ── SliverAppBar — collapsible header ─────────────────────
+            SliverAppBar(
+              expandedHeight: isSmallScreen ? 120 : 150,
+              pinned: true,
+              elevation: 0,
+              backgroundColor: Constants.redColor,
+              iconTheme: const IconThemeData(color: Colors.white),
+              flexibleSpace: FlexibleSpaceBar(
+                collapseMode: CollapseMode.parallax,
+                background: Container(
+                  decoration: BoxDecoration(
+                    gradient: Constants.redGradient,
+                  ),
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+                    padding: EdgeInsets.fromLTRB(
+                      20,
+                      isSmallScreen ? 12 : 16,
+                      20,
+                      isSmallScreen ? 12 : 16,
+                    ),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
@@ -334,34 +347,36 @@ class _CitiesScreenState extends State<CitiesScreen> {
                                 children: [
                                   Image.asset(
                                     Constants.appLogo,
-                                    width: 26,
-                                    height: 26,
+                                    width: isSmallScreen ? 22 : 26,
+                                    height: isSmallScreen ? 22 : 26,
                                     color: Colors.white,
-                                    errorBuilder: (_, __, ___) =>
-                                        const Icon(Icons.map,
-                                            color: Colors.white, size: 26),
+                                    errorBuilder: (_, __, ___) => Icon(
+                                      Icons.map,
+                                      color: Colors.white,
+                                      size: isSmallScreen ? 22 : 26,
+                                    ),
                                   ),
-                                  const SizedBox(width: 8),
-                                  const Text(
+                                  SizedBox(width: isSmallScreen ? 6 : 8),
+                                  Text(
                                     'Discover Cities',
                                     style: TextStyle(
                                       color: Colors.white,
-                                      fontSize: 22,
+                                      fontSize: isSmallScreen ? 18 : 22,
                                       fontWeight: FontWeight.w800,
                                       letterSpacing: -0.5,
                                     ),
                                   ),
                                 ],
                               ),
-                              
                               Padding(
-                                padding: const EdgeInsets.only(left: 36.0),
+                                padding: EdgeInsets.only(
+                                  left: isSmallScreen ? 30 : 36,
+                                ),
                                 child: Text(
                                   'Search bestest for Pakistan',
-                                  
                                   style: TextStyle(
                                     color: Colors.white.withOpacity(0.75),
-                                    fontSize: 12,
+                                    fontSize: isSmallScreen ? 11 : 12,
                                   ),
                                 ),
                               ),
@@ -372,19 +387,22 @@ class _CitiesScreenState extends State<CitiesScreen> {
                         // City count badge
                         if (_allCities.isNotEmpty)
                           Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 6),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: isSmallScreen ? 10 : 12,
+                              vertical: isSmallScreen ? 5 : 6,
+                            ),
                             decoration: BoxDecoration(
                               color: Colors.white.withOpacity(0.18),
                               borderRadius: BorderRadius.circular(20),
                               border: Border.all(
-                                  color: Colors.white.withOpacity(0.3)),
+                                color: Colors.white.withOpacity(0.3),
+                              ),
                             ),
                             child: Text(
                               '${_allCities.length} Cities',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 color: Colors.white,
-                                fontSize: 11,
+                                fontSize: isSmallScreen ? 10 : 11,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
@@ -393,137 +411,158 @@ class _CitiesScreenState extends State<CitiesScreen> {
                     ),
                   ),
                 ),
-              ),
-             
-              titlePadding: const EdgeInsets.only(left: 56, bottom: 14),
-            ),
-          ),
-
-          // ── Search bar ─────────────────────────────────────────────
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Constants.whiteColor,
-                  borderRadius:
-                      BorderRadius.circular(Constants.buttonBorderRadius + 4),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.07),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: TextField(
-                  controller: _searchController,
-                  focusNode: _searchFocus,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: Color(0xFF1A1A1A),
-                  ),
-                  decoration: InputDecoration(
-                    hintText: 'City search karein...',
-                    hintStyle: TextStyle(
-                      color: Constants.greyTextColor,
-                      fontSize: 14,
-                    ),
-                    prefixIcon: Padding(
-                      padding: const EdgeInsets.only(left: 14, right: 8),
-                      child: Icon(
-                        Icons.search_rounded,
-                        color: Constants.redColor,
-                        size: 22,
-                      ),
-                    ),
-                    prefixIconConstraints: const BoxConstraints(minWidth: 50),
-                    suffixIcon: _searchQuery.isNotEmpty
-                        ? GestureDetector(
-                            onTap: _clearSearch,
-                            child: Padding(
-                              padding: const EdgeInsets.only(right: 12),
-                              child: Icon(
-                                Icons.close_rounded,
-                                color: Constants.greyTextColor,
-                                size: 20,
-                              ),
-                            ),
-                          )
-                        : null,
-                    suffixIconConstraints: const BoxConstraints(minWidth: 40),
-                    border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(
-                      vertical: 2,
-                      horizontal: 4,
-                    ),
-                  ),
+                titlePadding: EdgeInsets.only(
+                  left: isSmallScreen ? 48 : 56,
+                  bottom: isSmallScreen ? 10 : 14,
                 ),
               ),
             ),
-          ),
 
-          // ── Result count ───────────────────────────────────────────
-          if (!_isLoading)
+            // ── Search bar ─────────────────────────────────────────────
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 14, 20, 2),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 3,
-                      height: 14,
-                      decoration: BoxDecoration(
-                        gradient: Constants.redGradient,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
+                padding: EdgeInsets.fromLTRB(
+                  isSmallScreen ? 12 : 16,
+                  isSmallScreen ? 12 : 16,
+                  isSmallScreen ? 12 : 16,
+                  0,
+                ),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Constants.whiteColor,
+                    borderRadius: BorderRadius.circular(
+                      Constants.buttonBorderRadius + 4,
                     ),
-                    const SizedBox(width: 8),
-                    Text(
-                      _searchQuery.isEmpty
-                          ? 'All cities — ${_allCities.length} available'
-                          : '${_filteredCities.length} results found',
-                      style: TextStyle(
-                        fontSize: 12,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.07),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: TextField(
+                    controller: _searchController,
+                    focusNode: _searchFocus,
+                    style: TextStyle(
+                      fontSize: isSmallScreen ? 13 : 14,
+                      color: const Color(0xFF1A1A1A),
+                    ),
+                    decoration: InputDecoration(
+                      hintText: 'City search karein...',
+                      hintStyle: TextStyle(
                         color: Constants.greyTextColor,
-                        fontWeight: FontWeight.w600,
+                        fontSize: isSmallScreen ? 13 : 14,
+                      ),
+                      prefixIcon: Padding(
+                        padding: const EdgeInsets.only(left: 14, right: 8),
+                        child: Icon(
+                          Icons.search_rounded,
+                          color: Constants.redColor,
+                          size: isSmallScreen ? 20 : 22,
+                        ),
+                      ),
+                      prefixIconConstraints:
+                          const BoxConstraints(minWidth: 50),
+                      suffixIcon: _searchQuery.isNotEmpty
+                          ? GestureDetector(
+                              onTap: _clearSearch,
+                              child: Padding(
+                                padding: const EdgeInsets.only(right: 12),
+                                child: Icon(
+                                  Icons.close_rounded,
+                                  color: Constants.greyTextColor,
+                                  size: isSmallScreen ? 18 : 20,
+                                ),
+                              ),
+                            )
+                          : null,
+                      suffixIconConstraints:
+                          const BoxConstraints(minWidth: 40),
+                      border: InputBorder.none,
+                      contentPadding: const EdgeInsets.symmetric(
+                        vertical: 2,
+                        horizontal: 4,
                       ),
                     ),
-                  ],
+                  ),
                 ),
               ),
             ),
 
-          // ── Grid / Loading / Empty ─────────────────────────────────
-          if (_isLoading)
-            SliverFillRemaining(
-              child: Center(
-                child: CircularProgressIndicator(
-                  color: Constants.redColor,
-                  strokeWidth: 2.5,
+            // ── Result count ───────────────────────────────────────────
+            if (!_isLoading)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(
+                    isSmallScreen ? 16 : 20,
+                    isSmallScreen ? 10 : 14,
+                    isSmallScreen ? 16 : 20,
+                    2,
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 3,
+                        height: 14,
+                        decoration: BoxDecoration(
+                          gradient: Constants.redGradient,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        _searchQuery.isEmpty
+                            ? 'All cities — ${_allCities.length} available'
+                            : '${_filteredCities.length} results found',
+                        style: TextStyle(
+                          fontSize: isSmallScreen ? 11 : 12,
+                          color: Constants.greyTextColor,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            )
-          else if (_filteredCities.isEmpty)
-            SliverFillRemaining(child: _buildEmptyState())
-          else
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 30),
-              sliver: SliverGrid(
-                delegate: SliverChildBuilderDelegate(
-                  (_, i) => _buildCityCard(_filteredCities[i]),
-                  childCount: _filteredCities.length,
+
+            // ── Grid / Loading / Empty ─────────────────────────────────
+            if (_isLoading)
+              SliverFillRemaining(
+                child: Center(
+                  child: CircularProgressIndicator(
+                    color: Constants.redColor,
+                    strokeWidth: 2.5,
+                  ),
                 ),
-                gridDelegate:
-                    const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 14,
-                  mainAxisSpacing: 14,
-                  childAspectRatio: 0.82,
+              )
+            else if (_filteredCities.isEmpty)
+              SliverFillRemaining(
+                child: _buildEmptyState(isSmallScreen),
+              )
+            else
+              SliverPadding(
+                padding: EdgeInsets.fromLTRB(
+                  isSmallScreen ? 12 : 16,
+                  isSmallScreen ? 6 : 8,
+                  isSmallScreen ? 12 : 16,
+                  isSmallScreen ? 20 : 30,
+                ),
+                sliver: SliverGrid(
+                  delegate: SliverChildBuilderDelegate(
+                    (_, i) => _buildCityCard(_filteredCities[i], isSmallScreen),
+                    childCount: _filteredCities.length,
+                  ),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: isSmallScreen ? 10 : 14,
+                    mainAxisSpacing: isSmallScreen ? 10 : 14,
+                    childAspectRatio: isSmallScreen ? 0.75 : 0.82,
+                  ),
                 ),
               ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }

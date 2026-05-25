@@ -36,14 +36,14 @@ class _AddDestinationScreenState extends State<AddDestinationScreen> {
 
   String? _selectedCategory;
 
-  final TextEditingController cityController         = TextEditingController();
-  final TextEditingController locationController     = TextEditingController();
-  final TextEditingController timingsController      = TextEditingController();
-  final TextEditingController distanceController     = TextEditingController();
-  final TextEditingController descriptionController  = TextEditingController();
-  final TextEditingController contactController      = TextEditingController();
+  final TextEditingController cityController = TextEditingController();
+  final TextEditingController locationController = TextEditingController();
+  final TextEditingController timingsController = TextEditingController();
+  final TextEditingController distanceController = TextEditingController();
+  final TextEditingController descriptionController = TextEditingController();
+  final TextEditingController contactController = TextEditingController();
   final TextEditingController locationNameController = TextEditingController();
-  final TextEditingController imageNameController    = TextEditingController();
+  final TextEditingController imageNameController = TextEditingController();
 
   @override
   void dispose() {
@@ -91,18 +91,16 @@ class _AddDestinationScreenState extends State<AddDestinationScreen> {
     setState(() => _isLoading = true);
 
     try {
-      await FirebaseFirestore.instance
-          .collection('destinationDetails')
-          .add({
-        'city':         _selectedCity,
-        'location':     locationController.text.trim(),
-        'timings':      timingsController.text.trim(),
-        'distance':     distanceController.text.trim(),
-        'description':  descriptionController.text.trim(),
-        'contact':      contactController.text.trim(),
+      await FirebaseFirestore.instance.collection('destinationDetails').add({
+        'city': _selectedCity,
+        'location': locationController.text.trim(),
+        'timings': timingsController.text.trim(),
+        'distance': distanceController.text.trim(),
+        'description': descriptionController.text.trim(),
+        'contact': contactController.text.trim(),
         'locationName': locationNameController.text.trim(),
-        'imagePath':    'assets/images/${imageNameController.text.trim()}',
-        'category':     _selectedCategory,
+        'imagePath': 'assets/images/${imageNameController.text.trim()}',
+        'category': _selectedCategory,
       });
 
       _showSnack('Destination added successfully!');
@@ -127,7 +125,6 @@ class _AddDestinationScreenState extends State<AddDestinationScreen> {
     }
   }
 
-  // ── Input Decoration ─────────────────────────────────────────
   InputDecoration _inputDeco(String hint, IconData icon) {
     return InputDecoration(
       isDense: true,
@@ -162,7 +159,6 @@ class _AddDestinationScreenState extends State<AddDestinationScreen> {
     );
   }
 
-  // ── Section Header ───────────────────────────────────────────
   Widget _sectionHeader(String title) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12, top: 4),
@@ -187,7 +183,6 @@ class _AddDestinationScreenState extends State<AddDestinationScreen> {
     );
   }
 
-  // ── Form Field with label ────────────────────────────────────
   Widget _field({
     required TextEditingController controller,
     required String hint,
@@ -211,350 +206,392 @@ class _AddDestinationScreenState extends State<AddDestinationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final double sw = MediaQuery.of(context).size.width;
+    final size = MediaQuery.of(context).size;
+    final isSmallScreen = size.height < 700;
+    final horizontalPadding = size.width * 0.05;
 
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Constants.redColor,
-        elevation: 0,
-        toolbarHeight: 56,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text('Add Destination',
-            style: TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.w700)),
-        centerTitle: true,
-      ),
-      body: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        child: Column(
-          children: [
-            // ── Top Banner ─────────────────────────────────────
-            Container(
-              width: double.infinity,
-              padding: EdgeInsets.fromLTRB(sw * 0.05, 20, sw * 0.05, 28),
-              decoration: BoxDecoration(
-                color: Constants.redColor,
-                borderRadius: const BorderRadius.only(
-                  bottomLeft: Radius.circular(28),
-                  bottomRight: Radius.circular(28),
-                ),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: const Icon(Icons.add_location_alt,
-                        color: Colors.white, size: 28),
-                  ),
-                  const SizedBox(width: 16),
-                  const Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('New Destination',
-                            style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 18,
-                                fontWeight: FontWeight.w800)),
-                        SizedBox(height: 3),
-                        Text('Fill in the details below to add a new place',
-                            style: TextStyle(
-                                color: Colors.white70, fontSize: 12)),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // ── Form Card ───────────────────────────────────────
-            Padding(
-              padding: EdgeInsets.symmetric(
-                  horizontal: sw * 0.05, vertical: 20),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-
-                    // ── Location Info ──────────────────────────
-                    _sectionHeader('Location Info'),
-                    _field(
-                      controller: locationNameController,
-                      hint: 'Destination Name',
-                      icon: Icons.place,
-                      validator: (v) =>
-                          v!.length < 3 ? 'Enter a valid name' : null,
-                    ),
-                    const SizedBox(height: 12),
-                    StreamBuilder<QuerySnapshot>(
-  stream: FirebaseFirestore.instance.collection('cities').snapshots(),
-  builder: (context, snapshot) {
-    // Jab tak data load ho raha ho ya error ho
-    if (snapshot.hasError) {
-      return Text('Error loading cities');
-    }
-    if (snapshot.connectionState == ConnectionState.waiting) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    // Firestore se data documents ki list nikalna
-    final cityDocs = snapshot.data?.docs ?? [];
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade50,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: _selectedCity != null
-              ? Constants.OrangeColor
-              : Colors.grey.shade200,
-          width: _selectedCity != null ? 1.5 : 1,
-        ),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          value: _selectedCity,
-          hint: Row(
+      body: SafeArea(
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: Column(
             children: [
-              Icon(Icons.location_city,
-                  color: Constants.OrangeColor, size: 18),
-              const SizedBox(width: 10),
-              Text(
-                'Select City',
-                style: TextStyle(
-                    color: Constants.greyTextColor.withOpacity(0.5),
-                    fontSize: 13),
-              ),
-            ],
-          ),
-          icon: Icon(Icons.keyboard_arrow_down,
-              color: Constants.OrangeColor),
-          isExpanded: true,
-          style: const TextStyle(color: Colors.black87, fontSize: 13),
-          onChanged: (String? newValue) {
-            setState(() {
-              _selectedCity = newValue;
-            });
-          },
-          // ✅ Firestore documents se dynamically dropdown items banana
-          items: cityDocs.map((DocumentSnapshot doc) {
-            // Assume kar rahe hain ke aapke document mein field ka naam 'name' ya 'cityName' hai
-            final Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-            final String cityName = data['city'] ?? 'Unknown'; 
-
-            return DropdownMenuItem<String>(
-              value: cityName,
-              child: Text(cityName),
-            );
-          }).toList(),
-        ),
-      ),
-    );
-  },
-),
-                    
-                    const SizedBox(height: 12),
-                    _field(
-                      controller: locationController,
-                      hint: 'Coordinates (e.g. 24.8607, 67.0011)',
-                      icon: Icons.map,
-                      validator: _validateLocation,
-                    ),
-                    const SizedBox(height: 20),
-
-                    // ── Category ───────────────────────────────
-                    _sectionHeader('Category'),
-                    Container(
-                      width: double.infinity,
-                      padding:
-                          const EdgeInsets.symmetric(horizontal: 12),
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade50,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: _selectedCategory != null
-                              ? Constants.OrangeColor
-                              : Colors.grey.shade200,
-                          width: _selectedCategory != null ? 1.5 : 1,
-                        ),
-                      ),
-                      child: DropdownButtonHideUnderline(
-                        child: DropdownButton<String>(
-                          value: _selectedCategory,
-                          hint: Row(
-                            children: [
-                              Icon(Icons.category,
-                                  color: Constants.OrangeColor, size: 18),
-                              const SizedBox(width: 10),
-                              Text('Select Category',
-                                  style: TextStyle(
-                                      color: Constants.greyTextColor
-                                          .withOpacity(0.5),
-                                      fontSize: 13)),
-                            ],
-                          ),
-                          icon: Icon(Icons.keyboard_arrow_down,
-                              color: Constants.OrangeColor),
-                          isExpanded: true,
-                          style: const TextStyle(
-                              color: Colors.black87, fontSize: 13),
-                          onChanged: (v) =>
-                              setState(() => _selectedCategory = v),
-                          items: _categories
-                              .map((c) => DropdownMenuItem(
-                                  value: c, child: Text(c)))
-                              .toList(),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-
-                    // ── Details ────────────────────────────────
-                    _sectionHeader('Details'),
-                    _field(
-                      controller: timingsController,
-                      hint: 'Opening Timings (e.g. 9AM - 10PM)',
-                      icon: Icons.access_time,
-                      validator: (v) =>
-                          v!.length < 3 ? 'Add timings' : null,
-                    ),
-                    const SizedBox(height: 12),
-                    _field(
-                      controller: distanceController,
-                      hint: 'Distance (e.g. 3.2 Km)',
-                      icon: Icons.directions_walk,
-                      validator: (v) =>
-                          v!.length < 2 ? 'Add distance with unit' : null,
-                    ),
-                    const SizedBox(height: 12),
-                    _field(
-                      controller: contactController,
-                      hint: 'Contact (+92XXXXXXXXXX)',
-                      icon: Icons.phone,
-                      validator: _validateContact,
-                      keyboardType: TextInputType.phone,
-                    ),
-                    const SizedBox(height: 20),
-
-                    // ── Media ──────────────────────────────────
-                    _sectionHeader('Media'),
-                    _field(
-                      controller: imageNameController,
-                      hint: 'Image filename (e.g. karachi.png)',
-                      icon: Icons.image,
-                      validator: (v) =>
-                          v!.trim().isEmpty ? 'Image name required' : null,
-                    ),
-                    const SizedBox(height: 4),
+              // ── Top Banner with Back Button ─────────────────────
+              Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: Constants.redColor,
+                  borderRadius: const BorderRadius.only(
+                    bottomLeft: Radius.circular(28),
+                    bottomRight: Radius.circular(28),
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    // Back Button Row
                     Padding(
-                      padding: const EdgeInsets.only(left: 4),
+                      padding: EdgeInsets.fromLTRB(
+                        horizontalPadding,
+                        isSmallScreen ? 10 : 12,
+                        horizontalPadding,
+                        isSmallScreen ? 8 : 10,
+                      ),
                       child: Row(
                         children: [
-                          Icon(Icons.info_outline,
-                              size: 11,
-                              color: Constants.greyTextColor
-                                  .withOpacity(0.5)),
-                          const SizedBox(width: 4),
-                          Text('File must exist in assets/images/ folder',
-                              style: TextStyle(
-                                  fontSize: 11,
-                                  color: Constants.greyTextColor
-                                      .withOpacity(0.5))),
+                          GestureDetector(
+                            onTap: () => Navigator.pop(context),
+                            child: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: const Icon(
+                                Icons.arrow_back,
+                                color: Colors.white,
+                                size: 20,
+                              ),
+                            ),
+                          ),
+                          const Spacer(),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 20),
-
-                    // ── Description ────────────────────────────
-                    _sectionHeader('Description'),
-                    _field(
-                      controller: descriptionController,
-                      hint: 'Write a brief description of this place...',
-                      icon: Icons.description,
-                      maxLines: 4,
-                      validator: (v) => v!.length < 20
-                          ? 'At least 20 characters required'
-                          : null,
+                    // Banner Content
+                    Padding(
+                      padding: EdgeInsets.fromLTRB(
+                        horizontalPadding,
+                        0,
+                        horizontalPadding,
+                        isSmallScreen ? 12 : 16,
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Icon(Icons.add_location_alt,
+                                color: Colors.white,
+                                size: isSmallScreen ? 22 : 26),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('New Destination',
+                                    style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: isSmallScreen ? 15 : 17,
+                                        fontWeight: FontWeight.w800)),
+                                SizedBox(height: isSmallScreen ? 2 : 3),
+                                Text('Fill in the details below',
+                                    style: TextStyle(
+                                        color: Colors.white70,
+                                        fontSize: isSmallScreen ? 10 : 11)),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                    const SizedBox(height: 28),
+                  ],
+                ),
+              ),
 
-                    // ── Submit Button ──────────────────────────
-                    SizedBox(
-                      width: double.infinity,
-                      height: 54,
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          gradient: _isLoading
-                              ? LinearGradient(colors: [
-                                  Colors.grey.shade300,
-                                  Colors.grey.shade300
-                                ])
-                              : Constants.redGradient,
-                          borderRadius: BorderRadius.circular(14),
-                          boxShadow: _isLoading
-                              ? []
-                              : [
-                                  BoxShadow(
-                                    color: Constants.OrangeColor
-                                        .withOpacity(0.35),
-                                    blurRadius: 12,
-                                    offset: const Offset(0, 4),
-                                  ),
-                                ],
-                        ),
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(14),
-                            onTap: _isLoading ? null : _submit,
-                            child: Center(
-                              child: _isLoading
-                                  ? const SizedBox(
-                                      width: 22,
-                                      height: 22,
-                                      child: CircularProgressIndicator(
-                                          color: Colors.white,
-                                          strokeWidth: 2.5),
-                                    )
-                                  : const Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Icon(Icons.add_location_alt,
-                                            color: Colors.white, size: 20),
-                                        SizedBox(width: 8),
-                                        Text('Add Destination',
-                                            style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 15,
-                                                fontWeight:
-                                                    FontWeight.w700)),
-                                      ],
+              // ── Form Card ───────────────────────────────────────
+              Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: horizontalPadding,
+                  vertical: isSmallScreen ? 14 : 18,
+                ),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // ── Location Info ──────────────────────────
+                      _sectionHeader('Location Info'),
+                      _field(
+                        controller: locationNameController,
+                        hint: 'Destination Name',
+                        icon: Icons.place,
+                        validator: (v) =>
+                            v!.length < 3 ? 'Enter a valid name' : null,
+                      ),
+                      SizedBox(height: isSmallScreen ? 9 : 11),
+                      StreamBuilder<QuerySnapshot>(
+                        stream: FirebaseFirestore.instance
+                            .collection('cities')
+                            .snapshots(),
+                        builder: (context, snapshot) {
+                          if (snapshot.hasError) {
+                            return Text('Error loading cities');
+                          }
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return const Center(
+                                child: CircularProgressIndicator());
+                          }
+
+                          final cityDocs = snapshot.data?.docs ?? [];
+
+                          return Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade50,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: _selectedCity != null
+                                    ? Constants.OrangeColor
+                                    : Colors.grey.shade200,
+                                width: _selectedCity != null ? 1.5 : 1,
+                              ),
+                            ),
+                            child: DropdownButtonHideUnderline(
+                              child: DropdownButton<String>(
+                                value: _selectedCity,
+                                hint: Row(
+                                  children: [
+                                    Icon(Icons.location_city,
+                                        color: Constants.OrangeColor, size: 18),
+                                    const SizedBox(width: 10),
+                                    Text(
+                                      'Select City',
+                                      style: TextStyle(
+                                          color: Constants.greyTextColor
+                                              .withOpacity(0.5),
+                                          fontSize: 13),
                                     ),
+                                  ],
+                                ),
+                                icon: Icon(Icons.keyboard_arrow_down,
+                                    color: Constants.OrangeColor),
+                                isExpanded: true,
+                                style: const TextStyle(
+                                    color: Colors.black87, fontSize: 13),
+                                onChanged: (String? newValue) {
+                                  setState(() {
+                                    _selectedCity = newValue;
+                                  });
+                                },
+                                items: cityDocs.map((DocumentSnapshot doc) {
+                                  final Map<String, dynamic> data =
+                                      doc.data() as Map<String, dynamic>;
+                                  final String cityName = data['city'] ??
+                                      'Unknown';
+
+                                  return DropdownMenuItem<String>(
+                                    value: cityName,
+                                    child: Text(cityName),
+                                  );
+                                }).toList(),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                      SizedBox(height: isSmallScreen ? 9 : 11),
+                      _field(
+                        controller: locationController,
+                        hint: 'Coordinates (e.g. 24.8607, 67.0011)',
+                        icon: Icons.map,
+                        validator: _validateLocation,
+                      ),
+                      SizedBox(height: isSmallScreen ? 14 : 18),
+
+                      // ── Category ───────────────────────────────
+                      _sectionHeader('Category'),
+                      Container(
+                        width: double.infinity,
+                        padding:
+                            const EdgeInsets.symmetric(horizontal: 12),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade50,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: _selectedCategory != null
+                                ? Constants.OrangeColor
+                                : Colors.grey.shade200,
+                            width: _selectedCategory != null ? 1.5 : 1,
+                          ),
+                        ),
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<String>(
+                            value: _selectedCategory,
+                            hint: Row(
+                              children: [
+                                Icon(Icons.category,
+                                    color: Constants.OrangeColor, size: 18),
+                                const SizedBox(width: 10),
+                                Text('Select Category',
+                                    style: TextStyle(
+                                        color: Constants.greyTextColor
+                                            .withOpacity(0.5),
+                                        fontSize: 13)),
+                              ],
+                            ),
+                            icon: Icon(Icons.keyboard_arrow_down,
+                                color: Constants.OrangeColor),
+                            isExpanded: true,
+                            style: const TextStyle(
+                                color: Colors.black87, fontSize: 13),
+                            onChanged: (v) =>
+                                setState(() => _selectedCategory = v),
+                            items: _categories
+                                .map((c) => DropdownMenuItem(
+                                    value: c, child: Text(c)))
+                                .toList(),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: isSmallScreen ? 14 : 18),
+
+                      // ── Details ────────────────────────────────
+                      _sectionHeader('Details'),
+                      _field(
+                        controller: timingsController,
+                        hint: 'Opening Timings (e.g. 9AM - 10PM)',
+                        icon: Icons.access_time,
+                        validator: (v) =>
+                            v!.length < 3 ? 'Add timings' : null,
+                      ),
+                      SizedBox(height: isSmallScreen ? 9 : 11),
+                      _field(
+                        controller: distanceController,
+                        hint: 'Distance (e.g. 3.2 Km)',
+                        icon: Icons.directions_walk,
+                        validator: (v) =>
+                            v!.length < 2 ? 'Add distance with unit' : null,
+                      ),
+                      SizedBox(height: isSmallScreen ? 9 : 11),
+                      _field(
+                        controller: contactController,
+                        hint: 'Contact (+92XXXXXXXXXX)',
+                        icon: Icons.phone,
+                        validator: _validateContact,
+                        keyboardType: TextInputType.phone,
+                      ),
+                      SizedBox(height: isSmallScreen ? 14 : 18),
+
+                      // ── Media ──────────────────────────────────
+                      _sectionHeader('Media'),
+                      _field(
+                        controller: imageNameController,
+                        hint: 'Image filename (e.g. karachi.png)',
+                        icon: Icons.image,
+                        validator: (v) =>
+                            v!.trim().isEmpty ? 'Image name required' : null,
+                      ),
+                      const SizedBox(height: 4),
+                      Padding(
+                        padding: const EdgeInsets.only(left: 4),
+                        child: Row(
+                          children: [
+                            Icon(Icons.info_outline,
+                                size: 11,
+                                color: Constants.greyTextColor
+                                    .withOpacity(0.5)),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                  'File must exist in assets/images/ folder',
+                                  style: TextStyle(
+                                      fontSize: 11,
+                                      color: Constants.greyTextColor
+                                          .withOpacity(0.5))),
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(height: isSmallScreen ? 14 : 18),
+
+                      // ── Description ────────────────────────────
+                      _sectionHeader('Description'),
+                      _field(
+                        controller: descriptionController,
+                        hint:
+                            'Write a brief description of this place...',
+                        icon: Icons.description,
+                        maxLines: 4,
+                        validator: (v) => v!.length < 20
+                            ? 'At least 20 characters required'
+                            : null,
+                      ),
+                      SizedBox(height: isSmallScreen ? 16 : 22),
+
+                      // ── Submit Button ──────────────────────────
+                      SizedBox(
+                        width: double.infinity,
+                        height: isSmallScreen ? 46 : 52,
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            gradient: _isLoading
+                                ? LinearGradient(colors: [
+                                    Colors.grey.shade300,
+                                    Colors.grey.shade300
+                                  ])
+                                : Constants.redGradient,
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: _isLoading
+                                ? []
+                                : [
+                                    BoxShadow(
+                                      color: Constants.OrangeColor
+                                          .withOpacity(0.3),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 3),
+                                    ),
+                                  ],
+                          ),
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(12),
+                              onTap: _isLoading ? null : _submit,
+                              child: Center(
+                                child: _isLoading
+                                    ? const SizedBox(
+                                        width: 20,
+                                        height: 20,
+                                        child: CircularProgressIndicator(
+                                            color: Colors.white,
+                                            strokeWidth: 2.5),
+                                      )
+                                    : Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Icon(Icons.add_location_alt,
+                                              color: Colors.white,
+                                              size: isSmallScreen ? 16 : 18),
+                                          const SizedBox(width: 8),
+                                          Text('Add Destination',
+                                              style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize:
+                                                      isSmallScreen ? 12 : 14,
+                                                  fontWeight:
+                                                      FontWeight.w700)),
+                                        ],
+                                      ),
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 30),
-                  ],
+                      SizedBox(height: isSmallScreen ? 16 : 20),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

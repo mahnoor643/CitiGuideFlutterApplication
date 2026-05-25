@@ -41,29 +41,29 @@ class _SignUp1State extends State<SignUp1> {
       if (!mounted) return;
       // First-time user: Go to SelectCity
       Navigator.pushAndRemoveUntil(
-  context,
-  MaterialPageRoute(
-    builder: (_) => SelectCity(
-      userId: user.uid,
-      username: user.displayName ?? '',
-      email: user.email ?? '',
-      profile: user.photoURL ?? '',
-    ),
-  ),
-  (route) => false,
-);
+        context,
+        MaterialPageRoute(
+          builder: (_) => SelectCity(
+            userId: user.uid,
+            username: user.displayName ?? '',
+            email: user.email ?? '',
+            profile: user.photoURL ?? '',
+          ),
+        ),
+        (route) => false,
+      );
     } else {
-      // Existing user: Go to SelectCity
-      final userData = userDoc.data() as Map<String, dynamic>;
+      // Existing user: Go to Dashboard
       if (!mounted) return;
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(
           builder: (_) => Dashboard(
             userId: user.uid,
-      username: user.displayName ?? '',
-      email: user.email ?? '',
-      profile: user.photoURL ?? '',),
+            username: user.displayName ?? '',
+            email: user.email ?? '',
+            profile: user.photoURL ?? '',
+          ),
         ),
         (route) => false,
       );
@@ -132,292 +132,138 @@ class _SignUp1State extends State<SignUp1> {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
+    final isSmallScreen = size.height < 700;
 
     return Scaffold(
-      backgroundColor: Constants.pageBackgroundColor,
+      backgroundColor: Constants.splashScreenPageColor,
       body: SafeArea(
-        child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          child: Column(
-            children: [
-              SizedBox(height: size.height * 0.04),
+        child: Column(
+          children: [
+            // ── Top Spacer ──
+            SizedBox(height: size.height * 0.04),
 
-             
-
-
-              // ── Main Card ──
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: size.width * 0.05),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 32,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Constants.greyTextColor,
-                    borderRadius: BorderRadius.circular(20),
-                    
-                  ),
-                  child: Column(
-                    children: [
-                      // ── Logo Image ──
-                      Container(
-                        height: 180,
-                        width: 180,
-                        margin: const EdgeInsets.only(bottom: 24),
-                        
-                        child: Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Container(
-                      decoration: BoxDecoration(
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 18,
-                            offset: const Offset(0, 6),
-                            spreadRadius: 1,
-                          ),
-                        ],
-                      ),
-                      child: Image.asset(
-                        Constants.mainLogo,
-                        height: 190,
-                        fit: BoxFit.contain,
-                        errorBuilder: (_, __, ___) => Icon(
-                          Icons.map_outlined,
-                          size: 190,
-                          color: Constants.OrangeColor,
-                        ),
-                      ),
+            // ── Main Content (Centered) ──
+            Expanded(
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                child: Center(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: size.width * 0.08,
+                      vertical: isSmallScreen ? 8 : 12,
                     ),
-                        ),
-                      ),
-
-                      // ── Title ──
-                      const Text(
-                        "Discover Amazing Places",
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Color(0xff1a1a1a),
-                          fontSize: 22,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: -0.3,
-                        ),
-                      ),
-
-                      const SizedBox(height: 12),
-
-                      // ── Subtitle ──
-                      Text(
-                        "Explore local destinations, save your favorites, and create unforgettable memories",
-                        style: TextStyle(
-                          color: const Color(0xff888888),
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                          height: 1.5,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-
-                      const SizedBox(height: 28),
-
-                      // ── Google Button ──
-                      Container(
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          gradient: Constants.orangeGradient,
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Constants.OrangeColor.withOpacity(0.3),
-                              blurRadius: 12,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(12),
-                            onTap: _isLoading ? null : _handleGoogleSignUp,
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 12,
-                                horizontal: 16,
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  if (!_isLoading)
-                                    Image.asset(
-                                      'assets/images/googleIcon.png',
-                                      height: 20,
-                                    ),
-                                  if (!_isLoading) const SizedBox(width: 10),
-                                  if (_isLoading)
-                                    const SizedBox(
-                                      height: 20,
-                                      width: 20,
-                                      child: CircularProgressIndicator(
-                                        color: Colors.white,
-                                        strokeWidth: 2,
-                                      ),
-                                    )
-                                  else
-                                    const Text(
-                                      "Continue with Google",
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                    ),
-                                ],
-                              ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // ── Logo Image ──
+                        Container(
+                          height: isSmallScreen ? 130 : 160,
+                          width: isSmallScreen ? 130 : 160,
+                          margin: EdgeInsets.only(
+                            bottom: isSmallScreen ? 24 : 32,
+                          ),
+                          child: Image.asset(
+                            Constants.mainLogo,
+                            fit: BoxFit.contain,
+                            errorBuilder: (_, __, ___) => Icon(
+                              Icons.map_outlined,
+                              size: isSmallScreen ? 130 : 160,
+                              color: Constants.OrangeColor,
                             ),
                           ),
                         ),
-                      ),
 
-                      const SizedBox(height: 12),
-
-                      // ── Apple Button ──
-                      Container(
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: const Color(0xffe5e5e5),
-                            width: 1.2,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.04),
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(12),
-                            onTap: () {
-                              debugPrint("Apple Sign-Up");
-                            },
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 12,
-                                horizontal: 16,
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.apple_rounded,
-                                    color: Colors.black,
-                                    size: 20,
-                                  ),
-                                  const SizedBox(width: 10),
-                                  const Text(
-                                    "Continue with Apple",
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: Color(0xff1a1a1a),
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
+                        // ── Title ──
+                        Text(
+                          "Discover Amazing Places",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: const Color(0xff1a1a1a),
+                            fontSize: isSmallScreen ? 24 : 28,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: -0.5,
                           ),
                         ),
-                      ),
 
-                      const SizedBox(height: 12),
+                        SizedBox(height: isSmallScreen ? 12 : 16),
 
-                      // ── Email Button ──
-                      Container(
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: const Color(0xffe5e5e5),
-                            width: 1.2,
+                        // ── Subtitle ──
+                        Text(
+                          "Explore local destinations, save your favorites, and create unforgettable memories",
+                          style: TextStyle(
+                            color: const Color(0xff888888),
+                            fontSize: isSmallScreen ? 12 : 13,
+                            fontWeight: FontWeight.w500,
+                            height: 1.6,
                           ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.04),
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
+                          textAlign: TextAlign.center,
                         ),
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(12),
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const SignUp2(),
-                                ),
-                              );
-                            },
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 12,
-                                horizontal: 16,
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const Icon(
-                                    Icons.mail_rounded,
-                                    color: Color(0xff1a1a1a),
-                                    size: 20,
-                                  ),
-                                  const SizedBox(width: 10),
-                                  const Text(
-                                    "Continue with Email",
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: Color(0xff1a1a1a),
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
+
+                        SizedBox(height: isSmallScreen ? 32 : 40),
+
+                        // ── Google Button ──
+                        _buildAuthButton(
+                          label: "Continue with Google",
+                          icon: 'assets/images/googleIcon.png',
+                          onTap: _isLoading ? null : _handleGoogleSignUp,
+                          isLoading: _isLoading,
+                          isSmallScreen: isSmallScreen,
                         ),
-                      ),
-                    ],
+
+                        SizedBox(height: isSmallScreen ? 10 : 12),
+
+                        // ── Apple Button ──
+                        _buildAuthButton(
+                          label: "Continue with Apple",
+                          icon: Icons.apple_rounded,
+                          onTap: () => debugPrint("Apple Sign-Up"),
+                          isSmallScreen: isSmallScreen,
+                        ),
+
+                        SizedBox(height: isSmallScreen ? 10 : 12),
+
+                        // ── Email Button ──
+                        _buildAuthButton(
+                          label: "Continue with Email",
+                          icon: Icons.mail_rounded,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const SignUp2(),
+                              ),
+                            );
+                          },
+                          isSmallScreen: isSmallScreen,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
+            ),
 
-              SizedBox(height: size.height * 0.08),
-
-              // ── Login Link ──
-              Row(
+            // ── Bottom Section (Login Link) ──
+            Padding(
+              padding: EdgeInsets.symmetric(
+                vertical: isSmallScreen ? 14 : 18,
+                horizontal: size.width * 0.08,
+              ),
+              child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const Text(
                     "Already have an account?",
                     style: TextStyle(
                       color: Color(0xff888888),
-                      fontSize: 14,
+                      fontSize: 13,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
                   const SizedBox(width: 4),
                   GestureDetector(
                     onTap: () {
-                      Navigator.push(
+                      Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(
                           builder: (context) => const Login(),
@@ -428,16 +274,101 @@ class _SignUp1State extends State<SignUp1> {
                       "Log in",
                       style: TextStyle(
                         color: Color(0xff1a1a1a),
-                        fontSize: 14,
+                        fontSize: 13,
                         fontWeight: FontWeight.w700,
+                        decoration: TextDecoration.underline,
                       ),
                     ),
                   ),
                 ],
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
-              SizedBox(height: size.height * 0.04),
-            ],
+  // ── Reusable Auth Button Widget ──
+  Widget _buildAuthButton({
+    required String label,
+    required dynamic icon,
+    required VoidCallback? onTap,
+    bool isLoading = false,
+    required bool isSmallScreen,
+  }) {
+    final isGoogleButton = label.contains("Google");
+    final isAppleButton = label.contains("Apple");
+
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        gradient: isGoogleButton ? Constants.orangeGradient : null,
+        color: isGoogleButton ? null : Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: !isGoogleButton
+            ? Border.all(
+                color: const Color(0xffe0e0e0),
+                width: 1.2,
+              )
+            : null,
+        boxShadow: [
+          BoxShadow(
+            color: isGoogleButton
+                ? Constants.OrangeColor.withOpacity(0.2)
+                : Colors.black.withOpacity(0.05),
+            blurRadius: isGoogleButton ? 12 : 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(14),
+          onTap: onTap,
+          child: Padding(
+            padding: EdgeInsets.symmetric(
+              vertical: isSmallScreen ? 12 : 14,
+              horizontal: 16,
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (!isLoading && icon is String)
+                  Image.asset(
+                    icon,
+                    height: isSmallScreen ? 18 : 20,
+                    width: isSmallScreen ? 18 : 20,
+                  )
+                else if (!isLoading && icon is IconData)
+                  Icon(
+                    icon,
+                    color: isGoogleButton ? Colors.white : const Color(0xff1a1a1a),
+                    size: isSmallScreen ? 18 : 20,
+                  ),
+                if (!isLoading) SizedBox(width: isSmallScreen ? 8 : 10),
+                if (isLoading)
+                  SizedBox(
+                    height: isSmallScreen ? 18 : 20,
+                    width: isSmallScreen ? 18 : 20,
+                    child: CircularProgressIndicator(
+                      color: isGoogleButton ? Colors.white : Constants.OrangeColor,
+                      strokeWidth: 2,
+                    ),
+                  )
+                else
+                  Text(
+                    label,
+                    style: TextStyle(
+                      fontSize: isSmallScreen ? 13 : 14,
+                      color:
+                          isGoogleButton ? Colors.white : const Color(0xff1a1a1a),
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+              ],
+            ),
           ),
         ),
       ),

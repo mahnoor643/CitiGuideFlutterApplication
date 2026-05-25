@@ -7,7 +7,7 @@ import 'package:citi_guide/screens/Login/login.dart';
 import 'package:citi_guide/screens/SearchScreen/searchScreen.dart';
 import 'package:citi_guide/screens/SignUpPages/signUp1.dart';
 import 'package:citi_guide/screens/SignUpPages/signUp2.dart';
-import 'package:citi_guide/screens/SplashScreens/firstSplashScreen.dart';
+import 'package:citi_guide/screens/SplashScreens/fiveSplashScreen.dart';
 import 'package:citi_guide/screens/map/map_page.dart';
 import 'package:citi_guide/screens/profile/profile.dart';
 import 'package:flutter/material.dart';
@@ -19,7 +19,7 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(CitiGuide());
+  runApp(const CitiGuide());
 }
 
 class CitiGuide extends StatelessWidget {
@@ -28,20 +28,17 @@ class CitiGuide extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: firstSplashScreen(),
+      home: const FifthSplashScreen(),
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        //Beneath colorScheme is used for background color setting of app
-        colorScheme: ColorScheme.light(
+        colorScheme: const ColorScheme.light(
           background: Colors.white,
         ),
       ),
       routes: {
-        // '/home': (context) => Dashboard(),
-        '/login': (context) => Login(),
-        '/signup': (context) => SignUp2(),
+        '/login': (context) => const Login(),
+        '/signup': (context) => const SignUp2(),
       },
     );
   }
 }
-
