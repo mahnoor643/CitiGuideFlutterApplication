@@ -54,23 +54,20 @@ class _DestinationDetailsState extends State<DestinationDetails> {
 
   // ─── Toggle save ──────────────────────────────────────────────────────────
   Future<void> _toggleSave(String locationName) async {
-    final userRef = FirebaseFirestore.instance
-        .collection('users')
-        .doc(widget.userId);
+    final userRef =
+        FirebaseFirestore.instance.collection('users').doc(widget.userId);
 
     setState(() => _isSaved = !_isSaved);
 
     try {
       if (_isSaved) {
         await userRef.update({
-          'savedDestinations':
-              FieldValue.arrayUnion([widget.destinationID]),
+          'savedDestinations': FieldValue.arrayUnion([widget.destinationID]),
         });
         _showSnack('$locationName saved!', saved: true);
       } else {
         await userRef.update({
-          'savedDestinations':
-              FieldValue.arrayRemove([widget.destinationID]),
+          'savedDestinations': FieldValue.arrayRemove([widget.destinationID]),
         });
         _showSnack('$locationName removed', saved: false);
       }
@@ -94,16 +91,14 @@ class _DestinationDetailsState extends State<DestinationDetails> {
             ),
             const SizedBox(width: 8),
             Text(msg,
-                style: const TextStyle(
-                    fontSize: 13, fontWeight: FontWeight.w600)),
+                style:
+                    const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
           ],
         ),
-        backgroundColor:
-            saved ? Constants.OrangeColor : Colors.grey.shade700,
+        backgroundColor: saved ? Constants.OrangeColor : Colors.grey.shade700,
         behavior: SnackBarBehavior.floating,
         duration: const Duration(seconds: 2),
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         margin: const EdgeInsets.all(16),
       ),
     );
@@ -195,11 +190,18 @@ class _DestinationDetailsState extends State<DestinationDetails> {
 
           // Parse lat/lng
           final String locationString = data['location'] ?? '0,0';
-          final List<String> latLngList = locationString.split(',');
-          final double latitude = double.tryParse(latLngList[0]) ?? 0;
-          final double longitude = double.tryParse(
-                  latLngList.length > 1 ? latLngList[1] : '0') ??
-              0;
+final List<String> latLngList = locationString.split(',');
+final double latitude = double.tryParse(latLngList[0].trim()) ?? 0;
+final double longitude = double.tryParse(
+    latLngList.length > 1 ? latLngList[1].trim() : '0') ?? 0;
+
+// ADD THESE DEBUG PRINTS:
+debugPrint('📍 Raw location: "$locationString"');
+debugPrint('📍 Split: lat="${latLngList[0]}", lng="${latLngList.length > 1 ? latLngList[1] : 'MISSING'}"');
+debugPrint('📍 After trim: lat=$latitude, lng=$longitude');
+
+// Debug:
+          debugPrint('🗺️ Location: lat=$latitude, lng=$longitude');
 
           final String locationName = data['locationName'] ?? '';
           final String city = data['city'] ?? '';
@@ -217,8 +219,7 @@ class _DestinationDetailsState extends State<DestinationDetails> {
                 pinned: true,
                 elevation: 0,
                 backgroundColor: Constants.OrangeColor,
-                iconTheme:
-                    const IconThemeData(color: Colors.white),
+                iconTheme: const IconThemeData(color: Colors.white),
                 // ✅ Save button top-right
                 actions: [
                   Padding(
@@ -235,8 +236,7 @@ class _DestinationDetailsState extends State<DestinationDetails> {
                         : GestureDetector(
                             onTap: () => _toggleSave(locationName),
                             child: AnimatedContainer(
-                              duration:
-                                  const Duration(milliseconds: 250),
+                              duration: const Duration(milliseconds: 250),
                               width: 38,
                               height: 38,
                               decoration: BoxDecoration(
@@ -252,8 +252,7 @@ class _DestinationDetailsState extends State<DestinationDetails> {
                                 ),
                               ),
                               child: AnimatedSwitcher(
-                                duration:
-                                    const Duration(milliseconds: 200),
+                                duration: const Duration(milliseconds: 200),
                                 child: Icon(
                                   _isSaved
                                       ? Icons.bookmark
@@ -277,8 +276,8 @@ class _DestinationDetailsState extends State<DestinationDetails> {
                         widget.url,
                         fit: BoxFit.cover,
                         errorBuilder: (_, __, ___) => Container(
-                          decoration: BoxDecoration(
-                              gradient: Constants.redGradient),
+                          decoration:
+                              BoxDecoration(gradient: Constants.redGradient),
                         ),
                       ),
                       // Gradient overlay
@@ -312,18 +311,14 @@ class _DestinationDetailsState extends State<DestinationDetails> {
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 10, vertical: 4),
                                   decoration: BoxDecoration(
-                                    color:
-                                        Colors.black.withOpacity(0.35),
-                                    borderRadius:
-                                        BorderRadius.circular(20),
+                                    color: Colors.black.withOpacity(0.35),
+                                    borderRadius: BorderRadius.circular(20),
                                   ),
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      const Icon(
-                                          Icons.location_on_outlined,
-                                          color: Colors.white,
-                                          size: 11),
+                                      const Icon(Icons.location_on_outlined,
+                                          color: Colors.white, size: 11),
                                       const SizedBox(width: 3),
                                       Text(
                                         city,
@@ -336,7 +331,6 @@ class _DestinationDetailsState extends State<DestinationDetails> {
                                     ],
                                   ),
                                 ),
-                               
                               ],
                             ),
                             const SizedBox(height: 8),
@@ -361,8 +355,7 @@ class _DestinationDetailsState extends State<DestinationDetails> {
                   ),
                   // Pinned title
                   // r
-                  titlePadding:
-                      const EdgeInsets.only(left: 56, bottom: 14),
+                  titlePadding: const EdgeInsets.only(left: 56, bottom: 14),
                 ),
               ),
 
@@ -392,20 +385,17 @@ class _DestinationDetailsState extends State<DestinationDetails> {
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 10, vertical: 4),
                               decoration: BoxDecoration(
-                                color: Constants.OrangeColor
-                                    .withOpacity(0.12),
+                                color: Constants.OrangeColor.withOpacity(0.12),
                                 borderRadius: BorderRadius.circular(20),
                                 border: Border.all(
-                                  color: Constants.OrangeColor
-                                      .withOpacity(0.4),
+                                  color: Constants.OrangeColor.withOpacity(0.4),
                                 ),
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Icon(Icons.bookmark,
-                                      size: 12,
-                                      color: Constants.OrangeColor),
+                                      size: 12, color: Constants.OrangeColor),
                                   const SizedBox(width: 4),
                                   Text(
                                     'Saved',
@@ -550,8 +540,7 @@ class _DestinationDetailsState extends State<DestinationDetails> {
                                         horizontal: 12, vertical: 6),
                                     decoration: BoxDecoration(
                                       gradient: Constants.redGradient,
-                                      borderRadius:
-                                          BorderRadius.circular(20),
+                                      borderRadius: BorderRadius.circular(20),
                                       boxShadow: [
                                         BoxShadow(
                                           color: Constants.redColor
@@ -565,8 +554,7 @@ class _DestinationDetailsState extends State<DestinationDetails> {
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
                                         Icon(Icons.map_outlined,
-                                            color: Colors.white,
-                                            size: 13),
+                                            color: Colors.white, size: 13),
                                         SizedBox(width: 5),
                                         Text(
                                           'Open Map',

@@ -44,6 +44,12 @@ class _MapPageState extends State<MapPage> {
       statusBarIconBrightness: Brightness.dark,
     ));
     _pDestination = LatLng(widget.latitudeDetected, widget.longitudeDetected);
+    debugPrint('🗺️ Destination: lat=${_pDestination.latitude}, lng=${_pDestination.longitude}');
+    debugPrint('🗺️ MapPage initState - Received lat=${widget.latitudeDetected}, lng=${widget.longitudeDetected}');
+  debugPrint('🗺️ _pDestination set to: ${_pDestination.latitude}, ${_pDestination.longitude}');
+    
+    // ✅ Request location permission first
+    _requestLocationPermission();
     getLocationUpdates();
   }
 
@@ -52,6 +58,22 @@ class _MapPageState extends State<MapPage> {
     _locationSub?.cancel();
     _polylineTimer?.cancel();
     super.dispose();
+  }
+
+  // ─── Request Location Permission ──────────────────────────────────────────
+  Future<void> _requestLocationPermission() async {
+    try {
+      PermissionStatus permission = await _locationController.hasPermission();
+      debugPrint('📍 Current permission: $permission');
+      
+      if (permission == PermissionStatus.denied) {
+        debugPrint('📍 Permission denied, requesting...');
+        permission = await _locationController.requestPermission();
+        debugPrint('📍 Permission after request: $permission');
+      }
+    } catch (e) {
+      debugPrint('❌ Permission error: $e');
+    }
   }
 
   // ─── Camera: destination ──────────────────────────────────────────────────
@@ -113,38 +135,60 @@ class _MapPageState extends State<MapPage> {
   // ─── Location Updates ─────────────────────────────────────────────────────
 
   Future<void> getLocationUpdates() async {
-    bool serviceEnabled = await _locationController.serviceEnabled();
-    if (!serviceEnabled) {
-      serviceEnabled = await _locationController.requestService();
-      if (!serviceEnabled) return;
-    }
-
-    PermissionStatus permissionGranted =
-        await _locationController.hasPermission();
-    if (permissionGranted == PermissionStatus.denied) {
-      permissionGranted = await _locationController.requestPermission();
-      if (permissionGranted != PermissionStatus.granted) return;
-    }
-
-    _locationSub = _locationController.onLocationChanged.listen(
-      (LocationData currentLocation) {
-        if (!mounted) return;
-        if (currentLocation.latitude == null ||
-            currentLocation.longitude == null) return;
-
-        final newPos =
-            LatLng(currentLocation.latitude!, currentLocation.longitude!);
-
-        setState(() => _currentP = newPos);
-
-        if (!_firstLocationReceived) {
-          _firstLocationReceived = true;
-          _fetchPolylineNow();
+    try {
+      bool serviceEnabled = await _locationController.serviceEnabled();
+      if (!serviceEnabled) {
+        debugPrint('📍 Location service disabled, requesting...');
+        serviceEnabled = await _locationController.requestService();
+        if (!serviceEnabled) {
+          debugPrint('❌ Location service request denied');
+          return;
         }
+      }
 
-        _cameraToCurrentPosition(newPos);
-      },
-    );
+      PermissionStatus permissionGranted =
+          await _locationController.hasPermission();
+      if (permissionGranted == PermissionStatus.denied) {
+        debugPrint('📍 Permission denied, requesting...');
+        permissionGranted = await _locationController.requestPermission();
+        if (permissionGranted != PermissionStatus.granted) {
+          debugPrint('❌ Permission still denied after request');
+          return;
+        }
+      }
+
+      debugPrint('✅ Permission granted, listening for location updates...');
+      
+      _locationSub = _locationController.onLocationChanged.listen(
+        (LocationData currentLocation) {
+          if (!mounted) return;
+          if (currentLocation.latitude == null ||
+              currentLocation.longitude == null) {
+            debugPrint('❌ Location data is null');
+            return;
+          }
+
+          final newPos =
+              LatLng(currentLocation.latitude!, currentLocation.longitude!);
+
+          debugPrint('📍 Current position: lat=${newPos.latitude}, lng=${newPos.longitude}');
+          setState(() => _currentP = newPos);
+
+          if (!_firstLocationReceived) {
+            _firstLocationReceived = true;
+            debugPrint('✅ First location received, fetching polyline...');
+            _fetchPolylineNow();
+          }
+
+          _cameraToCurrentPosition(newPos);
+        },
+        onError: (error) {
+          debugPrint('❌ Location stream error: $error');
+        },
+      );
+    } catch (e) {
+      debugPrint('❌ Location error: $e');
+    }
   }
 
   // ─── Polyline: immediate fetch ────────────────────────────────────────────
@@ -152,7 +196,9 @@ class _MapPageState extends State<MapPage> {
   Future<void> _fetchPolylineNow() async {
     if (_polylineFetching || !mounted) return;
     _polylineFetching = true;
+    debugPrint('🛣️ Fetching polyline...');
     final coords = await getPolylinePoints();
+    debugPrint('🛣️ Polyline points: ${coords.length}');
     _polylineFetching = false;
     if (mounted) generatePolylineFromPoints(coords);
     _startPolylineTimer();
@@ -173,33 +219,59 @@ class _MapPageState extends State<MapPage> {
 
   // ─── Polyline fetch ───────────────────────────────────────────────────────
 
-  Future<List<LatLng>> getPolylinePoints() async {
-    if (_currentP == null) return [];
+Future<List<LatLng>> getPolylinePoints() async {
+  debugPrint('🛣️ getPolylinePoints called');
+  debugPrint('🛣️ _currentP: $_currentP');
+  debugPrint('🛣️ _pDestination: $_pDestination');
+  
+  if (_currentP == null) {
+    debugPrint('❌ Current position is null');
+    return [];
+  }
+  
+  if (_pDestination.latitude == 0 && _pDestination.longitude == 0) {
+    debugPrint('❌ Destination is 0,0 - BAD DATA');
+    return [];
+  }
 
-    final polylinePoints = PolylinePoints();
+  final polylinePoints = PolylinePoints();
+  try {
+    debugPrint('🔌 Making polyline request...');
+    
+    debugPrint('📍 From: ${_currentP!.latitude}, ${_currentP!.longitude}');
+    debugPrint('📍 To: ${_pDestination.latitude}, ${_pDestination.longitude}');
+    debugPrint('🔑 API Key: $GOOGLE_MAPS_API_KEY');
+    
     final result = await polylinePoints.getRouteBetweenCoordinates(
       googleApiKey: GOOGLE_MAPS_API_KEY,
       request: PolylineRequest(
         origin: PointLatLng(_currentP!.latitude, _currentP!.longitude),
-        destination:
-            PointLatLng(_pDestination.latitude, _pDestination.longitude),
+        destination: PointLatLng(_pDestination.latitude, _pDestination.longitude),
         mode: TravelMode.driving,
         wayPoints: [],
       ),
     );
 
+    debugPrint('🛣️ Result points: ${result.points.length}');
+    debugPrint('🛣️ Error: ${result.errorMessage}');
+    
     if (result.points.isNotEmpty) {
-      return result.points
-          .map((p) => LatLng(p.latitude, p.longitude))
-          .toList();
+      debugPrint('✅ Polyline success!');
+      return result.points.map((p) => LatLng(p.latitude, p.longitude)).toList();
+    } else {
+      debugPrint('❌ No polyline points returned');
     }
-
-    debugPrint('Polyline error: ${result.errorMessage}');
-    return [];
+  } catch (e) {
+    debugPrint('❌ Exception: $e');
   }
+  return [];
+}
 
   void generatePolylineFromPoints(List<LatLng> coords) {
-    if (coords.isEmpty || !mounted) return;
+    if (coords.isEmpty || !mounted) {
+      debugPrint('⚠️ No coords to generate polyline');
+      return;
+    }
     const id = PolylineId("route");
     setState(() {
       polylines[id] = Polyline(
@@ -209,6 +281,7 @@ class _MapPageState extends State<MapPage> {
         width: 5,
       );
     });
+    debugPrint('✅ Polyline generated and rendered');
   }
 
   // ─── Reusable floating button style ──────────────────────────────────────
